@@ -1,0 +1,120 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        foreground: 'rgb(var(--color-foreground) / <alpha-value>)',
+        card: 'rgb(var(--color-card) / <alpha-value>)',
+        'card-foreground': 'rgb(var(--color-card-foreground) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
+        input: 'rgb(var(--color-input) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        primary: {
+          '50': 'rgb(var(--color-primary-50) / <alpha-value>)',
+          '100': 'rgb(var(--color-primary-100) / <alpha-value>)',
+          '200': 'rgb(var(--color-primary-200) / <alpha-value>)',
+          '300': 'rgb(var(--color-primary-300) / <alpha-value>)',
+          '400': 'rgb(var(--color-primary-400) / <alpha-value>)',
+          '500': 'rgb(var(--color-primary-500) / <alpha-value>)',
+          '600': 'rgb(var(--color-primary-600) / <alpha-value>)',
+          '700': 'rgb(var(--color-primary-700) / <alpha-value>)',
+          '800': 'rgb(var(--color-primary-800) / <alpha-value>)',
+          '900': 'rgb(var(--color-primary-900) / <alpha-value>)',
+          '950': 'rgb(var(--color-primary-950) / <alpha-value>)',
+        },
+        secondary: {
+          '50': 'rgb(var(--color-secondary-50) / <alpha-value>)',
+          '100': 'rgb(var(--color-secondary-100) / <alpha-value>)',
+          '200': 'rgb(var(--color-secondary-200) / <alpha-value>)',
+          '300': 'rgb(var(--color-secondary-300) / <alpha-value>)',
+          '400': 'rgb(var(--color-secondary-400) / <alpha-value>)',
+          '500': 'rgb(var(--color-secondary-500) / <alpha-value>)',
+          '600': 'rgb(var(--color-secondary-600) / <alpha-value>)',
+          '700': 'rgb(var(--color-secondary-700) / <alpha-value>)',
+          '800': 'rgb(var(--color-secondary-800) / <alpha-value>)',
+          '900': 'rgb(var(--color-secondary-900) / <alpha-value>)',
+          '950': 'rgb(var(--color-secondary-950) / <alpha-value>)',
+        },
+        accent: {
+          '50': 'rgb(var(--color-accent-50) / <alpha-value>)',
+          '100': 'rgb(var(--color-accent-100) / <alpha-value>)',
+          '200': 'rgb(var(--color-accent-200) / <alpha-value>)',
+          '300': 'rgb(var(--color-accent-300) / <alpha-value>)',
+          '400': 'rgb(var(--color-accent-400) / <alpha-value>)',
+          '500': 'rgb(var(--color-accent-500) / <alpha-value>)',
+          '600': 'rgb(var(--color-accent-600) / <alpha-value>)',
+          '700': 'rgb(var(--color-accent-700) / <alpha-value>)',
+          '800': 'rgb(var(--color-accent-800) / <alpha-value>)',
+          '900': 'rgb(var(--color-accent-900) / <alpha-value>)',
+          '950': 'rgb(var(--color-accent-950) / <alpha-value>)',
+        },
+        success: {
+          '50': 'rgb(var(--color-success-50) / <alpha-value>)',
+          '500': 'rgb(var(--color-success-500) / <alpha-value>)',
+          '900': 'rgb(var(--color-success-900) / <alpha-value>)',
+        },
+        warning: {
+          '50': 'rgb(var(--color-warning-50) / <alpha-value>)',
+          '500': 'rgb(var(--color-warning-500) / <alpha-value>)',
+          '900': 'rgb(var(--color-warning-900) / <alpha-value>)',
+        },
+        error: {
+          '50': 'rgb(var(--color-error-50) / <alpha-value>)',
+          '500': 'rgb(var(--color-error-500) / <alpha-value>)',
+          '900': 'rgb(var(--color-error-900) / <alpha-value>)',
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.5s ease-out',
+        'slide-up': 'slide-up 0.5s ease-out',
+        'slide-down': 'slide-down 0.5s ease-out',
+        'scale-in': 'scale-in 0.5s ease-out',
+        'bounce-subtle': 'bounce-subtle 2s infinite',
+        'pulse-subtle': 'pulse-subtle 3s infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'ripple': 'ripple 0.7s linear',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-up': {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'slide-down': {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'scale-in': {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'ripple': {
+          '0%': { width: '0', height: '0', opacity: '0.8' },
+          '100%': { width: '200%', height: '200%', opacity: '0' },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
