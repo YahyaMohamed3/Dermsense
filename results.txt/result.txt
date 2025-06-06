@@ -1,0 +1,90 @@
+🚀 Starting DermaSense Model Training (Optimized Version)
+Found 20509 images belonging to 9 classes.
+Found 4392 images belonging to 9 classes.
+Found 4403 images belonging to 9 classes.
+/usr/local/lib/python3.11/dist-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:121: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()
+Epoch 1/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 557ms/step - accuracy: 0.3485 - loss: 1.9462 - top_2_accuracy: 0.5281/usr/local/lib/python3.11/dist-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:121: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()
+
+Epoch 1: val_accuracy improved from -inf to 0.46516, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 409s 599ms/step - accuracy: 0.3486 - loss: 1.9459 - top_2_accuracy: 0.5282 - val_accuracy: 0.4652 - val_loss: 1.3825 - val_top_2_accuracy: 0.6708 - learning_rate: 0.0010
+Epoch 2/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 537ms/step - accuracy: 0.4304 - loss: 1.5497 - top_2_accuracy: 0.6218
+Epoch 2: val_accuracy improved from 0.46516 to 0.46949, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 360s 561ms/step - accuracy: 0.4304 - loss: 1.5497 - top_2_accuracy: 0.6218 - val_accuracy: 0.4695 - val_loss: 1.3418 - val_top_2_accuracy: 0.6774 - learning_rate: 0.0010
+Epoch 3/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 533ms/step - accuracy: 0.4458 - loss: 1.4897 - top_2_accuracy: 0.6453
+Epoch 3: val_accuracy improved from 0.46949 to 0.48087, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 357s 557ms/step - accuracy: 0.4458 - loss: 1.4897 - top_2_accuracy: 0.6453 - val_accuracy: 0.4809 - val_loss: 1.3180 - val_top_2_accuracy: 0.6840 - learning_rate: 0.0010
+Epoch 4/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 533ms/step - accuracy: 0.4664 - loss: 1.4189 - top_2_accuracy: 0.6696
+Epoch 4: val_accuracy improved from 0.48087 to 0.49066, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 357s 558ms/step - accuracy: 0.4664 - loss: 1.4189 - top_2_accuracy: 0.6696 - val_accuracy: 0.4907 - val_loss: 1.2891 - val_top_2_accuracy: 0.7022 - learning_rate: 0.0010
+Epoch 5/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 534ms/step - accuracy: 0.4757 - loss: 1.4202 - top_2_accuracy: 0.6762
+Epoch 5: val_accuracy improved from 0.49066 to 0.50865, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 358s 559ms/step - accuracy: 0.4757 - loss: 1.4202 - top_2_accuracy: 0.6762 - val_accuracy: 0.5087 - val_loss: 1.2681 - val_top_2_accuracy: 0.7108 - learning_rate: 0.0010
+Epoch 6/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 533ms/step - accuracy: 0.4862 - loss: 1.3956 - top_2_accuracy: 0.6888
+Epoch 6: val_accuracy did not improve from 0.50865
+641/641 ━━━━━━━━━━━━━━━━━━━━ 356s 556ms/step - accuracy: 0.4862 - loss: 1.3956 - top_2_accuracy: 0.6888 - val_accuracy: 0.4932 - val_loss: 1.2943 - val_top_2_accuracy: 0.7024 - learning_rate: 0.0010
+Epoch 7/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 536ms/step - accuracy: 0.4947 - loss: 1.3697 - top_2_accuracy: 0.6897
+Epoch 7: val_accuracy did not improve from 0.50865
+641/641 ━━━━━━━━━━━━━━━━━━━━ 358s 559ms/step - accuracy: 0.4947 - loss: 1.3697 - top_2_accuracy: 0.6897 - val_accuracy: 0.5043 - val_loss: 1.2523 - val_top_2_accuracy: 0.7102 - learning_rate: 0.0010
+Epoch 8/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 536ms/step - accuracy: 0.4958 - loss: 1.3453 - top_2_accuracy: 0.6954
+Epoch 8: val_accuracy did not improve from 0.50865
+641/641 ━━━━━━━━━━━━━━━━━━━━ 358s 559ms/step - accuracy: 0.4958 - loss: 1.3454 - top_2_accuracy: 0.6954 - val_accuracy: 0.5036 - val_loss: 1.2814 - val_top_2_accuracy: 0.7127 - learning_rate: 0.0010
+Epoch 9/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 533ms/step - accuracy: 0.5042 - loss: 1.3394 - top_2_accuracy: 0.7052
+Epoch 9: val_accuracy did not improve from 0.50865
+641/641 ━━━━━━━━━━━━━━━━━━━━ 357s 556ms/step - accuracy: 0.5042 - loss: 1.3394 - top_2_accuracy: 0.7052 - val_accuracy: 0.5009 - val_loss: 1.2849 - val_top_2_accuracy: 0.7092 - learning_rate: 0.0010
+Epoch 10/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 533ms/step - accuracy: 0.5050 - loss: 1.3375 - top_2_accuracy: 0.6961
+Epoch 10: val_accuracy improved from 0.50865 to 0.50956, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 357s 557ms/step - accuracy: 0.5050 - loss: 1.3375 - top_2_accuracy: 0.6961 - val_accuracy: 0.5096 - val_loss: 1.2480 - val_top_2_accuracy: 0.7215 - learning_rate: 0.0010
+Epoch 11/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 546ms/step - accuracy: 0.5119 - loss: 1.3028 - top_2_accuracy: 0.7091
+Epoch 11: val_accuracy improved from 0.50956 to 0.51548, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 371s 579ms/step - accuracy: 0.5119 - loss: 1.3029 - top_2_accuracy: 0.7091 - val_accuracy: 0.5155 - val_loss: 1.2348 - val_top_2_accuracy: 0.7293 - learning_rate: 0.0010
+Epoch 12/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 549ms/step - accuracy: 0.5121 - loss: 1.2999 - top_2_accuracy: 0.7140
+Epoch 12: val_accuracy improved from 0.51548 to 0.52801, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 378s 574ms/step - accuracy: 0.5121 - loss: 1.2999 - top_2_accuracy: 0.7140 - val_accuracy: 0.5280 - val_loss: 1.2145 - val_top_2_accuracy: 0.7420 - learning_rate: 0.0010
+Epoch 13/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 537ms/step - accuracy: 0.5248 - loss: 1.2898 - top_2_accuracy: 0.7201
+Epoch 13: val_accuracy did not improve from 0.52801
+641/641 ━━━━━━━━━━━━━━━━━━━━ 359s 560ms/step - accuracy: 0.5248 - loss: 1.2898 - top_2_accuracy: 0.7201 - val_accuracy: 0.5209 - val_loss: 1.2455 - val_top_2_accuracy: 0.7231 - learning_rate: 0.0010
+Epoch 14/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 537ms/step - accuracy: 0.5208 - loss: 1.2858 - top_2_accuracy: 0.7175
+Epoch 14: val_accuracy did not improve from 0.52801
+641/641 ━━━━━━━━━━━━━━━━━━━━ 360s 562ms/step - accuracy: 0.5208 - loss: 1.2858 - top_2_accuracy: 0.7175 - val_accuracy: 0.5093 - val_loss: 1.2414 - val_top_2_accuracy: 0.7291 - learning_rate: 0.0010
+Epoch 15/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 528ms/step - accuracy: 0.5264 - loss: 1.2740 - top_2_accuracy: 0.7197
+Epoch 15: val_accuracy did not improve from 0.52801
+641/641 ━━━━━━━━━━━━━━━━━━━━ 353s 551ms/step - accuracy: 0.5264 - loss: 1.2740 - top_2_accuracy: 0.7197 - val_accuracy: 0.5235 - val_loss: 1.2179 - val_top_2_accuracy: 0.7263 - learning_rate: 0.0010
+Epoch 16/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 538ms/step - accuracy: 0.5260 - loss: 1.2633 - top_2_accuracy: 0.7254
+Epoch 16: val_accuracy improved from 0.52801 to 0.53848, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 360s 562ms/step - accuracy: 0.5260 - loss: 1.2633 - top_2_accuracy: 0.7254 - val_accuracy: 0.5385 - val_loss: 1.1898 - val_top_2_accuracy: 0.7445 - learning_rate: 0.0010
+Epoch 17/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 532ms/step - accuracy: 0.5395 - loss: 1.2327 - top_2_accuracy: 0.7368
+Epoch 17: val_accuracy did not improve from 0.53848
+641/641 ━━━━━━━━━━━━━━━━━━━━ 356s 555ms/step - accuracy: 0.5395 - loss: 1.2327 - top_2_accuracy: 0.7368 - val_accuracy: 0.5357 - val_loss: 1.2068 - val_top_2_accuracy: 0.7423 - learning_rate: 0.0010
+Epoch 18/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 541ms/step - accuracy: 0.5396 - loss: 1.2484 - top_2_accuracy: 0.7352
+Epoch 18: val_accuracy did not improve from 0.53848
+641/641 ━━━━━━━━━━━━━━━━━━━━ 362s 564ms/step - accuracy: 0.5396 - loss: 1.2485 - top_2_accuracy: 0.7352 - val_accuracy: 0.5312 - val_loss: 1.2251 - val_top_2_accuracy: 0.7332 - learning_rate: 0.0010
+Epoch 19/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 531ms/step - accuracy: 0.5372 - loss: 1.2474 - top_2_accuracy: 0.7332
+Epoch 19: val_accuracy improved from 0.53848 to 0.54827, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 356s 556ms/step - accuracy: 0.5372 - loss: 1.2474 - top_2_accuracy: 0.7332 - val_accuracy: 0.5483 - val_loss: 1.1888 - val_top_2_accuracy: 0.7475 - learning_rate: 0.0010
+Epoch 20/20
+641/641 ━━━━━━━━━━━━━━━━━━━━ 0s 521ms/step - accuracy: 0.5343 - loss: 1.2588 - top_2_accuracy: 0.7357
+Epoch 20: val_accuracy improved from 0.54827 to 0.54964, saving model to best_dermasense_model_optimized.keras
+641/641 ━━━━━━━━━━━━━━━━━━━━ 349s 545ms/step - accuracy: 0.5343 - loss: 1.2588 - top_2_accuracy: 0.7357 - val_accuracy: 0.5496 - val_loss: 1.1709 - val_top_2_accuracy: 0.7575 - learning_rate: 0.0010
+Restoring model weights from the end of the best epoch: 20.
+Epoch 21/30
