@@ -31,6 +31,8 @@ MANIFEST
 *.h5
 *.pkl
 *.pickle
+*.keras
+*.ckpt
 saved_model/
 checkpoints/
 logs/
