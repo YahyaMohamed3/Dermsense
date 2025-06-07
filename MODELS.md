@@ -33,7 +33,7 @@ Test Loss:             0.6901
 
 ### 📋 Classification Report & Confusion Matrix
 
-![Original Confusion Matrix](confusion_matrix_original.png)
+![Original Confusion Matrix](Model_1_confusion_matrix.png)
 
 * **Weak Recall in**: `acne`, `psoriasis`, `eczema`
 * **Overprediction**: `benign_mole`, `uncertain`
@@ -67,7 +67,7 @@ Test Loss:             0.8036
 
 ### 📋 Classification Report & Confusion Matrix
 
-![Boundary Confusion Matrix](confusion_matrix_boundary.png)
+![Boundary Confusion Matrix](Model_2_confusion_matrix.png)
 
 * 📈 Improved recall for `psoriasis` and `keratosis`
 * 📉 `rash` and `uncertain` still hard to separate
@@ -162,3 +162,5 @@ TARGET_SAMPLES = {
 ---
 
 ✅ This README documents the entire pipeline history, key changes, and the logic behind every major decision.
+
+If you want to see epochs check the results file using google colab
