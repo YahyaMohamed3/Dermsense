@@ -99,3 +99,5 @@ Skin cancer is one of the most common yet treatable cancers if caught early. Der
 **DermaScan is not a diagnostic tool.** It is intended for educational and pre-screening purposes only. Users should consult with a certified dermatologist for any concerns.
 
 ---
+
+## will be building Model wont use hugging face 
