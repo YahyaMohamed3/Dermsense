@@ -6,31 +6,43 @@ import ResultPanel, { ScanResult } from '../components/scan/ResultPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
 import PrivacyNotice from '../components/scan/PrivacyNotice';
 
-// Simulated analysis result for demo purposes
-const simulatedResult: ScanResult = {
-  confidence: 85,
-  condition: 'Suspected Melanoma',
-  riskLevel: 'medium',
-  description: 'The uploaded image shows characteristics consistent with early-stage melanoma, including irregular borders and color variations. Further evaluation by a dermatologist is strongly recommended.',
-  recommendation: 'Please consult with a dermatologist as soon as possible for a professional evaluation. Early detection and treatment of melanoma significantly improves outcomes.'
-};
-
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   
-  const handleImageUpload = (file: File) => {
-    // Reset any previous results
+  const handleImageUpload = async (file : File) => {
     setResult(null);
-    
-    // Simulate processing
     setIsProcessing(true);
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
+
+    const formData = new FormData();
+    formData.append('image' , file);
+
+    try{
+      const response = await fetch('http://127.0.0.1:8000/api/uploadImage', {
+        method: 'POST',
+        body : formData,
+      });
+
+      if(!response.ok){
+        throw new Error('Could not fetch scan results');
+      }
+
+      const data: ScanResult = await response.json();
+      setResult(data);
+      
+    }catch(error){
+      console.error('Error uploading image:', error);
+      setResult({
+        top1: { label: 'Error', confidence: 0 },
+        top2: { label: 'N/A', confidence: 0 },
+        riskLevel: 'unknown',
+        description: 'An error occurred while processing the image. Please try again.',
+        recommendation: 'If the problem persists, please contact support.'
+      });
+    } finally{
       setIsProcessing(false);
-      setResult(simulatedResult);
-    }, 3000);
+    }
+
   };
   
   return (
@@ -56,7 +68,6 @@ export default function ScanPage() {
               Get insights and recommendations in seconds.
             </p>
           </motion.div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <motion.div

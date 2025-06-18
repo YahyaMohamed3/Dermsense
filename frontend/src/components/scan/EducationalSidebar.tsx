@@ -146,7 +146,7 @@ export default function EducationalSidebar() {
       </div>
       
       <div className="card-footer flex-col items-start border-t mt-6">
-        <h4 className="font-medium mb-2">Need Professional Advice?</h4>
+        <h4 className="font-medium mt-2">Need Professional Advice?</h4>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
           This tool is not a substitute for professional medical advice. Always consult with a dermatologist.
         </p>
