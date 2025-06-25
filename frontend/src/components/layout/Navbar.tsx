@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { cn } from '../../lib/utils';
+import { cn } from "../../lib/utils";
 import Logo from '../ui/Logo';
 
 export default function Navbar() {
