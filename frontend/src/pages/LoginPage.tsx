@@ -6,8 +6,8 @@ import { Lock, User, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import NeuralNetworkModel from "../three/NeuralNetworkModel";
-import ParticleField from "../three/ParticleField";
+import NeuralNetworkModel from "../components/three/NeuralNetworkModel";
+import ParticleField from "../components/three/ParticleField";
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({
