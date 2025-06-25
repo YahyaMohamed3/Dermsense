@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield } from 'lucide-react';
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import NeuralNetworkModel from "../three/NeuralNetworkModel";
-import ParticleField from "../three/ParticleField";
+import { Microscope, Smartphone } from 'lucide-react';
+import Particles from 'react-tsparticles';
+import { loadSlim } from 'tsparticles-slim';
+import { Engine } from 'tsparticles-engine';
 
 export default function HeroSection() {
+  const particlesInit = async (engine: Engine) => {
+    await loadSlim(engine);
+  };
+
   const textRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -15,10 +18,10 @@ export default function HeroSection() {
     if (!textElement) return;
 
     const phrases = [
-      'Early Detection',
-      'Peace of Mind',
-      'Smart Analysis',
-      'Skin Health'
+      'Clarity',
+      'Confidence',
+      'Precision',
+      'Insight'
     ];
     
     let currentPhraseIndex = 0;
@@ -70,36 +73,76 @@ export default function HeroSection() {
   };
   
   const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
+    hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
     }
   };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* 3D Background */}
+      {/* Interactive Neural Pathways Background */}
       <div className="absolute inset-0 -z-10">
-        <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={0.8} />
-          <NeuralNetworkModel count={2000} />
-          <ParticleField count={1000} size={30} />
-          <OrbitControls 
-            enableZoom={false} 
-            enablePan={false} 
-            enableRotate={true}
-            rotateSpeed={0.3}
-            autoRotate
-            autoRotateSpeed={0.5}
-          />
-        </Canvas>
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          options={{
+            background: {
+              color: {
+                value: "transparent",
+              },
+            },
+            fpsLimit: 60,
+            particles: {
+              color: {
+                value: "#ffffff",
+              },
+              links: {
+                color: "#374151",
+                distance: 150,
+                enable: true,
+                opacity: 0.2,
+                width: 1,
+              },
+              collisions: {
+                enable: false,
+              },
+              move: {
+                direction: "none",
+                enable: true,
+                outModes: {
+                  default: "bounce",
+                },
+                random: true,
+                speed: 0.5,
+                straight: false,
+              },
+              number: {
+                density: {
+                  enable: true,
+                  area: 800,
+                },
+                value: 80,
+              },
+              opacity: {
+                value: 0.3,
+              },
+              shape: {
+                type: "circle",
+              },
+              size: {
+                value: { min: 1, max: 3 },
+              },
+            },
+            detectRetina: true,
+          }}
+        />
       </div>
       
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/90 to-white/95 dark:from-slate-900/90 dark:to-slate-900/95 -z-5"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 to-slate-900/95 -z-5"></div>
       
       <div className="container relative z-10 py-20">
         <motion.div
@@ -109,34 +152,34 @@ export default function HeroSection() {
           animate="visible"
         >
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 mb-6">
-              <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
-              AI-Powered Skin Analysis
+            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-primary-900/50 text-primary-300 mb-6">
+              AI-Powered Dermatological Analysis
             </span>
           </motion.div>
           
           <motion.h1 
             variants={itemVariants} 
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 dark:text-white mb-8 leading-tight tracking-tight"
+            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-tight tracking-tight"
           >
-            <span className="block mb-2">Intelligent</span>
-            <span className="block mb-2">Dermatological</span>
+            <span className="block mb-4">Clarity for Your Skin.</span>
+            <span className="block mb-4">Confidence for Your Life.</span>
             <span className="relative inline-block">
               <span 
                 ref={textRef} 
-                className="text-primary-600 dark:text-secondary-400"
+                className="text-secondary-400"
               >
                 Insight
               </span>
-              <span className="absolute bottom-0 left-0 w-full h-2 bg-primary-600 dark:bg-secondary-400 opacity-30"></span>
+              <span className="absolute bottom-0 left-0 w-full h-2 bg-secondary-400 opacity-30"></span>
             </span>
           </motion.h1>
           
           <motion.p 
             variants={itemVariants} 
-            className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
           >
-            Upload a clear image of your skin concern for an instant, private analysis powered by state-of-the-art AI.
+            State-of-the-art dermatological analysis, powered by AI. 
+            Completely private, entirely on your device.
           </motion.p>
           
           <motion.div 
@@ -145,18 +188,22 @@ export default function HeroSection() {
           >
             <Link
               to="/scan"
-              className="btn btn-primary btn-lg group min-w-[200px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300"
+              className="btn btn-primary btn-lg group min-w-[280px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
             >
-              Start Scanning
-              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
+              <Microscope className="w-5 h-5 mr-2" strokeWidth={1.5} />
+              Analyze Clinical Image
             </Link>
             
-            <Link
-              to="#how-it-works"
-              className="btn btn-outline btn-lg min-w-[200px] px-8 py-4 text-lg border-2 hover:-translate-y-1 transition-all duration-300"
-            >
-              Learn More
-            </Link>
+            <div className="relative">
+              <button
+                className="btn btn-outline btn-lg min-w-[280px] px-8 py-4 text-lg border-2 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
+                disabled
+              >
+                <Smartphone className="w-5 h-5 mr-2" strokeWidth={1.5} />
+                Analyze Personal Photo
+              </button>
+              <span className="absolute -top-2 -right-2 coming-soon-badge">Coming Soon</span>
+            </div>
           </motion.div>
           
           <motion.div
@@ -175,8 +222,8 @@ export default function HeroSection() {
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
             </div>
             
-            <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 dark:bg-secondary-700/10 rounded-full blur-3xl" />
-            <div className="absolute -top-5 -left-5 -z-10 w-64 h-64 bg-primary-400/20 dark:bg-primary-700/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 rounded-full blur-3xl" />
+            <div className="absolute -top-5 -left-5 -z-10 w-64 h-64 bg-primary-400/20 rounded-full blur-3xl" />
           </motion.div>
         </motion.div>
       </div>

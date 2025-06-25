@@ -117,11 +117,11 @@
   }
 
   body {
-    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans antialiased;
+    @apply bg-slate-900 text-white font-sans antialiased;
   }
 
   * {
-    @apply border-slate-200 dark:border-slate-700;
+    @apply border-slate-700;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -149,11 +149,11 @@
   }
 
   .btn-outline {
-    @apply border border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30;
+    @apply border border-primary-600 bg-transparent text-primary-400 hover:bg-primary-900/20 active:bg-primary-900/30;
   }
 
   .btn-ghost {
-    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 text-slate-700 dark:text-slate-300;
+    @apply bg-transparent hover:bg-slate-800 active:bg-slate-700 text-slate-300;
   }
 
   .btn-sm {
@@ -169,7 +169,7 @@
   }
 
   .card {
-    @apply rounded-xl border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm;
+    @apply rounded-xl border bg-slate-800 text-slate-100 shadow-sm;
   }
 
   .card-header {
@@ -181,7 +181,7 @@
   }
 
   .card-description {
-    @apply text-slate-500 dark:text-slate-400;
+    @apply text-slate-400;
   }
 
   .card-content {
@@ -198,18 +198,18 @@
   
   /* Glass Panel Styles */
   .glass-panel {
-    @apply bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
+    @apply bg-slate-800/60 backdrop-blur-xl border border-slate-700 hover:border-blue-400/50 transition-colors duration-300 shadow-sm;
   }
   
   /* Scanner Animation */
   .scanner-line {
-    @apply absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-500 dark:via-secondary-400 to-transparent;
+    @apply absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary-400 to-transparent;
     animation: scanner 2s ease-in-out infinite;
   }
   
   /* Coming Soon Badge */
   .coming-soon-badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-900/30 text-primary-300;
     animation: pulse-subtle 2s infinite;
   }
 }
