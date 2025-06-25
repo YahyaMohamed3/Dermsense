@@ -1,23 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Microscope, Smartphone } from 'lucide-react';
 import Particles from 'react-tsparticles';
 import { loadSlim } from 'tsparticles-slim';
 import { Engine } from 'tsparticles-engine';
+import HeroHillLines from './HeroHillLines';
 
 export default function HeroSection() {
-  const [scrollY, setScrollY] = useState(0);
-  
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
   const particlesInit = async (engine: Engine) => {
     await loadSlim(engine);
   };
@@ -111,7 +101,7 @@ export default function HeroSection() {
                 value: "#ffffff",
               },
               links: {
-                color: scrollY > 100 ? "#38bdf8" : "#374151",
+                color: "#38bdf8",
                 distance: 150,
                 enable: true,
                 opacity: 0.2,
@@ -152,14 +142,10 @@ export default function HeroSection() {
         />
       </div>
       
-      {/* Glowing line that moves down as user scrolls */}
-      <motion.div 
-        className="absolute left-0 right-0 h-0.5 bg-secondary-400/50 z-0"
-        style={{ 
-          top: `${Math.min(scrollY / 5, 100)}%`,
-          opacity: Math.max(0, 1 - scrollY / 1000)
-        }}
-      />
+      {/* Animated hill lines background */}
+      <div className="absolute inset-0 -z-5">
+        <HeroHillLines />
+      </div>
       
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 to-slate-900/95 -z-5"></div>
