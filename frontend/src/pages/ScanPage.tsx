@@ -64,28 +64,28 @@ export default function ScanPage() {
       </Helmet>
       
       <div className="container pt-24 pb-12">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-500 dark:to-secondary-400 text-transparent bg-clip-text">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-500 dark:to-secondary-400 text-transparent bg-clip-text">
               Skin Analysis Scanner
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis. 
               Get insights and recommendations in seconds.
             </p>
           </motion.div>
           
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-8">
             <div className="inline-flex rounded-md shadow-sm">
               <button
                 onClick={() => setActiveModel('standard')}
-                className={`px-4 py-2 text-sm font-medium rounded-l-lg border ${
+                className={`px-6 py-3 text-base font-medium rounded-l-lg border-2 ${
                   activeModel === 'standard'
-                    ? 'bg-primary-600 text-white border-primary-600'
+                    ? 'bg-primary-600 text-white border-primary-600 dark:bg-primary-700 dark:border-primary-700'
                     : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
@@ -93,9 +93,9 @@ export default function ScanPage() {
               </button>
               <button
                 onClick={() => setActiveModel('advanced')}
-                className={`px-4 py-2 text-sm font-medium rounded-r-lg border ${
+                className={`px-6 py-3 text-base font-medium rounded-r-lg border-2 ${
                   activeModel === 'advanced'
-                    ? 'bg-primary-600 text-white border-primary-600'
+                    ? 'bg-primary-600 text-white border-primary-600 dark:bg-primary-700 dark:border-primary-700'
                     : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
@@ -115,21 +115,26 @@ export default function ScanPage() {
               <EducationalSidebar />
             </motion.div>
             
-            {/* Image Uploader - 4 columns */}
-            <div className="lg:col-span-4 space-y-8">
-              <ImageUploader 
-                onImageUpload={handleImageUpload} 
-                isProcessing={isProcessing} 
-              />
-            </div>
-            
-            {/* Results Panel - 5 columns */}
-            <div className="lg:col-span-5">
-              <AnimatePresence mode="wait">
-                {result && (
-                  <ResultPanel result={result} />
-                )}
-              </AnimatePresence>
+            {/* Main Content Area - 9 columns */}
+            <div className="lg:col-span-9">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Image Uploader */}
+                <div className="space-y-8">
+                  <ImageUploader 
+                    onImageUpload={handleImageUpload} 
+                    isProcessing={isProcessing} 
+                  />
+                </div>
+                
+                {/* Results Panel */}
+                <div>
+                  <AnimatePresence mode="wait">
+                    {result && (
+                      <ResultPanel result={result} />
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
           </div>
         </div>

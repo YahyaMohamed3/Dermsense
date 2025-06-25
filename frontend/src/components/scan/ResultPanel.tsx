@@ -78,21 +78,25 @@ export default function ResultPanel({ result }: ResultPanelProps) {
       bg: 'bg-success-50 dark:bg-success-900/20',
       text: 'text-success-900 dark:text-success-500',
       border: 'border-success-500',
+      badge: 'bg-success-500 text-white',
     },
     medium: {
       bg: 'bg-warning-50 dark:bg-warning-900/20',
       text: 'text-warning-900 dark:text-warning-500',
       border: 'border-warning-500',
+      badge: 'bg-warning-500 text-white',
     },
     high: {
       bg: 'bg-error-50 dark:bg-error-900/20',
       text: 'text-error-900 dark:text-error-500',
       border: 'border-error-500',
+      badge: 'bg-error-500 text-white',
     },
     unknown: {
       bg: 'bg-slate-100 dark:bg-slate-800',
       text: 'text-slate-600 dark:text-slate-300',
       border: 'border-slate-400',
+      badge: 'bg-slate-500 text-white',
     },
   };
 
@@ -103,7 +107,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
-      className="card overflow-hidden rounded-2xl shadow-md border dark:border-slate-700 transition-all duration-300"
+      className="card overflow-hidden rounded-2xl shadow-md border dark:border-slate-700 transition-all duration-300 h-full"
     >
       <div className="card-header">
         <div className="flex items-center justify-between">
@@ -111,8 +115,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           <span
             className={cn(
               'px-3 py-1 rounded-full text-sm font-medium',
-              riskColor.bg,
-              riskColor.text
+              riskColor.badge
             )}
           >
             {result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1)} Risk
@@ -122,64 +125,50 @@ export default function ResultPanel({ result }: ResultPanelProps) {
       </div>
 
       <div className="card-content space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            {/* Top 1 */}
-            <div>
-              <h4 className="text-lg font-medium mb-1 text-slate-900 dark:text-white">Top Condition</h4>
-              <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
-                {result.top1.label}
+        <div className="grid grid-cols-1 gap-6">
+          {/* Top 1 */}
+          <div>
+            <h4 className="text-lg font-medium mb-1 text-slate-900 dark:text-white">Primary Condition</h4>
+            <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
+              {result.top1.label}
+            </p>
+            <div className="flex items-center mt-2">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mr-3">
+                Confidence: 
               </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Confidence: <span className="font-mono text-white dark:text-white bg-primary-600 dark:bg-primary-700 px-2 py-0.5 rounded">{counterValue.toFixed(1)}%</span>
-              </p>
-              <div className="h-2 mt-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${result.top1.confidence}%` }}
-                  transition={{ duration: 1 }}
-                  className="h-full bg-success-500 rounded-full"
-                />
-              </div>
+              <span className="font-mono text-white dark:text-white bg-primary-600 dark:bg-primary-700 px-2 py-0.5 rounded">
+                {counterValue.toFixed(1)}%
+              </span>
             </div>
-
-            {/* Top 2 */}
-            <div>
-              <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
-                Second Most Likely
-              </h4>
-              <p className="text-md font-semibold text-slate-800 dark:text-slate-200">
-                {result.top2.label} <span className="text-white dark:text-white bg-slate-600 dark:bg-slate-700 px-2 py-0.5 rounded text-sm">{result.top2.confidence}%</span>
-              </p>
-            </div>
-
-            {/* Important Note */}
-            <div
-              className={cn(
-                'border rounded-lg p-4',
-                riskColor.border,
-                riskColor.bg
-              )}
-            >
-              <div className="flex items-start">
-                <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-                <div>
-                  <h4 className="font-medium">Important Note</h4>
-                  <p className="text-sm">
-                    This is an AI-powered analysis. It is not a substitute for medical advice. 
-                    Please consult a licensed dermatologist for further evaluation.
-                  </p>
-                </div>
-              </div>
+            <div className="h-2 mt-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${result.top1.confidence}%` }}
+                transition={{ duration: 1 }}
+                className="h-full bg-success-500 rounded-full"
+              />
             </div>
           </div>
-          
+
+          {/* Top 2 */}
+          <div>
+            <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+              Secondary Possibility
+            </h4>
+            <p className="text-md font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+              {result.top2.label} 
+              <span className="ml-2 text-white dark:text-white bg-slate-600 dark:bg-slate-700 px-2 py-0.5 rounded text-sm">
+                {result.top2.confidence}%
+              </span>
+            </p>
+          </div>
+
           {/* Heatmap Image */}
           <AnimatePresence>
             {showHeatmap && result.heatmapImage && (
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-800 shadow-inner"
               >
@@ -195,18 +184,25 @@ export default function ResultPanel({ result }: ResultPanelProps) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
 
-        {/* Model Selector */}
-        <div className="flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3 px-1">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">AI Model</span>
-          <div className="flex items-center space-x-2">
-            <button className="px-3 py-1.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium">
-              Standard
-            </button>
-            <button className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700">
-              Advanced
-            </button>
+          {/* Important Note */}
+          <div
+            className={cn(
+              'border rounded-lg p-4',
+              riskColor.border,
+              riskColor.bg
+            )}
+          >
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-medium">Important Note</h4>
+                <p className="text-sm">
+                  This is an AI-powered analysis. It is not a substitute for medical advice. 
+                  Please consult a licensed dermatologist for further evaluation.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

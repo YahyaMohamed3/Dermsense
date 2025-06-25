@@ -68,7 +68,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
       <div
         {...getRootProps()}
         className={cn(
-          'border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors h-80 flex flex-col items-center justify-center',
+          'border-3 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors min-h-[400px] flex flex-col items-center justify-center',
           isDragActive 
             ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
             : 'border-slate-300 dark:border-slate-700 hover:border-primary-400 hover:bg-slate-50 dark:hover:border-slate-600 dark:hover:bg-slate-800/50',
@@ -79,31 +79,32 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         
         {isProcessing ? (
           <div className="py-8 flex flex-col items-center">
-            <Loader2 className="w-12 h-12 text-primary-600 dark:text-secondary-400 animate-spin mb-4" strokeWidth={1.5} />
-            <p className="text-lg font-medium">Processing your image...</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Please wait while we analyze your skin.</p>
+            <Loader2 className="w-16 h-16 text-primary-600 dark:text-secondary-400 animate-spin mb-6" strokeWidth={1.5} />
+            <p className="text-xl font-medium mb-2">Processing your image...</p>
+            <p className="text-base text-slate-500 dark:text-slate-400">Please wait while we analyze your skin.</p>
             
-            {/* Processing preview without scanner effect */}
+            {/* Processing preview */}
             {preview && (
-              <div className="relative mt-4 rounded-lg overflow-hidden w-64 h-64">
+              <div className="relative mt-8 rounded-lg overflow-hidden w-full max-w-md mx-auto">
                 <img
                   src={preview}
                   alt="Processing"
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full object-contain rounded-lg shadow-lg max-h-[300px]"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
             )}
           </div>
         ) : preview ? (
-          <div className="relative">
+          <div className="relative w-full">
             <img
               src={preview}
               alt="Uploaded skin image"
-              className="max-h-64 mx-auto rounded-lg shadow-md"
+              className="max-h-[350px] mx-auto rounded-lg shadow-md object-contain"
             />
             <button
               onClick={clearImage}
-              className="absolute top-2 right-2 bg-slate-800/70 text-white p-1 rounded-full hover:bg-slate-900/80 transition-colors"
+              className="absolute top-2 right-2 bg-slate-800/70 text-white p-2 rounded-full hover:bg-slate-900/80 transition-colors"
               aria-label="Remove image"
             >
               <X className="w-5 h-5" strokeWidth={1.5} />
@@ -113,25 +114,25 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-8"
+            className="py-8 w-full"
           >
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mb-4"
+              className="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mb-6"
             >
               {isDragActive ? 
-                <ImageIcon className="w-8 h-8" strokeWidth={1.5} /> : 
-                <Upload className="w-8 h-8" strokeWidth={1.5} />
+                <ImageIcon className="w-12 h-12" strokeWidth={1.5} /> : 
+                <Upload className="w-12 h-12" strokeWidth={1.5} />
               }
             </motion.div>
-            <p className="text-lg font-medium mb-1">
+            <p className="text-2xl font-medium mb-3">
               {isDragActive ? 'Drop your image here' : 'Upload a skin image'}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-lg text-slate-500 dark:text-slate-400 mb-4">
               Drag and drop, or click to select a file
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+            <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">
               PNG, JPG or GIF (max. 10MB)
             </p>
           </motion.div>
@@ -142,7 +143,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 text-sm text-error-600 dark:text-error-400"
+          className="mt-4 text-sm text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20 p-3 rounded-lg"
         >
           {error}
         </motion.div>

@@ -79,7 +79,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* 3D Background */}
       <div className="absolute inset-0 -z-10">
         <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
@@ -103,7 +103,7 @@ export default function HeroSection() {
       
       <div className="container relative z-10 py-20">
         <motion.div
-          className="max-w-4xl mx-auto text-center"
+          className="max-w-5xl mx-auto text-center"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -115,25 +115,34 @@ export default function HeroSection() {
             </span>
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white mb-8 leading-tight tracking-tight">
-            Intelligent <br className="md:hidden" />
-            Dermatological{' '}
-            <span className="relative">
+          <motion.h1 
+            variants={itemVariants} 
+            className="text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 dark:text-white mb-8 leading-tight tracking-tight"
+          >
+            <span className="block mb-2">Intelligent</span>
+            <span className="block mb-2">Dermatological</span>
+            <span className="relative inline-block">
               <span 
                 ref={textRef} 
                 className="text-primary-600 dark:text-secondary-400"
               >
                 Insight
               </span>
-              <span className="absolute bottom-0 left-0 w-full h-1 bg-primary-600 dark:bg-secondary-400 opacity-30"></span>
+              <span className="absolute bottom-0 left-0 w-full h-2 bg-primary-600 dark:bg-secondary-400 opacity-30"></span>
             </span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+          <motion.p 
+            variants={itemVariants} 
+            className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
+          >
             Upload a clear image of your skin concern for an instant, private analysis powered by state-of-the-art AI.
           </motion.p>
           
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <motion.div 
+            variants={itemVariants} 
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          >
             <Link
               to="/scan"
               className="btn btn-primary btn-lg group min-w-[200px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300"
@@ -155,7 +164,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.9 }}
-            className="mt-20 relative mx-auto max-w-5xl"
+            className="mt-20 relative mx-auto max-w-6xl"
           >
             <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden">
               <img
