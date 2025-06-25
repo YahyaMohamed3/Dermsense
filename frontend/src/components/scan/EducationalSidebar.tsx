@@ -58,13 +58,13 @@ export default function EducationalSidebar() {
   };
   
   return (
-    <div className="card h-full">
+    <div className="card h-auto">
       <div className="card-header">
         <h3 className="card-title">Educational Resources</h3>
         <p className="card-description">Learn about skin conditions and cancer types</p>
       </div>
       
-      <div className="card-content pb-0 max-h-[600px] overflow-y-auto scrollbar-hide">
+      <div className="card-content pb-0 max-h-[500px] overflow-y-auto scrollbar-hide">
         <div className="space-y-6">
           <section>
             <h4 className="text-lg font-medium mb-4">Common Skin Lesion Types</h4>

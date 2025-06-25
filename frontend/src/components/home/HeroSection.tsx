@@ -115,8 +115,9 @@ export default function HeroSection() {
             </span>
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-            Intelligent Dermatological{' '}
+          <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white mb-8 leading-tight tracking-tight">
+            Intelligent <br className="md:hidden" />
+            Dermatological{' '}
             <span className="relative">
               <span 
                 ref={textRef} 
@@ -141,49 +142,33 @@ export default function HeroSection() {
               <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
             </Link>
             
-            <div className="relative">
-              <button
-                className="btn btn-outline btn-lg min-w-[200px] px-8 py-4 text-lg border-2 hover:-translate-y-1 transition-all duration-300"
-                disabled
-              >
-                Learn More
-              </button>
-              <span className="coming-soon-badge absolute -top-2 -right-2 px-3 py-1">
-                Coming Soon
-              </span>
-            </div>
+            <Link
+              to="#how-it-works"
+              className="btn btn-outline btn-lg min-w-[200px] px-8 py-4 text-lg border-2 hover:-translate-y-1 transition-all duration-300"
+            >
+              Learn More
+            </Link>
           </motion.div>
           
           <motion.div
             variants={itemVariants}
-            className="mt-16 text-center"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.9 }}
+            className="mt-20 relative mx-auto max-w-5xl"
           >
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Trusted by healthcare professionals</p>
-            <div className="flex flex-wrap justify-center gap-8 opacity-70">
-              <div className="h-8 w-24 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
-              <div className="h-8 w-32 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
-              <div className="h-8 w-28 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+            <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden">
+              <img
+                src="https://images.pexels.com/photos/7089401/pexels-photo-7089401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                alt="DermaSense application interface showing skin analysis"
+                className="rounded-xl w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
             </div>
+            
+            <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 dark:bg-secondary-700/10 rounded-full blur-3xl" />
+            <div className="absolute -top-5 -left-5 -z-10 w-64 h-64 bg-primary-400/20 dark:bg-primary-700/10 rounded-full blur-3xl" />
           </motion.div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.9 }}
-          className="mt-16 relative mx-auto max-w-5xl"
-        >
-          <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden">
-            <img
-              src="https://images.pexels.com/photos/7089401/pexels-photo-7089401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-              alt="DermaSense application interface showing skin analysis"
-              className="rounded-xl w-full h-auto object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
-          </div>
-          
-          <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 dark:bg-secondary-700/10 rounded-full blur-3xl" />
-          <div className="absolute -top-5 -left-5 -z-10 w-64 h-64 bg-primary-400/20 dark:bg-primary-700/10 rounded-full blur-3xl" />
         </motion.div>
       </div>
     </section>

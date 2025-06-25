@@ -100,14 +100,14 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 300 }}
+      initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
       className="card overflow-hidden rounded-2xl shadow-md border dark:border-slate-700 transition-all duration-300"
     >
       <div className="card-header">
         <div className="flex items-center justify-between">
-          <h3 className="card-title">Analysis Results</h3>
+          <h3 className="card-title text-slate-900 dark:text-white">Analysis Results</h3>
           <span
             className={cn(
               'px-3 py-1 rounded-full text-sm font-medium',
@@ -126,12 +126,12 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           <div className="space-y-6">
             {/* Top 1 */}
             <div>
-              <h4 className="text-lg font-medium mb-1">Top Condition</h4>
+              <h4 className="text-lg font-medium mb-1 text-slate-900 dark:text-white">Top Condition</h4>
               <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
                 {result.top1.label}
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Confidence: <span className="font-mono">{counterValue.toFixed(1)}%</span>
+                Confidence: <span className="font-mono text-white dark:text-white bg-primary-600 dark:bg-primary-700 px-2 py-0.5 rounded">{counterValue.toFixed(1)}%</span>
               </p>
               <div className="h-2 mt-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <motion.div
@@ -149,7 +149,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                 Second Most Likely
               </h4>
               <p className="text-md font-semibold text-slate-800 dark:text-slate-200">
-                {result.top2.label} ({result.top2.confidence}%)
+                {result.top2.label} <span className="text-white dark:text-white bg-slate-600 dark:bg-slate-700 px-2 py-0.5 rounded text-sm">{result.top2.confidence}%</span>
               </p>
             </div>
 
@@ -178,12 +178,12 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           <AnimatePresence>
             {showHeatmap && result.heatmapImage && (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
                 className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-800 shadow-inner"
               >
-                <h4 className="font-semibold text-lg mb-2">AI Focus Area</h4>
+                <h4 className="font-semibold text-lg mb-2 text-slate-900 dark:text-white">AI Focus Area</h4>
                 <img
                   src={result.heatmapImage}
                   alt="Grad-CAM Heatmap"
@@ -237,7 +237,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
               {/* Description with typewriter effect */}
               <div>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium mb-1">Description</h4>
+                  <h4 className="font-medium mb-1 text-slate-900 dark:text-white">Description</h4>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
@@ -260,7 +260,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
               {/* Recommendation */}
               <div>
-                <h4 className="font-medium mb-1">Recommendation</h4>
+                <h4 className="font-medium mb-1 text-slate-900 dark:text-white">Recommendation</h4>
                 <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
                   <p className="text-slate-600 dark:text-slate-300">{result.recommendation}</p>
                 </div>

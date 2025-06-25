@@ -83,7 +83,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             <p className="text-lg font-medium">Processing your image...</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Please wait while we analyze your skin.</p>
             
-            {/* Processing preview with scanner effect */}
+            {/* Processing preview without scanner effect */}
             {preview && (
               <div className="relative mt-4 rounded-lg overflow-hidden w-64 h-64">
                 <img
@@ -91,7 +91,6 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
                   alt="Processing"
                   className="w-full h-full object-cover rounded-lg"
                 />
-                <div className="scanner-line"></div>
               </div>
             )}
           </div>

@@ -104,27 +104,33 @@ export default function ScanPage() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Educational Sidebar - 3 columns */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="lg:col-span-3"
+            >
+              <EducationalSidebar />
+            </motion.div>
+            
+            {/* Image Uploader - 4 columns */}
+            <div className="lg:col-span-4 space-y-8">
               <ImageUploader 
                 onImageUpload={handleImageUpload} 
                 isProcessing={isProcessing} 
               />
-              
+            </div>
+            
+            {/* Results Panel - 5 columns */}
+            <div className="lg:col-span-5">
               <AnimatePresence mode="wait">
                 {result && (
                   <ResultPanel result={result} />
                 )}
               </AnimatePresence>
             </div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              <EducationalSidebar />
-            </motion.div>
           </div>
         </div>
       </div>
