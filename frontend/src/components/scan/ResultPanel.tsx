@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2 } from 'lucide-react';
-import { cn } from "../../lib/utils";
-import { typewriterEffect } from '../../lib/utils';
+import { cn, typewriterEffect } from "../../lib/utils";
 
 export interface ScanResult {
   top1: {
@@ -27,6 +26,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [counterValue, setCounterValue] = useState(0);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   
   // Digital counter effect for confidence score
   useEffect(() => {
@@ -48,6 +48,11 @@ export default function ResultPanel({ result }: ResultPanelProps) {
         if (currentStep >= steps) {
           clearInterval(timer);
           setCounterValue(targetValue);
+          
+          // Show heatmap after confidence score animation completes
+          setTimeout(() => {
+            setShowHeatmap(true);
+          }, 500);
         }
       }, stepTime);
       
@@ -95,9 +100,9 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, x: 300 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
       className="card overflow-hidden rounded-2xl shadow-md border dark:border-slate-700 transition-all duration-300"
     >
       <div className="card-header">
@@ -117,59 +122,98 @@ export default function ResultPanel({ result }: ResultPanelProps) {
       </div>
 
       <div className="card-content space-y-6">
-        {/* Top 1 */}
-        <div>
-          <h4 className="text-lg font-medium mb-1">Top Condition</h4>
-          <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
-            {result.top1.label}
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Confidence: <span className="font-mono">{counterValue.toFixed(2)}%</span>
-          </p>
-          <div className="h-2 mt-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${result.top1.confidence}%` }}
-              transition={{ duration: 1 }}
-              className="h-full bg-success-500 rounded-full"
-            />
-          </div>
-        </div>
-
-        {/* Top 2 */}
-        <div>
-          <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
-            Second Most Likely
-          </h4>
-          <p className="text-md font-semibold text-slate-800 dark:text-slate-200">
-            {result.top2.label} ({result.top2.confidence}%)
-          </p>
-        </div>
-
-        {/* Important Note */}
-        <div
-          className={cn(
-            'border rounded-lg p-4',
-            riskColor.border,
-            riskColor.bg
-          )}
-        >
-          <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {/* Top 1 */}
             <div>
-              <h4 className="font-medium">Important Note</h4>
-              <p className="text-sm">
-                This is an AI-powered analysis. It is not a substitute for medical advice. 
-                Please consult a licensed dermatologist for further evaluation.
+              <h4 className="text-lg font-medium mb-1">Top Condition</h4>
+              <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
+                {result.top1.label}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Confidence: <span className="font-mono">{counterValue.toFixed(1)}%</span>
+              </p>
+              <div className="h-2 mt-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${result.top1.confidence}%` }}
+                  transition={{ duration: 1 }}
+                  className="h-full bg-success-500 rounded-full"
+                />
+              </div>
+            </div>
+
+            {/* Top 2 */}
+            <div>
+              <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                Second Most Likely
+              </h4>
+              <p className="text-md font-semibold text-slate-800 dark:text-slate-200">
+                {result.top2.label} ({result.top2.confidence}%)
               </p>
             </div>
+
+            {/* Important Note */}
+            <div
+              className={cn(
+                'border rounded-lg p-4',
+                riskColor.border,
+                riskColor.bg
+              )}
+            >
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                <div>
+                  <h4 className="font-medium">Important Note</h4>
+                  <p className="text-sm">
+                    This is an AI-powered analysis. It is not a substitute for medical advice. 
+                    Please consult a licensed dermatologist for further evaluation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Heatmap Image */}
+          <AnimatePresence>
+            {showHeatmap && result.heatmapImage && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-800 shadow-inner"
+              >
+                <h4 className="font-semibold text-lg mb-2">AI Focus Area</h4>
+                <img
+                  src={result.heatmapImage}
+                  alt="Grad-CAM Heatmap"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 shadow-md"
+                />
+                <p className="text-sm mt-2 text-slate-600 dark:text-slate-400 leading-snug">
+                  Highlighted areas show where the AI focused during classification.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Model Selector */}
+        <div className="flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3 px-1">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">AI Model</span>
+          <div className="flex items-center space-x-2">
+            <button className="px-3 py-1.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium">
+              Standard
+            </button>
+            <button className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700">
+              Advanced
+            </button>
           </div>
         </div>
 
         {/* Expand Details */}
         <button
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-          className="flex items-center justify-between w-full py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          className="flex items-center justify-between w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
         >
           <span className="font-medium flex items-center">
             <Info className="w-4 h-4 mr-2" strokeWidth={1.5} />
@@ -197,57 +241,44 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className="text-primary-600 dark:text-secondary-400 hover:text-primary-700 dark:hover:text-secondary-300"
+                    className="text-primary-600 dark:text-secondary-400 hover:text-primary-700 dark:hover:text-secondary-300 p-2"
                   >
                     <Volume2 className="w-5 h-5" strokeWidth={1.5} />
                   </motion.button>
                 </div>
-                <p className="text-slate-600 dark:text-slate-300 min-h-[3rem] border-l-2 border-primary-500 dark:border-secondary-400 pl-3">
-                  {displayedText}
-                  <motion.span 
-                    animate={{ opacity: [1, 0, 1] }}
-                    transition={{ repeat: Infinity, duration: 0.8 }}
-                    className="inline-block w-2 h-4 bg-primary-500 dark:bg-secondary-400 ml-1"
-                  />
-                </p>
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <p className="text-slate-600 dark:text-slate-300 min-h-[3rem] border-l-2 border-primary-500 dark:border-secondary-400 pl-3">
+                    {displayedText}
+                    <motion.span 
+                      animate={{ opacity: [1, 0, 1] }}
+                      transition={{ repeat: Infinity, duration: 0.8 }}
+                      className="inline-block w-2 h-4 bg-primary-500 dark:bg-secondary-400 ml-1"
+                    />
+                  </p>
+                </div>
               </div>
 
               {/* Recommendation */}
               <div>
                 <h4 className="font-medium mb-1">Recommendation</h4>
-                <p className="text-slate-600 dark:text-slate-300">{result.recommendation}</p>
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <p className="text-slate-600 dark:text-slate-300">{result.recommendation}</p>
+                </div>
               </div>
-
-              {/* Grad-CAM Image */}
-              {result.heatmapImage && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-800 shadow-inner"
-                >
-                  <h4 className="font-semibold text-lg mb-2">AI Focus Area</h4>
-                  <img
-                    src={result.heatmapImage}
-                    alt="Grad-CAM Heatmap"
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 shadow-md"
-                  />
-                  <p className="text-sm mt-2 text-slate-600 dark:text-slate-400 leading-snug">
-                    Highlighted areas show where the AI focused during classification.
-                    Use this visualization as supportive insight.
-                  </p>
-                </motion.div>
-              )}
               
               {/* Optional actions */}
-              <div className="flex flex-wrap gap-3 mt-4">
-                <button className="btn btn-outline text-sm">
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button className="btn btn-outline text-sm px-4 py-2">
                   <Volume2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   Listen to Explanation
                 </button>
                 
-                <button className="btn btn-outline text-sm">
+                <button className="btn btn-outline text-sm px-4 py-2">
                   Play Video Summary
+                </button>
+                
+                <button className="btn btn-primary text-sm px-4 py-2 ml-auto">
+                  Download Report
                 </button>
               </div>
             </motion.div>

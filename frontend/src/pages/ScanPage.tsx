@@ -9,6 +9,7 @@ import PrivacyNotice from '../components/scan/PrivacyNotice';
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [activeModel, setActiveModel] = useState<'standard' | 'advanced'>('standard');
   
   const handleImageUpload = async (file: File) => {
     setResult(null);
@@ -16,6 +17,7 @@ export default function ScanPage() {
 
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('model', activeModel);
 
     try {
       // Simulate API delay for demo purposes
@@ -47,6 +49,10 @@ export default function ScanPage() {
     }
   };
   
+  const toggleModel = () => {
+    setActiveModel(activeModel === 'standard' ? 'advanced' : 'standard');
+  };
+  
   return (
     <>
       <Helmet>
@@ -58,18 +64,46 @@ export default function ScanPage() {
       </Helmet>
       
       <div className="container pt-24 pb-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Skin Analysis Scanner</h1>
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-500 dark:to-secondary-400 text-transparent bg-clip-text">
+              Skin Analysis Scanner
+            </h1>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis. 
               Get insights and recommendations in seconds.
             </p>
           </motion.div>
+          
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex rounded-md shadow-sm">
+              <button
+                onClick={() => setActiveModel('standard')}
+                className={`px-4 py-2 text-sm font-medium rounded-l-lg border ${
+                  activeModel === 'standard'
+                    ? 'bg-primary-600 text-white border-primary-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                Standard Model
+              </button>
+              <button
+                onClick={() => setActiveModel('advanced')}
+                className={`px-4 py-2 text-sm font-medium rounded-r-lg border ${
+                  activeModel === 'advanced'
+                    ? 'bg-primary-600 text-white border-primary-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                Advanced Model
+              </button>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <ImageUploader 

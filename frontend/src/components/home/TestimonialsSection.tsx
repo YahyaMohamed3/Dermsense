@@ -41,7 +41,7 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900">
+    <section className="py-24 bg-slate-50 dark:bg-slate-900">
       <div className="container">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.span
@@ -49,7 +49,7 @@ export default function TestimonialsSection() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-primary-600 dark:text-primary-400 font-medium"
+            className="text-primary-600 dark:text-secondary-400 font-medium"
           >
             Testimonials
           </motion.span>
@@ -67,7 +67,7 @@ export default function TestimonialsSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg text-gray-600 dark:text-gray-300"
+            className="text-lg text-slate-600 dark:text-slate-300"
           >
             Don't just take our word for it. Hear from people who have used DermaSense to improve their skin health.
           </motion.p>
@@ -87,10 +87,10 @@ export default function TestimonialsSection() {
                 <img
                   src={testimonials[currentIndex].avatar}
                   alt={testimonials[currentIndex].name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-lg"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg"
                 />
                 <div className="absolute -bottom-3 -right-3 bg-primary-600 text-white rounded-full p-2">
-                  <Star className="w-4 h-4 fill-white" />
+                  <Star className="w-4 h-4 fill-white" strokeWidth={1.5} />
                 </div>
               </div>
               
@@ -98,18 +98,19 @@ export default function TestimonialsSection() {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-5 h-5 ${i < testimonials[currentIndex].rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                    className={`w-5 h-5 ${i < testimonials[currentIndex].rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300 dark:text-slate-600'}`}
+                    strokeWidth={1.5}
                   />
                 ))}
               </div>
               
-              <blockquote className="text-xl md:text-2xl italic text-gray-600 dark:text-gray-300 mb-6">
+              <blockquote className="text-xl md:text-2xl font-medium text-slate-700 dark:text-slate-300 mb-6 max-w-3xl">
                 "{testimonials[currentIndex].content}"
               </blockquote>
               
               <div>
-                <p className="font-medium text-lg">{testimonials[currentIndex].name}</p>
-                <p className="text-gray-500 dark:text-gray-400">{testimonials[currentIndex].role}</p>
+                <p className="font-semibold text-lg">{testimonials[currentIndex].name}</p>
+                <p className="text-slate-500 dark:text-slate-400">{testimonials[currentIndex].role}</p>
               </div>
             </motion.div>
           </div>
@@ -117,17 +118,17 @@ export default function TestimonialsSection() {
           <div className="flex justify-center mt-8 space-x-4">
             <button
               onClick={prevTestimonial}
-              className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               aria-label="Previous testimonial"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-6 h-6" strokeWidth={1.5} />
             </button>
             <button
               onClick={nextTestimonial}
-              className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               aria-label="Next testimonial"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-6 h-6" strokeWidth={1.5} />
             </button>
           </div>
           
@@ -138,8 +139,8 @@ export default function TestimonialsSection() {
                 onClick={() => setCurrentIndex(index)}
                 className={`w-3 h-3 mx-1 rounded-full ${
                   index === currentIndex
-                    ? 'bg-primary-600 dark:bg-primary-400'
-                    : 'bg-gray-300 dark:bg-gray-600'
+                    ? 'bg-primary-600 dark:bg-secondary-400'
+                    : 'bg-slate-300 dark:bg-slate-600'
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}
               />

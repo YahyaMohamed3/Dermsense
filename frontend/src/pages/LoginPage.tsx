@@ -4,6 +4,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/ui/Logo';
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import NeuralNetworkModel from "../three/NeuralNetworkModel";
+import ParticleField from "../three/ParticleField";
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({
@@ -41,19 +45,40 @@ export default function LoginPage() {
         <meta name="description" content="Secure login for healthcare professionals" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+        {/* 3D Background */}
+        <div className="absolute inset-0 -z-10">
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+            <ambientLight intensity={0.3} />
+            <pointLight position={[10, 10, 10]} intensity={0.5} />
+            <NeuralNetworkModel count={1500} />
+            <ParticleField count={800} size={30} />
+            <OrbitControls 
+              enableZoom={false} 
+              enablePan={false} 
+              enableRotate={true}
+              rotateSpeed={0.2}
+              autoRotate
+              autoRotateSpeed={0.3}
+            />
+          </Canvas>
+        </div>
+        
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/95 to-white/98 dark:from-slate-900/95 dark:to-slate-900/98 -z-5"></div>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md z-10"
         >
-          <div className="glass-panel rounded-2xl shadow-lg p-8">
+          <div className="glass-panel rounded-2xl shadow-xl p-8">
             {/* Header */}
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <Logo className="w-12 h-12" />
+                <Logo className="w-16 h-16" />
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                 Clinical Access
               </h1>
               <p className="text-slate-600 dark:text-slate-300">
@@ -67,7 +92,7 @@ export default function LoginPage() {
                 Demo Access
               </h3>
               <p className="text-xs text-primary-700 dark:text-primary-400">
-                Password: <code className="bg-primary-100 dark:bg-primary-800 px-1 rounded">demoday2025</code>
+                Password: <code className="bg-primary-100 dark:bg-primary-800 px-2 py-0.5 rounded">demoday2025</code>
               </p>
             </div>
 
@@ -129,11 +154,11 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full btn btn-primary btn-lg relative"
+                className="w-full btn btn-primary btn-lg relative py-3"
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                     Authenticating...
                   </>
                 ) : (

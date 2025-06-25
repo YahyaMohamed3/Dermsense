@@ -44,9 +44,9 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-1" strokeWidth={1.5} /> },
+    { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
     ...(isAuthenticated ? [
-      { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-1" strokeWidth={1.5} /> }
+      { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} /> }
     ] : [])
   ];
 
@@ -106,14 +106,14 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link 
                 to="/dashboard" 
-                className="btn btn-outline btn-md"
+                className="btn btn-outline btn-md px-4 py-2"
               >
                 <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="btn btn-ghost btn-md text-error-600 hover:text-error-700 hover:bg-error-50 dark:hover:bg-error-900/20"
+                className="btn btn-ghost btn-md px-4 py-2 text-error-600 hover:text-error-700 hover:bg-error-50 dark:hover:bg-error-900/20"
               >
                 <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Logout
@@ -123,14 +123,14 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link 
                 to="/scan" 
-                className="btn btn-primary btn-md"
+                className="btn btn-primary btn-md px-4 py-2"
               >
                 <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Scan Now
               </Link>
               <Link 
                 to="/login" 
-                className="btn btn-outline btn-md"
+                className="btn btn-outline btn-md px-4 py-2"
               >
                 Clinical Login
               </Link>
@@ -190,7 +190,7 @@ export default function Navbar() {
                   <>
                     <Link
                       to="/scan"
-                      className="flex items-center justify-center w-full btn btn-primary btn-md mb-2"
+                      className="flex items-center justify-center w-full btn btn-primary btn-md mb-2 px-4 py-2"
                       onClick={closeMobileMenu}
                     >
                       <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
@@ -198,7 +198,7 @@ export default function Navbar() {
                     </Link>
                     <Link
                       to="/login"
-                      className="flex items-center justify-center w-full btn btn-outline btn-md"
+                      className="flex items-center justify-center w-full btn btn-outline btn-md px-4 py-2"
                       onClick={closeMobileMenu}
                     >
                       Clinical Login

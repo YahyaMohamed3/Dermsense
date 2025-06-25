@@ -2,6 +2,10 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield } from 'lucide-react';
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import NeuralNetworkModel from "../three/NeuralNetworkModel";
+import ParticleField from "../three/ParticleField";
 
 export default function HeroSection() {
   const textRef = useRef<HTMLHeadingElement>(null);
@@ -75,17 +79,29 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-900 -z-10" />
-      
-      {/* Animated background dots */}
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      {/* 3D Background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-300/20 dark:bg-primary-700/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-secondary-300/20 dark:bg-secondary-700/10 rounded-full blur-3xl" />
+        <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} intensity={0.8} />
+          <NeuralNetworkModel count={2000} />
+          <ParticleField count={1000} size={30} />
+          <OrbitControls 
+            enableZoom={false} 
+            enablePan={false} 
+            enableRotate={true}
+            rotateSpeed={0.3}
+            autoRotate
+            autoRotateSpeed={0.5}
+          />
+        </Canvas>
       </div>
       
-      <div className="container">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/90 to-white/95 dark:from-slate-900/90 dark:to-slate-900/95 -z-5"></div>
+      
+      <div className="container relative z-10 py-20">
         <motion.div
           className="max-w-4xl mx-auto text-center"
           variants={containerVariants}
@@ -93,13 +109,13 @@ export default function HeroSection() {
           animate="visible"
         >
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 mb-6">
-              <Shield className="w-4 h-4 mr-1" strokeWidth={1.5} />
+            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 mb-6">
+              <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
               AI-Powered Skin Analysis
             </span>
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4">
+          <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
             Intelligent Dermatological{' '}
             <span className="relative">
               <span 
@@ -112,29 +128,41 @@ export default function HeroSection() {
             </span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto">
+          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
             Upload a clear image of your skin concern for an instant, private analysis powered by state-of-the-art AI.
           </motion.p>
           
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link
               to="/scan"
-              className="btn btn-primary btn-lg group min-w-[180px]"
+              className="btn btn-primary btn-lg group min-w-[200px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300"
             >
               Start Scanning
-              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
             </Link>
             
             <div className="relative">
               <button
-                className="btn btn-outline btn-lg min-w-[180px]"
+                className="btn btn-outline btn-lg min-w-[200px] px-8 py-4 text-lg border-2 hover:-translate-y-1 transition-all duration-300"
                 disabled
               >
                 Learn More
               </button>
-              <span className="coming-soon-badge absolute -top-2 -right-2">
+              <span className="coming-soon-badge absolute -top-2 -right-2 px-3 py-1">
                 Coming Soon
               </span>
+            </div>
+          </motion.div>
+          
+          <motion.div
+            variants={itemVariants}
+            className="mt-16 text-center"
+          >
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Trusted by healthcare professionals</p>
+            <div className="flex flex-wrap justify-center gap-8 opacity-70">
+              <div className="h-8 w-24 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              <div className="h-8 w-32 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              <div className="h-8 w-28 bg-slate-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
             </div>
           </motion.div>
         </motion.div>
@@ -142,15 +170,16 @@ export default function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.7 }}
+          transition={{ duration: 0.7, delay: 0.9 }}
           className="mt-16 relative mx-auto max-w-5xl"
         >
-          <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10">
+          <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden">
             <img
               src="https://images.pexels.com/photos/7089401/pexels-photo-7089401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
               alt="DermaSense application interface showing skin analysis"
               className="rounded-xl w-full h-auto object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
           </div>
           
           <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 dark:bg-secondary-700/10 rounded-full blur-3xl" />

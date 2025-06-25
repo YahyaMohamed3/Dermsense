@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Download, Printer, Share2 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 
 // --- TYPE DEFINITIONS (for TypeScript) ---
@@ -170,7 +170,7 @@ const DashboardPage: React.FC = () => {
         >
           {/* Header */}
           <header className="mb-8">
-            <h1 className="text-4xl font-bold text-primary-600 dark:text-secondary-400 mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-500 dark:to-secondary-400 text-transparent bg-clip-text mb-2">
               Clinical Dashboard
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-300">
@@ -181,114 +181,146 @@ const DashboardPage: React.FC = () => {
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
             <motion.div 
-              className="card p-4"
+              className="card p-4 hover:shadow-md transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Total Cases</p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
-                <Eye className="w-8 h-8 text-primary-600 dark:text-secondary-400" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <Eye className="w-6 h-6 text-primary-600 dark:text-secondary-400" strokeWidth={1.5} />
+                </div>
               </div>
             </motion.div>
             
             <motion.div 
-              className="card p-4"
+              className="card p-4 hover:shadow-md transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">New Cases</p>
                   <p className="text-2xl font-bold text-primary-600">{stats.new}</p>
                 </div>
-                <Clock className="w-8 h-8 text-primary-600" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-primary-600" strokeWidth={1.5} />
+                </div>
               </div>
             </motion.div>
             
             <motion.div 
-              className="card p-4"
+              className="card p-4 hover:shadow-md transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Reviewed</p>
                   <p className="text-2xl font-bold text-success-600">{stats.reviewed}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-success-600" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-success-600" strokeWidth={1.5} />
+                </div>
               </div>
             </motion.div>
             
             <motion.div 
-              className="card p-4"
+              className="card p-4 hover:shadow-md transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Flagged</p>
                   <p className="text-2xl font-bold text-warning-600">{stats.flagged}</p>
                 </div>
-                <AlertTriangle className="w-8 h-8 text-warning-600" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded-full bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-warning-600" strokeWidth={1.5} />
+                </div>
               </div>
             </motion.div>
             
             <motion.div 
-              className="card p-4"
+              className="card p-4 hover:shadow-md transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">High Risk</p>
                   <p className="text-2xl font-bold text-error-600">{stats.highRisk}</p>
                 </div>
-                <AlertTriangle className="w-8 h-8 text-error-600" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-error-600" strokeWidth={1.5} />
+                </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Filter Buttons */}
-          <div className="flex items-center gap-4 mb-6">
-            <Filter className="w-5 h-5 text-slate-600 dark:text-slate-400" strokeWidth={1.5} />
+          {/* Filter Buttons and Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <Filter className="w-5 h-5 text-slate-600 dark:text-slate-400" strokeWidth={1.5} />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveFilter('all')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeFilter === 'all'
+                      ? 'bg-primary-600 dark:bg-secondary-400 text-white dark:text-black shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  All Cases ({stats.total})
+                </button>
+                <button
+                  onClick={() => setActiveFilter('new')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeFilter === 'new'
+                      ? 'bg-primary-600 dark:bg-secondary-400 text-white dark:text-black shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  New Cases ({stats.new})
+                </button>
+                <button
+                  onClick={() => setActiveFilter('flagged')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeFilter === 'flagged'
+                      ? 'bg-warning-500 text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  Flagged ({stats.flagged})
+                </button>
+              </div>
+            </div>
+            
             <div className="flex gap-2">
-              <button
-                onClick={() => setActiveFilter('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeFilter === 'all'
-                    ? 'bg-primary-600 dark:bg-secondary-400 text-white dark:text-black'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                All Cases ({stats.total})
+              <button className="btn btn-outline btn-sm px-3 py-2">
+                <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                Print
               </button>
-              <button
-                onClick={() => setActiveFilter('new')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeFilter === 'new'
-                    ? 'bg-primary-600 dark:bg-secondary-400 text-white dark:text-black'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                New Cases ({stats.new})
+              <button className="btn btn-outline btn-sm px-3 py-2">
+                <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                Export
               </button>
-              <button
-                onClick={() => setActiveFilter('flagged')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeFilter === 'flagged'
-                    ? 'bg-warning-500 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                Flagged ({stats.flagged})
+              <button className="btn btn-outline btn-sm px-3 py-2">
+                <Share2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                Share
               </button>
             </div>
           </div>
@@ -353,7 +385,7 @@ const DashboardPage: React.FC = () => {
                               <div className="flex items-center">
                                 <div className="flex-shrink-0 h-12 w-12">
                                   <img
-                                    className="h-12 w-12 rounded-lg object-cover border border-slate-200 dark:border-slate-700"
+                                    className="h-12 w-12 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
                                     src={caseItem.image_url}
                                     alt="Case thumbnail"
                                   />
@@ -404,7 +436,7 @@ const DashboardPage: React.FC = () => {
                                   e.stopPropagation();
                                   handleCaseClick(caseItem.id);
                                 }}
-                                className="text-primary-600 dark:text-secondary-400 hover:text-primary-900 dark:hover:text-secondary-300"
+                                className="text-primary-600 dark:text-secondary-400 hover:text-primary-900 dark:hover:text-secondary-300 px-3 py-1 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                               >
                                 {isExpanded ? 'Hide Details' : 'View Details'}
                               </button>
@@ -422,26 +454,40 @@ const DashboardPage: React.FC = () => {
                                 layout
                               >
                                 <td colSpan={6} className="px-6 py-4">
-                                  <div className="glass-panel p-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="glass-panel p-6 rounded-xl">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                       {/* Original Image */}
                                       <div>
-                                        <h3 className="text-lg font-semibold mb-2">Original Image</h3>
-                                        <img
-                                          src={caseItem.image_url}
-                                          alt="Patient skin lesion"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 shadow-md"
-                                        />
+                                        <h3 className="text-lg font-semibold mb-3">Original Image</h3>
+                                        <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-md group">
+                                          <img
+                                            src={caseItem.image_url}
+                                            alt="Patient skin lesion"
+                                            className="w-full h-64 object-cover"
+                                          />
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
+                                            <button className="btn btn-sm btn-primary">
+                                              View Full Size
+                                            </button>
+                                          </div>
+                                        </div>
                                       </div>
                                       
                                       {/* Grad-CAM Heatmap */}
                                       <div>
-                                        <h3 className="text-lg font-semibold mb-2">AI Focus Area</h3>
-                                        <img
-                                          src={caseItem.heatmap_url}
-                                          alt="AI analysis heatmap"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 shadow-md"
-                                        />
+                                        <h3 className="text-lg font-semibold mb-3">AI Focus Area</h3>
+                                        <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-md group">
+                                          <img
+                                            src={caseItem.heatmap_url}
+                                            alt="AI analysis heatmap"
+                                            className="w-full h-64 object-cover"
+                                          />
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
+                                            <button className="btn btn-sm btn-primary">
+                                              View Full Size
+                                            </button>
+                                          </div>
+                                        </div>
                                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
                                           Highlighted areas show where the AI focused during analysis
                                         </p>
@@ -449,7 +495,7 @@ const DashboardPage: React.FC = () => {
                                     </div>
                                     
                                     {/* Analysis Results */}
-                                    <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                    <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                       <h3 className="text-lg font-semibold mb-3">AI Analysis Results</h3>
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
@@ -476,8 +522,8 @@ const DashboardPage: React.FC = () => {
                                     </div>
                                     
                                     {/* Clinical Notes */}
-                                    <div className="mt-4">
-                                      <h3 className="text-lg font-semibold mb-2">Clinical Notes</h3>
+                                    <div className="mt-6">
+                                      <h3 className="text-lg font-semibold mb-3">Clinical Notes</h3>
                                       <textarea
                                         className="w-full h-24 p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                         placeholder="Add your clinical observations and notes..."
@@ -485,15 +531,21 @@ const DashboardPage: React.FC = () => {
                                     </div>
                                     
                                     {/* Action Buttons */}
-                                    <div className="mt-4 flex gap-3">
-                                      <button className="btn btn-primary">
+                                    <div className="mt-6 flex flex-wrap gap-3">
+                                      <button className="btn btn-primary px-4 py-2">
+                                        <CheckCircle className="w-4 h-4 mr-2" strokeWidth={1.5} />
                                         Mark as Reviewed
                                       </button>
-                                      <button className="btn btn-outline border-warning-500 text-warning-600 hover:bg-warning-50 dark:border-warning-400 dark:text-warning-400 dark:hover:bg-warning-900/20">
+                                      <button className="btn btn-outline border-warning-500 text-warning-600 hover:bg-warning-50 dark:border-warning-400 dark:text-warning-400 dark:hover:bg-warning-900/20 px-4 py-2">
+                                        <AlertTriangle className="w-4 h-4 mr-2" strokeWidth={1.5} />
                                         Flag for Follow-up
                                       </button>
+                                      <button className="btn btn-outline px-4 py-2">
+                                        <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                                        Print Report
+                                      </button>
                                       <button 
-                                        className="btn btn-ghost"
+                                        className="btn btn-ghost ml-auto"
                                         onClick={() => setExpandedCase(null)}
                                       >
                                         Close
