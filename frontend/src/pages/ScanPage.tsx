@@ -64,8 +64,8 @@ export default function ScanPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-slate-100">Skin Analysis Scanner</h1>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Skin Analysis Scanner</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis. 
               Get insights and recommendations in seconds.
             </p>

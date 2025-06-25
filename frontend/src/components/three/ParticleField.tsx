@@ -33,7 +33,7 @@ export default function ParticleField({ count = 1000, size = 20 }) {
     <Points ref={ref} positions={positions} stride={3}>
       <PointMaterial
         transparent
-        color="#00f6ff"
+        color="#38bdf8" // secondary-400
         size={0.05}
         sizeAttenuation={true}
         depthWrite={false}

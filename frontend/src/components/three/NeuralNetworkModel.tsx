@@ -75,7 +75,7 @@ export default function NeuralNetworkModel({ count = 2000 }) {
     <Points ref={ref} positions={positions} stride={3}>
       <PointMaterial
         transparent
-        color="#00f6ff"
+        color="#3b82f6" // primary-600
         size={0.12}
         sizeAttenuation={true}
         depthWrite={false}

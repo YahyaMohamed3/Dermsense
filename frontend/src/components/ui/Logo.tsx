@@ -10,7 +10,7 @@ export default function Logo({ className }: LogoProps) {
       viewBox="0 0 32 32" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('text-cyan-500', className)}
+      className={cn('text-primary-600 dark:text-secondary-400', className)}
     >
       <rect width="32" height="32" rx="8" fill="currentColor"/>
       <path d="M10.5 17.5C10.5 18.8807 9.38071 20 8 20C6.61929 20 5.5 18.8807 5.5 17.5C5.5 16.1193 6.61929 15 8 15C9.38071 15 10.5 16.1193 10.5 17.5Z" fill="white"/>

@@ -4,51 +4,66 @@
 
 @layer base {
   :root {
-    /* Neuro-Glass Dark Theme */
-    --color-background: 15 23 42; /* slate-900 */
-    --color-foreground: 241 245 249; /* slate-100 */
-    --color-card: 30 41 59; /* slate-800 */
-    --color-card-foreground: 241 245 249; /* slate-100 */
-    --color-border: 51 65 85; /* slate-700 */
-    --color-input: 30 41 59; /* slate-800 */
-    --color-muted: 148 163 184; /* slate-400 */
+    /* Light Mode */
+    --color-background: 248 250 252; /* slate-50 */
+    --color-foreground: 15 23 42; /* slate-900 */
+    --color-card: 255 255 255; /* white */
+    --color-card-foreground: 15 23 42; /* slate-900 */
+    --color-border: 226 232 240; /* slate-200 */
+    --color-input: 241 245 249; /* slate-100 */
+    --color-muted: 100 116 139; /* slate-500 */
     
-    /* Primary Accent - Cyan */
-    --color-primary-50: 236 254 255;
-    --color-primary-100: 207 250 254;
-    --color-primary-200: 165 243 252;
-    --color-primary-300: 103 232 249;
-    --color-primary-400: 34 211 238;
-    --color-primary-500: 0 246 255; /* Primary Accent */
-    --color-primary-600: 8 145 178;
-    --color-primary-700: 14 116 144;
-    --color-primary-800: 21 94 117;
-    --color-primary-900: 22 78 99;
-    --color-primary-950: 8 51 68;
+    /* Primary - Deep Professional Blue */
+    --color-primary-50: 239 246 255;
+    --color-primary-100: 219 234 254;
+    --color-primary-200: 191 219 254;
+    --color-primary-300: 147 197 253;
+    --color-primary-400: 96 165 250;
+    --color-primary-500: 59 130 246;
+    --color-primary-600: 37 99 235;
+    --color-primary-700: 29 78 216;
+    --color-primary-800: 30 64 175;
+    --color-primary-900: 30 58 138;
+    --color-primary-950: 23 37 84;
     
-    /* Success - Clinical Green */
+    /* Secondary - Vibrant Clear Blue */
+    --color-secondary-50: 240 249 255;
+    --color-secondary-100: 224 242 254;
+    --color-secondary-200: 186 230 253;
+    --color-secondary-300: 125 211 252;
+    --color-secondary-400: 56 189 248;
+    --color-secondary-500: 14 165 233;
+    --color-secondary-600: 2 132 199;
+    --color-secondary-700: 3 105 161;
+    --color-secondary-800: 7 89 133;
+    --color-secondary-900: 12 74 110;
+    --color-secondary-950: 8 47 73;
+    
+    /* Success - Calm Clinical Green */
     --color-success-50: 236 253 245;
     --color-success-100: 209 250 229;
     --color-success-200: 167 243 208;
     --color-success-300: 110 231 183;
     --color-success-400: 52 211 153;
-    --color-success-500: 0 255 171; /* Clinical bright green */
+    --color-success-500: 16 185 129;
     --color-success-600: 5 150 105;
     --color-success-700: 4 120 87;
     --color-success-800: 6 95 70;
     --color-success-900: 6 78 59;
+    --color-success-950: 2 44 34;
     
-    /* Warning - Sharp Orange */
+    /* Warning - Clear Amber */
     --color-warning-50: 255 251 235;
     --color-warning-100: 254 243 199;
     --color-warning-200: 253 230 138;
     --color-warning-300: 252 211 77;
     --color-warning-400: 251 191 36;
-    --color-warning-500: 255 171 0; /* Sharp orange */
+    --color-warning-500: 245 158 11;
     --color-warning-600: 217 119 6;
     --color-warning-700: 180 83 9;
     --color-warning-800: 146 64 14;
     --color-warning-900: 120 53 15;
+    --color-warning-950: 69 26 3;
     
     /* Error - Red */
     --color-error-50: 254 242 242;
@@ -61,18 +76,56 @@
     --color-error-700: 185 28 28;
     --color-error-800: 153 27 27;
     --color-error-900: 127 29 29;
+    --color-error-950: 69 10 10;
+  }
+
+  .dark {
+    /* Dark Mode */
+    --color-background: 15 23 42; /* slate-900 */
+    --color-foreground: 241 245 249; /* slate-100 */
+    --color-card: 30 41 59; /* slate-800 */
+    --color-card-foreground: 241 245 249; /* slate-100 */
+    --color-border: 51 65 85; /* slate-700 */
+    --color-input: 30 41 59; /* slate-800 */
+    --color-muted: 148 163 184; /* slate-400 */
+    
+    /* Primary - Deep Professional Blue (Dark Mode) */
+    --color-primary-50: 239 246 255;
+    --color-primary-100: 219 234 254;
+    --color-primary-200: 191 219 254;
+    --color-primary-300: 147 197 253;
+    --color-primary-400: 96 165 250;
+    --color-primary-500: 59 130 246;
+    --color-primary-600: 37 99 235;
+    --color-primary-700: 29 78 216;
+    --color-primary-800: 30 64 175;
+    --color-primary-900: 30 58 138;
+    --color-primary-950: 23 37 84;
+    
+    /* Secondary - Vibrant Clear Blue (Dark Mode) */
+    --color-secondary-50: 240 249 255;
+    --color-secondary-100: 224 242 254;
+    --color-secondary-200: 186 230 253;
+    --color-secondary-300: 125 211 252;
+    --color-secondary-400: 56 189 248;
+    --color-secondary-500: 14 165 233;
+    --color-secondary-600: 2 132 199;
+    --color-secondary-700: 3 105 161;
+    --color-secondary-800: 7 89 133;
+    --color-secondary-900: 12 74 110;
+    --color-secondary-950: 8 47 73;
   }
 
   body {
-    @apply bg-slate-900 text-slate-100 font-inter antialiased;
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans antialiased;
   }
 
   * {
-    @apply border-slate-700;
+    @apply border-slate-200 dark:border-slate-700;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-manrope font-bold leading-tight tracking-tight;
+    @apply font-medium leading-tight tracking-tight;
   }
 
   p {
@@ -88,19 +141,19 @@
   }
 
   .btn-primary {
-    @apply bg-primary-500 text-black hover:bg-primary-400 active:bg-primary-600 shadow-[0_0_15px_rgba(0,246,255,0.4)] hover:shadow-[0_0_20px_rgba(0,246,255,0.6)];
+    @apply bg-primary-600 text-white hover:bg-primary-500 hover:shadow-md hover:-translate-y-px active:bg-primary-700;
   }
   
   .btn-secondary {
-    @apply bg-slate-700 text-white hover:bg-slate-600 active:bg-slate-800;
+    @apply bg-secondary-600 text-white hover:bg-secondary-500 hover:shadow-md hover:-translate-y-px active:bg-secondary-700;
   }
 
   .btn-outline {
-    @apply border border-primary-500 bg-transparent text-primary-500 hover:bg-primary-500/10 active:bg-primary-500/20;
+    @apply border border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30;
   }
 
   .btn-ghost {
-    @apply bg-transparent hover:bg-slate-800 active:bg-slate-700 text-slate-300;
+    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 text-slate-700 dark:text-slate-300;
   }
 
   .btn-sm {
@@ -116,7 +169,7 @@
   }
 
   .card {
-    @apply rounded-xl border border-slate-700 bg-slate-800/80 text-slate-100 shadow-lg;
+    @apply rounded-xl border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm;
   }
 
   .card-header {
@@ -124,11 +177,11 @@
   }
 
   .card-title {
-    @apply text-2xl font-semibold text-slate-100;
+    @apply text-2xl font-semibold;
   }
 
   .card-description {
-    @apply text-slate-400;
+    @apply text-slate-500 dark:text-slate-400;
   }
 
   .card-content {
@@ -143,30 +196,20 @@
     @apply mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8;
   }
   
-  /* Neuro-Glass Components */
+  /* Glass Panel Styles */
   .glass-panel {
-    @apply bg-slate-800/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl shadow-lg;
+    @apply bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
   }
   
-  .glow-border {
-    @apply border border-cyan-500 shadow-[0_0_10px_rgba(0,246,255,0.5)];
-  }
-  
-  .glow-text {
-    @apply text-cyan-500 drop-shadow-[0_0_8px_rgba(0,246,255,0.8)];
-  }
-  
-  .glow-hover {
-    @apply hover:shadow-[0_0_15px_rgba(0,246,255,0.7)] transition-shadow duration-300;
-  }
-  
+  /* Scanner Animation */
   .scanner-line {
-    @apply absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent;
+    @apply absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-500 dark:via-secondary-400 to-transparent;
     animation: scanner 2s ease-in-out infinite;
   }
   
-  .pulse-badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-500;
+  /* Coming Soon Badge */
+  .coming-soon-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300;
     animation: pulse-subtle 2s infinite;
   }
 }
@@ -197,11 +240,9 @@
 @keyframes pulse-subtle {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
     opacity: 0.7;
-    transform: scale(0.95);
   }
 }
 
@@ -211,14 +252,5 @@
   }
   50% {
     transform: translateY(-10px);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px 2px rgba(0, 246, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px 5px rgba(0, 246, 255, 0.6);
   }
 }

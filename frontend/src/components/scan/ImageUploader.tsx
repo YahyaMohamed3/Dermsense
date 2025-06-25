@@ -61,17 +61,17 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
   return (
     <motion.div 
       className="w-full"
-      initial={{ x: -50, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
       <div
         {...getRootProps()}
         className={cn(
-          'glass-panel p-6 text-center cursor-pointer transition-all duration-300 h-80 flex flex-col items-center justify-center',
+          'border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors h-80 flex flex-col items-center justify-center',
           isDragActive 
-            ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_15px_rgba(0,246,255,0.4)]' 
-            : 'hover:border-cyan-400 hover:bg-slate-800/80 hover:shadow-[0_0_10px_rgba(0,246,255,0.2)]',
+            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+            : 'border-slate-300 dark:border-slate-700 hover:border-primary-400 hover:bg-slate-50 dark:hover:border-slate-600 dark:hover:bg-slate-800/50',
           isProcessing && 'opacity-70 cursor-not-allowed'
         )}
       >
@@ -79,11 +79,11 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         
         {isProcessing ? (
           <div className="py-8 flex flex-col items-center">
-            <Loader2 className="w-12 h-12 text-cyan-500 animate-spin mb-4" strokeWidth={1.5} />
-            <p className="text-lg font-medium text-slate-100">Processing your image...</p>
-            <p className="text-sm text-slate-400">Please wait while we analyze your skin.</p>
+            <Loader2 className="w-12 h-12 text-primary-600 dark:text-secondary-400 animate-spin mb-4" strokeWidth={1.5} />
+            <p className="text-lg font-medium">Processing your image...</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Please wait while we analyze your skin.</p>
             
-            {/* Scanner line animation */}
+            {/* Processing preview with scanner effect */}
             {preview && (
               <div className="relative mt-4 rounded-lg overflow-hidden w-64 h-64">
                 <img
@@ -100,11 +100,11 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             <img
               src={preview}
               alt="Uploaded skin image"
-              className="max-h-64 mx-auto rounded-lg shadow-lg"
+              className="max-h-64 mx-auto rounded-lg shadow-md"
             />
             <button
               onClick={clearImage}
-              className="absolute top-2 right-2 bg-slate-800/70 text-slate-100 p-1 rounded-full hover:bg-slate-900/80 transition-colors"
+              className="absolute top-2 right-2 bg-slate-800/70 text-white p-1 rounded-full hover:bg-slate-900/80 transition-colors"
               aria-label="Remove image"
             >
               <X className="w-5 h-5" strokeWidth={1.5} />
@@ -119,20 +119,20 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-cyan-500/20 text-cyan-500 mb-4"
+              className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mb-4"
             >
               {isDragActive ? 
                 <ImageIcon className="w-8 h-8" strokeWidth={1.5} /> : 
                 <Upload className="w-8 h-8" strokeWidth={1.5} />
               }
             </motion.div>
-            <p className="text-lg font-medium mb-1 text-slate-100">
+            <p className="text-lg font-medium mb-1">
               {isDragActive ? 'Drop your image here' : 'Upload a skin image'}
             </p>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Drag and drop, or click to select a file
             </p>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
               PNG, JPG or GIF (max. 10MB)
             </p>
           </motion.div>
@@ -143,7 +143,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 text-sm text-error-500"
+          className="mt-2 text-sm text-error-600 dark:text-error-400"
         >
           {error}
         </motion.div>

@@ -55,14 +55,14 @@ export default function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-slate-900/80 backdrop-blur-md shadow-md'
+          ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm'
           : 'bg-transparent'
       )}
     >
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
           <Logo className="w-8 h-8" />
-          <span className="font-bold text-xl text-slate-100">DermaSense</span>
+          <span className="font-bold text-xl">DermaSense</span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-8">
@@ -72,8 +72,8 @@ export default function Navbar() {
               to={link.path}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center text-sm font-medium transition-colors hover:text-cyan-500',
-                  isActive ? 'text-cyan-500' : 'text-slate-300'
+                  'flex items-center text-sm font-medium transition-colors hover:text-primary-600 dark:hover:text-secondary-400',
+                  isActive ? 'text-primary-600 dark:text-secondary-400' : 'text-slate-700 dark:text-slate-300'
                 )
               }
             >
@@ -86,7 +86,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-800 transition-colors mr-2 text-slate-400 hover:text-slate-200"
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-2"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -106,14 +106,14 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link 
                 to="/dashboard" 
-                className="btn btn-outline btn-md text-cyan-500 border-cyan-500"
+                className="btn btn-outline btn-md"
               >
                 <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="btn btn-ghost btn-md text-error-500 hover:text-error-400 hover:bg-error-500/10"
+                className="btn btn-ghost btn-md text-error-600 hover:text-error-700 hover:bg-error-50 dark:hover:bg-error-900/20"
               >
                 <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Logout
@@ -130,7 +130,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 to="/login" 
-                className="btn btn-outline btn-md text-cyan-500 border-cyan-500"
+                className="btn btn-outline btn-md"
               >
                 Clinical Login
               </Link>
@@ -139,7 +139,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleMobileMenu}
-            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
             aria-expanded={isMobileMenuOpen}
           >
             <span className="sr-only">Open main menu</span>
@@ -155,7 +155,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden glass-panel shadow-lg"
+            className="md:hidden bg-white dark:bg-slate-900 shadow-lg"
           >
             <div className="pt-2 pb-4 space-y-1 px-4">
               {navLinks.map((link) => (
@@ -166,8 +166,8 @@ export default function Navbar() {
                     cn(
                       'flex items-center px-3 py-2 rounded-md text-base font-medium',
                       isActive
-                        ? 'bg-cyan-500/20 text-cyan-500'
-                        : 'hover:bg-slate-800 text-slate-300'
+                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                     )
                   }
                   onClick={closeMobileMenu}
@@ -177,11 +177,11 @@ export default function Navbar() {
                 </NavLink>
               ))}
               
-              <div className="pt-2 border-t border-slate-700">
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
                 {isAuthenticated ? (
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-500 hover:bg-error-500/10"
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20"
                   >
                     <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     Logout
@@ -198,7 +198,7 @@ export default function Navbar() {
                     </Link>
                     <Link
                       to="/login"
-                      className="flex items-center justify-center w-full btn btn-outline btn-md text-cyan-500 border-cyan-500"
+                      className="flex items-center justify-center w-full btn btn-outline btn-md"
                       onClick={closeMobileMenu}
                     >
                       Clinical Login

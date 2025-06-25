@@ -17,20 +17,20 @@ export default function PrivacyNotice() {
       <div className="glass-panel rounded-lg shadow-lg p-4 pr-10 relative">
         <button
           onClick={() => setIsVisible(false)}
-          className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+          className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
           aria-label="Close privacy notice"
         >
           <X className="w-4 h-4" strokeWidth={1.5} />
         </button>
         
         <div className="flex items-start">
-          <div className="bg-cyan-500/20 rounded-full p-2 mr-3">
-            <Shield className="w-5 h-5 text-cyan-500" strokeWidth={1.5} />
+          <div className="bg-primary-100 dark:bg-primary-900/50 rounded-full p-2 mr-3">
+            <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400" strokeWidth={1.5} />
           </div>
           
           <div>
-            <h4 className="font-medium text-sm text-slate-100">Privacy First Processing</h4>
-            <p className="text-xs text-slate-300 mt-1">
+            <h4 className="font-medium text-sm">Privacy First Processing</h4>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
               Your images are processed securely and never shared with third parties.
               All analysis is done with privacy-preserving techniques.
             </p>

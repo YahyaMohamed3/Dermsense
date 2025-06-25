@@ -70,24 +70,24 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
   const riskColors = {
     low: {
-      bg: 'bg-success-500/20',
-      text: 'text-success-500',
-      border: 'border-success-500/50',
+      bg: 'bg-success-50 dark:bg-success-900/20',
+      text: 'text-success-900 dark:text-success-500',
+      border: 'border-success-500',
     },
     medium: {
-      bg: 'bg-warning-500/20',
-      text: 'text-warning-500',
-      border: 'border-warning-500/50',
+      bg: 'bg-warning-50 dark:bg-warning-900/20',
+      text: 'text-warning-900 dark:text-warning-500',
+      border: 'border-warning-500',
     },
     high: {
-      bg: 'bg-error-500/20',
-      text: 'text-error-500',
-      border: 'border-error-500/50',
+      bg: 'bg-error-50 dark:bg-error-900/20',
+      text: 'text-error-900 dark:text-error-500',
+      border: 'border-error-500',
     },
     unknown: {
-      bg: 'bg-slate-700',
-      text: 'text-slate-300',
-      border: 'border-slate-500/50',
+      bg: 'bg-slate-100 dark:bg-slate-800',
+      text: 'text-slate-600 dark:text-slate-300',
+      border: 'border-slate-400',
     },
   };
 
@@ -97,12 +97,12 @@ export default function ResultPanel({ result }: ResultPanelProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3 }}
-      className="glass-panel overflow-hidden rounded-2xl shadow-xl transition-all duration-300"
+      transition={{ duration: 0.5 }}
+      className="card overflow-hidden rounded-2xl shadow-md border dark:border-slate-700 transition-all duration-300"
     >
       <div className="card-header">
         <div className="flex items-center justify-between">
-          <h3 className="card-title text-slate-100">Analysis Results</h3>
+          <h3 className="card-title">Analysis Results</h3>
           <span
             className={cn(
               'px-3 py-1 rounded-full text-sm font-medium',
@@ -113,35 +113,35 @@ export default function ResultPanel({ result }: ResultPanelProps) {
             {result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1)} Risk
           </span>
         </div>
-        <p className="card-description text-slate-400">Based on the image you provided</p>
+        <p className="card-description">Based on the image you provided</p>
       </div>
 
       <div className="card-content space-y-6">
         {/* Top 1 */}
         <div>
-          <h4 className="text-lg font-medium mb-1 text-slate-200">Top Condition</h4>
-          <p className="text-2xl font-bold glow-text">
+          <h4 className="text-lg font-medium mb-1">Top Condition</h4>
+          <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
             {result.top1.label}
           </p>
-          <p className="text-sm text-slate-400">
-            Confidence: <span className="text-cyan-500 font-mono">{counterValue.toFixed(2)}%</span>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Confidence: <span className="font-mono">{counterValue.toFixed(2)}%</span>
           </p>
-          <div className="h-2 mt-2 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-2 mt-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${result.top1.confidence}%` }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="h-full bg-cyan-500 rounded-full"
+              transition={{ duration: 1 }}
+              className="h-full bg-success-500 rounded-full"
             />
           </div>
         </div>
 
         {/* Top 2 */}
         <div>
-          <h4 className="text-sm font-medium text-slate-400 mb-1">
+          <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
             Second Most Likely
           </h4>
-          <p className="text-md font-semibold text-slate-300">
+          <p className="text-md font-semibold text-slate-800 dark:text-slate-200">
             {result.top2.label} ({result.top2.confidence}%)
           </p>
         </div>
@@ -157,8 +157,8 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           <div className="flex items-start">
             <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
             <div>
-              <h4 className="font-medium text-slate-100">Important Note</h4>
-              <p className="text-sm text-slate-300">
+              <h4 className="font-medium">Important Note</h4>
+              <p className="text-sm">
                 This is an AI-powered analysis. It is not a substitute for medical advice. 
                 Please consult a licensed dermatologist for further evaluation.
               </p>
@@ -169,15 +169,15 @@ export default function ResultPanel({ result }: ResultPanelProps) {
         {/* Expand Details */}
         <button
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-          className="flex items-center justify-between w-full py-2 px-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+          className="flex items-center justify-between w-full py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
         >
-          <span className="font-medium flex items-center text-slate-200">
+          <span className="font-medium flex items-center">
             <Info className="w-4 h-4 mr-2" strokeWidth={1.5} />
             {isDetailsOpen ? 'Hide Details' : 'View Details'}
           </span>
           {isDetailsOpen ? 
-            <ChevronUp className="w-5 h-5 text-slate-300" strokeWidth={1.5} /> : 
-            <ChevronDown className="w-5 h-5 text-slate-300" strokeWidth={1.5} />
+            <ChevronUp className="w-5 h-5" strokeWidth={1.5} /> : 
+            <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
           }
         </button>
 
@@ -188,34 +188,34 @@ export default function ResultPanel({ result }: ResultPanelProps) {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 space-y-4 overflow-hidden"
+              className="mt-4 space-y-4"
             >
               {/* Description with typewriter effect */}
               <div>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium mb-1 text-slate-200">Description</h4>
+                  <h4 className="font-medium mb-1">Description</h4>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className="text-cyan-500 hover:text-cyan-400"
+                    className="text-primary-600 dark:text-secondary-400 hover:text-primary-700 dark:hover:text-secondary-300"
                   >
                     <Volume2 className="w-5 h-5" strokeWidth={1.5} />
                   </motion.button>
                 </div>
-                <p className="text-slate-300 min-h-[3rem] border-l-2 border-cyan-500/50 pl-3">
+                <p className="text-slate-600 dark:text-slate-300 min-h-[3rem] border-l-2 border-primary-500 dark:border-secondary-400 pl-3">
                   {displayedText}
                   <motion.span 
                     animate={{ opacity: [1, 0, 1] }}
                     transition={{ repeat: Infinity, duration: 0.8 }}
-                    className="inline-block w-2 h-4 bg-cyan-500 ml-1"
+                    className="inline-block w-2 h-4 bg-primary-500 dark:bg-secondary-400 ml-1"
                   />
                 </p>
               </div>
 
               {/* Recommendation */}
               <div>
-                <h4 className="font-medium mb-1 text-slate-200">Recommendation</h4>
-                <p className="text-slate-300">{result.recommendation}</p>
+                <h4 className="font-medium mb-1">Recommendation</h4>
+                <p className="text-slate-600 dark:text-slate-300">{result.recommendation}</p>
               </div>
 
               {/* Grad-CAM Image */}
@@ -223,42 +223,33 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
-                  className="glass-panel p-4 mt-4"
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-800 shadow-inner"
                 >
-                  <h4 className="font-semibold text-lg mb-2 text-slate-100">Visual Explanation (Grad-CAM)</h4>
-                  <div className="relative">
-                    <img
-                      src={result.heatmapImage}
-                      alt="Grad-CAM Heatmap"
-                      className="w-full rounded-lg border border-slate-600 shadow-md"
-                    />
-                    {/* Connecting line animation */}
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: 0.8, delay: 0.5 }}
-                      className="absolute -top-4 left-0 h-px bg-gradient-to-r from-cyan-500 to-transparent"
-                    />
-                  </div>
-                  <p className="text-sm mt-2 text-slate-400 leading-snug">
+                  <h4 className="font-semibold text-lg mb-2">AI Focus Area</h4>
+                  <img
+                    src={result.heatmapImage}
+                    alt="Grad-CAM Heatmap"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 shadow-md"
+                  />
+                  <p className="text-sm mt-2 text-slate-600 dark:text-slate-400 leading-snug">
                     Highlighted areas show where the AI focused during classification.
                     Use this visualization as supportive insight.
                   </p>
                 </motion.div>
               )}
               
-              {/* Avatar placeholder (would be implemented with actual video avatar) */}
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                className="flex justify-center mt-6"
-              >
-                <div className="relative w-16 h-16 rounded-full bg-slate-700 border-2 border-cyan-500 flex items-center justify-center overflow-hidden glow-hover cursor-pointer">
-                  <span className="text-xs text-slate-300">AI Doctor</span>
-                </div>
-              </motion.div>
+              {/* Optional actions */}
+              <div className="flex flex-wrap gap-3 mt-4">
+                <button className="btn btn-outline text-sm">
+                  <Volume2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                  Listen to Explanation
+                </button>
+                
+                <button className="btn btn-outline text-sm">
+                  Play Video Summary
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
