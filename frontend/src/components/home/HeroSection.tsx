@@ -243,9 +243,6 @@ export default function HeroSection() {
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
               
-              {/* Scanner line animation */}
-              <div className="scanner-line"></div>
-              
               {/* Glowing corners */}
               <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-secondary-400/70 rounded-tl-lg"></div>
               <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-secondary-400/70 rounded-tr-lg"></div>
