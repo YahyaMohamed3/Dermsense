@@ -44,9 +44,9 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-1" /> },
+    { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-1" strokeWidth={1.5} /> },
     ...(isAuthenticated ? [
-      { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-1" /> }
+      { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-1" strokeWidth={1.5} /> }
     ] : [])
   ];
 
@@ -55,14 +55,14 @@ export default function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm'
+          ? 'bg-slate-900/80 backdrop-blur-md shadow-md'
           : 'bg-transparent'
       )}
     >
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
           <Logo className="w-8 h-8" />
-          <span className="font-bold text-xl">DermaSense</span>
+          <span className="font-bold text-xl text-slate-100">DermaSense</span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-8">
@@ -72,8 +72,8 @@ export default function Navbar() {
               to={link.path}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center text-sm font-medium transition-colors hover:text-primary-600',
-                  isActive ? 'text-primary-600' : 'text-foreground/80'
+                  'flex items-center text-sm font-medium transition-colors hover:text-cyan-500',
+                  isActive ? 'text-cyan-500' : 'text-slate-300'
                 )
               }
             >
@@ -86,7 +86,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mr-2"
+            className="p-2 rounded-full hover:bg-slate-800 transition-colors mr-2 text-slate-400 hover:text-slate-200"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -97,7 +97,7 @@ export default function Navbar() {
                 exit={{ y: 20, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
               </motion.div>
             </AnimatePresence>
           </button>
@@ -106,16 +106,16 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link 
                 to="/dashboard" 
-                className="btn btn-outline btn-md"
+                className="btn btn-outline btn-md text-cyan-500 border-cyan-500"
               >
-                <BarChart3 className="w-4 h-4 mr-2" />
+                <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="btn btn-ghost btn-md text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="btn btn-ghost btn-md text-error-500 hover:text-error-400 hover:bg-error-500/10"
               >
-                <LogOut className="w-4 h-4 mr-2" />
+                <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Logout
               </button>
             </div>
@@ -125,12 +125,12 @@ export default function Navbar() {
                 to="/scan" 
                 className="btn btn-primary btn-md"
               >
-                <Scan className="w-4 h-4 mr-2" />
+                <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
                 Scan Now
               </Link>
               <Link 
                 to="/login" 
-                className="btn btn-outline btn-md"
+                className="btn btn-outline btn-md text-cyan-500 border-cyan-500"
               >
                 Clinical Login
               </Link>
@@ -139,11 +139,11 @@ export default function Navbar() {
 
           <button
             onClick={toggleMobileMenu}
-            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800"
+            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800"
             aria-expanded={isMobileMenuOpen}
           >
             <span className="sr-only">Open main menu</span>
-            {isMobileMenuOpen ? <X className="block h-6 w-6" /> : <Menu className="block h-6 w-6" />}
+            {isMobileMenuOpen ? <X className="block h-6 w-6" strokeWidth={1.5} /> : <Menu className="block h-6 w-6" strokeWidth={1.5} />}
           </button>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-white dark:bg-gray-900 shadow-lg"
+            className="md:hidden glass-panel shadow-lg"
           >
             <div className="pt-2 pb-4 space-y-1 px-4">
               {navLinks.map((link) => (
@@ -166,8 +166,8 @@ export default function Navbar() {
                     cn(
                       'flex items-center px-3 py-2 rounded-md text-base font-medium',
                       isActive
-                        ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'bg-cyan-500/20 text-cyan-500'
+                        : 'hover:bg-slate-800 text-slate-300'
                     )
                   }
                   onClick={closeMobileMenu}
@@ -177,13 +177,13 @@ export default function Navbar() {
                 </NavLink>
               ))}
               
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-2 border-t border-slate-700">
                 {isAuthenticated ? (
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-500 hover:bg-error-500/10"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     Logout
                   </button>
                 ) : (
@@ -193,12 +193,12 @@ export default function Navbar() {
                       className="flex items-center justify-center w-full btn btn-primary btn-md mb-2"
                       onClick={closeMobileMenu}
                     >
-                      <Scan className="w-4 h-4 mr-2" />
+                      <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
                       Scan Now
                     </Link>
                     <Link
                       to="/login"
-                      className="flex items-center justify-center w-full btn btn-outline btn-md"
+                      className="flex items-center justify-center w-full btn btn-outline btn-md text-cyan-500 border-cyan-500"
                       onClick={closeMobileMenu}
                     >
                       Clinical Login

@@ -11,7 +11,7 @@ function generateParticles(count: number, size: number) {
     const i3 = i * 3;
     positions[i3] = (Math.random() - 0.5) * size;
     positions[i3 + 1] = (Math.random() - 0.5) * size;
-    positions[i3 + 2] = (Math.random() - 0.5) * size;
+    positions[i3 + 2] = (Math.random() - 0.5) * size * 0.5; // Flatter on z-axis
   }
   
   return positions;

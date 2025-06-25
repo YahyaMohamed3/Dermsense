@@ -68,10 +68,10 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
       <div
         {...getRootProps()}
         className={cn(
-          'glass-panel p-6 text-center cursor-pointer transition-colors h-80 flex flex-col items-center justify-center',
+          'glass-panel p-6 text-center cursor-pointer transition-all duration-300 h-80 flex flex-col items-center justify-center',
           isDragActive 
-            ? 'border-cyan-500 bg-cyan-500/10' 
-            : 'hover:border-cyan-400 hover:bg-slate-800/80',
+            ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_0_15px_rgba(0,246,255,0.4)]' 
+            : 'hover:border-cyan-400 hover:bg-slate-800/80 hover:shadow-[0_0_10px_rgba(0,246,255,0.2)]',
           isProcessing && 'opacity-70 cursor-not-allowed'
         )}
       >
@@ -100,7 +100,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             <img
               src={preview}
               alt="Uploaded skin image"
-              className="max-h-64 mx-auto rounded-lg"
+              className="max-h-64 mx-auto rounded-lg shadow-lg"
             />
             <button
               onClick={clearImage}

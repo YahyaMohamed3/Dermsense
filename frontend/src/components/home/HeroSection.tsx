@@ -46,7 +46,10 @@ export default function HeroSection() {
             <OrbitControls 
               enableZoom={false} 
               enablePan={false} 
-              enableRotate={false} 
+              enableRotate={true}
+              rotateSpeed={0.2}
+              autoRotate
+              autoRotateSpeed={0.5}
             />
           </Canvas>
         )}
@@ -71,7 +74,7 @@ export default function HeroSection() {
             variants={itemVariants}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-100 mb-4"
           >
-            DermaSense: AI-Powered Dermatological Insight
+            DermaSense: AI-Powered <span className="text-cyan-500">Dermatological</span> Insight
           </motion.h1>
           
           <motion.p
@@ -87,9 +90,9 @@ export default function HeroSection() {
           >
             <Link
               to="/scan"
-              className="btn bg-cyan-500 text-black hover:bg-cyan-400 glow-hover min-w-[240px]"
+              className="btn bg-cyan-500 text-black hover:bg-cyan-400 glow-hover min-w-[240px] group"
             >
-              Analyze Clinical Image (Dermatoscopy)
+              Analyze Clinical Image
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
             </Link>
             
@@ -98,7 +101,7 @@ export default function HeroSection() {
                 className="btn btn-outline border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 min-w-[240px]"
                 disabled
               >
-                Analyze Personal Photo (Phone Camera)
+                Analyze Personal Photo
               </button>
               <span className="pulse-badge absolute -top-2 -right-2">
                 Coming Soon
