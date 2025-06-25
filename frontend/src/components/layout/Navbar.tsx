@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Scan, Sun, Moon } from 'lucide-react';
+import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { cn } from '../../lib/utils';
 import Logo from '../ui/Logo';
@@ -10,6 +10,9 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,9 +35,19 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userRole');
+    navigate('/');
+    closeMobileMenu();
+  };
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-1" /> },
+    ...(isAuthenticated ? [
+      { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-1" /> }
+    ] : [])
   ];
 
   return (
@@ -89,13 +102,40 @@ export default function Navbar() {
             </AnimatePresence>
           </button>
           
-          <Link 
-            to="/scan" 
-            className="hidden md:inline-flex btn btn-primary btn-md"
-          >
-            <Scan className="w-4 h-4 mr-2" />
-            Scan Now
-          </Link>
+          {isAuthenticated ? (
+            <div className="hidden md:flex items-center space-x-2">
+              <Link 
+                to="/dashboard" 
+                className="btn btn-outline btn-md"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Dashboard
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-ghost btn-md text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center space-x-2">
+              <Link 
+                to="/scan" 
+                className="btn btn-primary btn-md"
+              >
+                <Scan className="w-4 h-4 mr-2" />
+                Scan Now
+              </Link>
+              <Link 
+                to="/login" 
+                className="btn btn-outline btn-md"
+              >
+                Clinical Login
+              </Link>
+            </div>
+          )}
 
           <button
             onClick={toggleMobileMenu}
@@ -136,15 +176,35 @@ export default function Navbar() {
                   {link.name}
                 </NavLink>
               ))}
-              <div className="pt-2">
-                <Link
-                  to="/scan"
-                  className="flex items-center justify-center w-full btn btn-primary btn-md"
-                  onClick={closeMobileMenu}
-                >
-                  <Scan className="w-4 h-4 mr-2" />
-                  Scan Now
-                </Link>
+              
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                {isAuthenticated ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/scan"
+                      className="flex items-center justify-center w-full btn btn-primary btn-md mb-2"
+                      onClick={closeMobileMenu}
+                    >
+                      <Scan className="w-4 h-4 mr-2" />
+                      Scan Now
+                    </Link>
+                    <Link
+                      to="/login"
+                      className="flex items-center justify-center w-full btn btn-outline btn-md"
+                      onClick={closeMobileMenu}
+                    >
+                      Clinical Login
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
