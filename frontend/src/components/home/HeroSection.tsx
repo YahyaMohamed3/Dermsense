@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Microscope, Smartphone } from 'lucide-react';
@@ -7,6 +7,17 @@ import { loadSlim } from 'tsparticles-slim';
 import { Engine } from 'tsparticles-engine';
 
 export default function HeroSection() {
+  const [scrollY, setScrollY] = useState(0);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   const particlesInit = async (engine: Engine) => {
     await loadSlim(engine);
   };
@@ -100,7 +111,7 @@ export default function HeroSection() {
                 value: "#ffffff",
               },
               links: {
-                color: "#374151",
+                color: scrollY > 100 ? "#38bdf8" : "#374151",
                 distance: 150,
                 enable: true,
                 opacity: 0.2,
@@ -141,6 +152,15 @@ export default function HeroSection() {
         />
       </div>
       
+      {/* Glowing line that moves down as user scrolls */}
+      <motion.div 
+        className="absolute left-0 right-0 h-0.5 bg-secondary-400/50 z-0"
+        style={{ 
+          top: `${Math.min(scrollY / 5, 100)}%`,
+          opacity: Math.max(0, 1 - scrollY / 1000)
+        }}
+      />
+      
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 to-slate-900/95 -z-5"></div>
       
@@ -152,7 +172,8 @@ export default function HeroSection() {
           animate="visible"
         >
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-primary-900/50 text-primary-300 mb-6">
+            <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-primary-900/50 text-primary-300 mb-6 border border-primary-800/50 shadow-lg shadow-primary-900/20">
+              <span className="w-2 h-2 bg-secondary-400 rounded-full mr-2 animate-pulse"></span>
               AI-Powered Dermatological Analysis
             </span>
           </motion.div>
@@ -179,7 +200,7 @@ export default function HeroSection() {
             className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
           >
             State-of-the-art dermatological analysis, powered by AI. 
-            Completely private, entirely on your device.
+            <span className="block mt-2">Completely private, entirely on your device.</span>
           </motion.p>
           
           <motion.div 
@@ -188,10 +209,11 @@ export default function HeroSection() {
           >
             <Link
               to="/scan"
-              className="btn btn-primary btn-lg group min-w-[280px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
+              className="btn btn-primary btn-lg group min-w-[280px] px-8 py-4 text-lg shadow-lg hover:shadow-primary-500/20 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
             >
-              <Microscope className="w-5 h-5 mr-2" strokeWidth={1.5} />
-              Analyze Clinical Image
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              <Microscope className="w-5 h-5 mr-2 relative z-10" strokeWidth={1.5} />
+              <span className="relative z-10">Analyze Clinical Image</span>
             </Link>
             
             <div className="relative">
@@ -213,17 +235,49 @@ export default function HeroSection() {
             transition={{ duration: 0.7, delay: 0.9 }}
             className="mt-20 relative mx-auto max-w-6xl"
           >
-            <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden">
+            <div className="glass-panel rounded-2xl shadow-xl p-1 relative z-10 overflow-hidden group">
               <img
                 src="https://images.pexels.com/photos/7089401/pexels-photo-7089401.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
                 alt="DermaSense application interface showing skin analysis"
-                className="rounded-xl w-full h-auto object-cover"
+                className="rounded-xl w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent"></div>
+              
+              {/* Scanner line animation */}
+              <div className="scanner-line"></div>
+              
+              {/* Glowing corners */}
+              <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-secondary-400/70 rounded-tl-lg"></div>
+              <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-secondary-400/70 rounded-tr-lg"></div>
+              <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-secondary-400/70 rounded-bl-lg"></div>
+              <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-secondary-400/70 rounded-br-lg"></div>
             </div>
             
             <div className="absolute -bottom-5 -right-5 -z-10 w-64 h-64 bg-secondary-400/20 rounded-full blur-3xl" />
             <div className="absolute -top-5 -left-5 -z-10 w-64 h-64 bg-primary-400/20 rounded-full blur-3xl" />
+          </motion.div>
+          
+          {/* Scroll indicator */}
+          <motion.div 
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+          >
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-slate-400 mb-2">Scroll to explore</span>
+              <motion.div 
+                className="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center p-1"
+                animate={{ y: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <motion.div 
+                  className="w-1 h-2 bg-secondary-400 rounded-full"
+                  animate={{ y: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                />
+              </motion.div>
+            </div>
           </motion.div>
         </motion.div>
       </div>

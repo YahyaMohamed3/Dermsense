@@ -68,10 +68,10 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
       <div
         {...getRootProps()}
         className={cn(
-          'border-3 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors min-h-[400px] flex flex-col items-center justify-center',
+          'border-3 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden',
           isDragActive 
-            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
-            : 'border-slate-300 dark:border-slate-700 hover:border-primary-400 hover:bg-slate-50 dark:hover:border-slate-600 dark:hover:bg-slate-800/50',
+            ? 'border-secondary-400 bg-primary-900/20' 
+            : 'border-slate-700 hover:border-secondary-400 hover:bg-slate-800/50',
           isProcessing && 'opacity-70 cursor-not-allowed'
         )}
       >
@@ -79,9 +79,9 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         
         {isProcessing ? (
           <div className="py-8 flex flex-col items-center">
-            <Loader2 className="w-16 h-16 text-primary-600 dark:text-secondary-400 animate-spin mb-6" strokeWidth={1.5} />
-            <p className="text-xl font-medium mb-2">Processing your image...</p>
-            <p className="text-base text-slate-500 dark:text-slate-400">Please wait while we analyze your skin.</p>
+            <Loader2 className="w-16 h-16 text-secondary-400 animate-spin mb-6" strokeWidth={1.5} />
+            <p className="text-xl font-medium mb-2 text-white">Processing your image...</p>
+            <p className="text-base text-slate-400">Please wait while we analyze your skin.</p>
             
             {/* Processing preview */}
             {preview && (
@@ -92,11 +92,14 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
                   className="w-full object-contain rounded-lg shadow-lg max-h-[300px]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                
+                {/* Scanner line animation */}
+                <div className="scanner-line"></div>
               </div>
             )}
           </div>
         ) : preview ? (
-          <div className="relative w-full">
+          <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={preview}
               alt="Uploaded skin image"
@@ -109,6 +112,12 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             >
               <X className="w-5 h-5" strokeWidth={1.5} />
             </button>
+            
+            {/* Glowing corners */}
+            <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-secondary-400/50 rounded-tl-lg"></div>
+            <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-secondary-400/50 rounded-tr-lg"></div>
+            <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-secondary-400/50 rounded-bl-lg"></div>
+            <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-secondary-400/50 rounded-br-lg"></div>
           </div>
         ) : (
           <motion.div
@@ -119,22 +128,27 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mb-6"
+              className="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-primary-900/30 text-secondary-400 mb-6 relative group"
             >
               {isDragActive ? 
                 <ImageIcon className="w-12 h-12" strokeWidth={1.5} /> : 
                 <Upload className="w-12 h-12" strokeWidth={1.5} />
               }
+              <div className="absolute -inset-1 bg-secondary-400/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </motion.div>
-            <p className="text-2xl font-medium mb-3">
+            <p className="text-2xl font-medium mb-3 text-white">
               {isDragActive ? 'Drop your image here' : 'Upload a skin image'}
             </p>
-            <p className="text-lg text-slate-500 dark:text-slate-400 mb-4">
+            <p className="text-lg text-slate-400 mb-4">
               Drag and drop, or click to select a file
             </p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">
+            <p className="text-sm text-slate-500 mt-2">
               PNG, JPG or GIF (max. 10MB)
             </p>
+            
+            {/* Decorative elements */}
+            <div className="absolute top-5 left-5 w-20 h-20 border border-slate-700/50 rounded-lg -rotate-12"></div>
+            <div className="absolute bottom-5 right-5 w-16 h-16 border border-slate-700/50 rounded-lg rotate-12"></div>
           </motion.div>
         )}
       </div>
@@ -143,7 +157,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 text-sm text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20 p-3 rounded-lg"
+          className="mt-4 text-sm text-error-400 bg-error-900/20 p-3 rounded-lg"
         >
           {error}
         </motion.div>

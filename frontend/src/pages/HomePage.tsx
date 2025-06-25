@@ -9,7 +9,11 @@ import {
   ArrowRight, 
   Shield, 
   Brain, 
-  LineChart 
+  LineChart,
+  Globe,
+  Database,
+  Smartphone,
+  ChevronRight
 } from 'lucide-react';
 
 import HeroSection from '../components/home/HeroSection';
@@ -28,7 +32,10 @@ export default function HomePage() {
       <HeroSection />
       
       {/* Process Section */}
-      <section className="py-24 bg-slate-900">
+      <section className="py-24 bg-slate-900 relative overflow-hidden">
+        {/* Animated background line */}
+        <div className="absolute left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-secondary-400/30 to-transparent top-0"></div>
+        
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.span
@@ -68,10 +75,12 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="glass-panel p-8 rounded-xl"
+              className="glass-panel p-8 rounded-xl relative group"
             >
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
                 <UploadCloud className="w-8 h-8" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">1. Upload Securely</h3>
               <p className="text-slate-300">
@@ -86,10 +95,12 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="glass-panel p-8 rounded-xl"
+              className="glass-panel p-8 rounded-xl relative group"
             >
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
                 <Cpu className="w-8 h-8" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">2. On-Device AI Analysis</h3>
               <p className="text-slate-300">
@@ -104,10 +115,12 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="glass-panel p-8 rounded-xl"
+              className="glass-panel p-8 rounded-xl relative group"
             >
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
                 <Sparkles className="w-8 h-8" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">3. Receive Instant Insight</h3>
               <p className="text-slate-300">
@@ -119,8 +132,17 @@ export default function HomePage() {
       </section>
       
       {/* Technology Section */}
-      <section className="py-24 bg-slate-800">
-        <div className="container">
+      <section className="py-24 bg-slate-800 relative overflow-hidden">
+        {/* Animated background line */}
+        <div className="absolute left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary-400/30 to-transparent top-0"></div>
+        
+        {/* Floating orbs background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-900/30 blur-3xl"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-secondary-900/20 blur-3xl"></div>
+        </div>
+        
+        <div className="container relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.span
               initial={{ opacity: 0 }}
@@ -216,8 +238,11 @@ export default function HomePage() {
       </section>
       
       {/* Benefits Section */}
-      <section className="py-24 bg-slate-900">
-        <div className="container">
+      <section className="py-24 bg-slate-900 relative overflow-hidden">
+        {/* Animated background line */}
+        <div className="absolute left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-secondary-400/30 to-transparent top-0"></div>
+        
+        <div className="container relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.span
               initial={{ opacity: 0 }}
@@ -257,8 +282,9 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="flex gap-6"
             >
-              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0">
+              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0 relative group">
                 <Shield className="w-7 h-7" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Complete Privacy</h3>
@@ -276,8 +302,9 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="flex gap-6"
             >
-              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0">
+              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0 relative group">
                 <Brain className="w-7 h-7" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Clinical-Grade AI</h3>
@@ -295,8 +322,9 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex gap-6"
             >
-              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0">
+              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0 relative group">
                 <Sparkles className="w-7 h-7" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Instant Results</h3>
@@ -314,8 +342,9 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex gap-6"
             >
-              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0">
+              <div className="w-14 h-14 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 flex-shrink-0 relative group">
                 <LineChart className="w-7 h-7" strokeWidth={1.5} />
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Explainable Results</h3>
@@ -323,6 +352,146 @@ export default function HomePage() {
                   We don't just tell you what we found - we show you why with visual heatmaps and clear explanations.
                 </p>
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Vision & Future Section */}
+      <section className="py-24 bg-slate-800 relative overflow-hidden">
+        {/* Animated background line */}
+        <div className="absolute left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary-400/30 to-transparent top-0"></div>
+        
+        {/* Floating orbs background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-primary-900/20 blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 rounded-full bg-secondary-900/10 blur-3xl"></div>
+        </div>
+        
+        <div className="container relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <motion.span
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-secondary-400 font-medium"
+            >
+              Looking Forward
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-3xl md:text-4xl font-bold mt-2 mb-4 text-white"
+            >
+              Our Vision: From Clinical Tool to Global Platform
+            </motion.h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Left Column */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="glass-panel p-8 rounded-xl relative group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 mr-4 relative">
+                  <Smartphone className="w-6 h-6" strokeWidth={1.5} />
+                  <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-white">The Dual-Path Future</h3>
+              </div>
+              
+              <p className="text-slate-300 leading-relaxed">
+                The state-of-the-art clinical model you can use today is just the beginning. Our architecture is designed for a dual-path system. Our immediate roadmap includes launching our consumer-grade model, specifically trained on millions of real-world phone photos to help users everywhere identify common conditions like acne, eczema, and psoriasis, democratizing access to dermatological information.
+              </p>
+              
+              <div className="mt-6 flex items-center text-secondary-400 text-sm font-medium">
+                <span>Learn more about our roadmap</span>
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </div>
+            </motion.div>
+            
+            {/* Right Column */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="glass-panel p-8 rounded-xl relative group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary-900/50 flex items-center justify-center text-secondary-400 mr-4 relative">
+                  <Globe className="w-6 h-6" strokeWidth={1.5} />
+                  <div className="absolute -inset-1 bg-secondary-400/10 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-white">The Citizen Science Initiative</h3>
+              </div>
+              
+              <p className="text-slate-300 leading-relaxed">
+                We believe in the power of shared data to accelerate medical progress. With user consent, every anonymous analysis can be contributed to our secure Supabase backend. This creates a powerful, ethically-sourced dataset that will be used to train even more accurate models, forming a feedback loop of innovation that benefits the entire global community.
+              </p>
+              
+              <div className="mt-6 flex items-center text-secondary-400 text-sm font-medium">
+                <span>Learn about our data ethics</span>
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </div>
+            </motion.div>
+          </div>
+          
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="glass-panel p-6 rounded-xl text-center"
+            >
+              <div className="text-4xl font-bold text-secondary-400 mb-2">97%</div>
+              <div className="text-sm text-slate-300">Top-2 Accuracy</div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="glass-panel p-6 rounded-xl text-center"
+            >
+              <div className="text-4xl font-bold text-secondary-400 mb-2">100%</div>
+              <div className="text-sm text-slate-300">Privacy Preserved</div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="glass-panel p-6 rounded-xl text-center"
+            >
+              <div className="text-4xl font-bold text-secondary-400 mb-2">&lt;3s</div>
+              <div className="text-sm text-slate-300">Analysis Time</div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+              className="glass-panel p-6 rounded-xl text-center"
+            >
+              <div className="text-4xl font-bold text-secondary-400 mb-2">9+</div>
+              <div className="text-sm text-slate-300">Conditions Detected</div>
             </motion.div>
           </div>
         </div>
@@ -352,19 +521,29 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="glass-panel p-12 rounded-2xl max-w-4xl mx-auto text-center"
+            className="glass-panel p-12 rounded-2xl max-w-4xl mx-auto text-center relative group"
           >
+            {/* Glowing border effect on hover */}
+            <div className="absolute inset-0 rounded-2xl border border-secondary-400/0 group-hover:border-secondary-400/50 transition-colors duration-500"></div>
+            
+            {/* Glowing corners */}
+            <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-secondary-400/30 rounded-tl-2xl"></div>
+            <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-secondary-400/30 rounded-tr-2xl"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-secondary-400/30 rounded-bl-2xl"></div>
+            <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-secondary-400/30 rounded-br-2xl"></div>
+            
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Begin?</h2>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Take the first step toward better understanding your skin health with AI-powered analysis.
             </p>
             <Link
               to="/scan"
-              className="inline-flex items-center justify-center px-10 py-5 text-xl font-medium rounded-xl bg-white text-primary-700 hover:bg-primary-50 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group"
+              className="inline-flex items-center justify-center px-10 py-5 text-xl font-medium rounded-xl bg-white text-primary-700 hover:bg-primary-50 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden"
             >
-              <Microscope className="w-6 h-6 mr-3" strokeWidth={1.5} />
-              Analyze Clinical Image
-              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" strokeWidth={1.5} />
+              <span className="absolute inset-0 w-0 bg-gradient-to-r from-secondary-400/20 to-secondary-400/0 group-hover:w-full transition-all duration-700"></span>
+              <Microscope className="w-6 h-6 mr-3 relative z-10" strokeWidth={1.5} />
+              <span className="relative z-10">Analyze Clinical Image</span>
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 relative z-10" strokeWidth={1.5} />
             </Link>
           </motion.div>
         </div>

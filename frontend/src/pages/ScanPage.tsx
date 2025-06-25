@@ -63,30 +63,30 @@ export default function ScanPage() {
         />
       </Helmet>
       
-      <div className="container pt-24 pb-12">
+      <div className="container pt-32 pb-20">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-500 dark:to-secondary-400 text-transparent bg-clip-text">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-500 to-secondary-400 text-transparent bg-clip-text">
               Skin Analysis Scanner
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis. 
               Get insights and recommendations in seconds.
             </p>
           </motion.div>
           
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-10">
             <div className="inline-flex rounded-md shadow-sm">
               <button
                 onClick={() => setActiveModel('standard')}
                 className={`px-6 py-3 text-base font-medium rounded-l-lg border-2 ${
                   activeModel === 'standard'
-                    ? 'bg-primary-600 text-white border-primary-600 dark:bg-primary-700 dark:border-primary-700'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    ? 'bg-primary-700 text-white border-primary-700'
+                    : 'bg-slate-800 text-slate-300 border-slate-600 hover:bg-slate-700'
                 }`}
               >
                 Standard Model
@@ -95,8 +95,8 @@ export default function ScanPage() {
                 onClick={() => setActiveModel('advanced')}
                 className={`px-6 py-3 text-base font-medium rounded-r-lg border-2 ${
                   activeModel === 'advanced'
-                    ? 'bg-primary-600 text-white border-primary-600 dark:bg-primary-700 dark:border-primary-700'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    ? 'bg-primary-700 text-white border-primary-700'
+                    : 'bg-slate-800 text-slate-300 border-slate-600 hover:bg-slate-700'
                 }`}
               >
                 Advanced Model

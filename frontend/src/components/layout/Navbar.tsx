@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3 } from 'lucide-react';
+import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3, Home, Shield, Info } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { cn } from "../../lib/utils";
 import Logo from '../ui/Logo';
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
@@ -43,7 +44,7 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
+    { name: 'Home', path: '/', icon: <Home className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
     { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
     ...(isAuthenticated ? [
       { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} /> }
@@ -53,32 +54,52 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm'
+          ? 'bg-slate-900/80 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
       )}
     >
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
-          <Logo className="w-8 h-8" />
-          <span className="font-bold text-xl">DermaSense</span>
+      <div className="container flex h-20 items-center justify-between">
+        <Link to="/" className="flex items-center space-x-2 group" onClick={closeMobileMenu}>
+          <div className="relative">
+            <Logo className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
+            <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-2xl text-white">DermaSense</span>
+            <span className="text-xs text-secondary-400 -mt-1">AI Skin Analysis</span>
+          </div>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-1">
           {navLinks.map((link) => (
             <NavLink
               key={link.name}
               to={link.path}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center text-sm font-medium transition-colors hover:text-primary-600 dark:hover:text-secondary-400',
-                  isActive ? 'text-primary-600 dark:text-secondary-400' : 'text-slate-700 dark:text-slate-300'
+                  'flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors relative group',
+                  isActive 
+                    ? 'text-secondary-400' 
+                    : 'text-slate-300 hover:text-white'
                 )
               }
             >
-              {link.icon}
-              {link.name}
+              {({ isActive }) => (
+                <>
+                  {link.icon}
+                  {link.name}
+                  {isActive && (
+                    <motion.span 
+                      layoutId="navbar-active-pill"
+                      className="absolute inset-0 bg-slate-800/80 -z-10 rounded-lg"
+                      transition={{ type: "spring", duration: 0.6 }}
+                    />
+                  )}
+                  <span className="absolute inset-0 rounded-lg bg-slate-800/0 group-hover:bg-slate-800/40 transition-colors -z-10"></span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -86,7 +107,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-2"
+            className="p-2 rounded-full hover:bg-slate-800 transition-colors mr-2"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -97,7 +118,7 @@ export default function Navbar() {
                 exit={{ y: 20, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+                {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
               </motion.div>
             </AnimatePresence>
           </button>
@@ -139,7 +160,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleMobileMenu}
-            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
+            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800"
             aria-expanded={isMobileMenuOpen}
           >
             <span className="sr-only">Open main menu</span>
@@ -155,7 +176,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-white dark:bg-slate-900 shadow-lg"
+            className="md:hidden bg-slate-900 shadow-lg border-t border-slate-800"
           >
             <div className="pt-2 pb-4 space-y-1 px-4">
               {navLinks.map((link) => (
@@ -166,8 +187,8 @@ export default function Navbar() {
                     cn(
                       'flex items-center px-3 py-2 rounded-md text-base font-medium',
                       isActive
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        ? 'bg-primary-900/30 text-primary-300'
+                        : 'hover:bg-slate-800 text-slate-300'
                     )
                   }
                   onClick={closeMobileMenu}
@@ -177,11 +198,11 @@ export default function Navbar() {
                 </NavLink>
               ))}
               
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="pt-2 border-t border-slate-800">
                 {isAuthenticated ? (
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20"
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-600 hover:bg-error-900/20"
                   >
                     <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     Logout
