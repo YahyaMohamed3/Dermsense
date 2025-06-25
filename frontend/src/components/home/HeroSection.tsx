@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Microscope, Smartphone } from 'lucide-react';
-import Particles from 'react-tsparticles';
-import { loadSlim } from 'tsparticles-slim';
-import { Engine } from 'tsparticles-engine';
 
 export default function HeroSection() {
   const [scrollY, setScrollY] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>(0);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -17,10 +16,132 @@ export default function HeroSection() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
-  const particlesInit = async (engine: Engine) => {
-    await loadSlim(engine);
-  };
+
+  // Neural network visualization
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    setCanvasDimensions();
+    window.addEventListener('resize', setCanvasDimensions);
+
+    // Neural network nodes
+    const layers = [6, 10, 12, 10, 6]; // Number of nodes in each layer
+    const layerDistance = canvas.width / (layers.length + 1);
+    const nodes: { x: number; y: number; radius: number; layer: number; index: number }[] = [];
+
+    // Create nodes
+    layers.forEach((nodeCount, layerIndex) => {
+      const layerX = layerDistance * (layerIndex + 1);
+      const spacing = canvas.height / (nodeCount + 1);
+      
+      for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+          x: layerX,
+          y: spacing * (i + 1),
+          radius: 4,
+          layer: layerIndex,
+          index: i
+        });
+      }
+    });
+
+    // Animation variables
+    let time = 0;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw connections between nodes
+      ctx.lineWidth = 0.5;
+      
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        
+        // Connect to next layer
+        if (node.layer < layers.length - 1) {
+          const nextLayerStartIndex = nodes.findIndex(n => n.layer === node.layer + 1);
+          const nextLayerEndIndex = nodes.findIndex(n => n.layer === node.layer + 2) - 1 || nodes.length - 1;
+          
+          for (let j = nextLayerStartIndex; j <= nextLayerEndIndex; j++) {
+            const nextNode = nodes[j];
+            
+            // Calculate pulse position
+            const distance = Math.sqrt(Math.pow(nextNode.x - node.x, 2) + Math.pow(nextNode.y - node.y, 2));
+            const pulseSpeed = 0.001;
+            const pulsePosition = (time * pulseSpeed) % 1;
+            const pulseX = node.x + (nextNode.x - node.x) * pulsePosition;
+            const pulseY = node.y + (nextNode.y - node.y) * pulsePosition;
+            
+            // Draw connection line
+            ctx.beginPath();
+            ctx.moveTo(node.x, node.y);
+            ctx.lineTo(nextNode.x, nextNode.y);
+            
+            // Color based on position in network
+            const gradientColor = `rgba(56, 189, 248, ${0.1 + (node.layer / layers.length) * 0.2})`;
+            ctx.strokeStyle = gradientColor;
+            ctx.stroke();
+            
+            // Draw pulse
+            if ((node.index + nextNode.index + time) % 20 === 0) {
+              ctx.beginPath();
+              ctx.arc(pulseX, pulseY, 2, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+              ctx.fill();
+            }
+          }
+        }
+      }
+      
+      // Draw nodes
+      for (const node of nodes) {
+        ctx.beginPath();
+        
+        // Pulse effect
+        const pulse = Math.sin(time * 0.05 + node.layer * 0.5 + node.index * 0.2) * 0.5 + 0.5;
+        const radius = node.radius * (1 + pulse * 0.3);
+        
+        ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        
+        // Color based on position in network
+        const alpha = 0.3 + pulse * 0.7;
+        const color = node.layer % 2 === 0 ? 
+          `rgba(56, 189, 248, ${alpha})` : // Secondary color
+          `rgba(37, 99, 235, ${alpha})`; // Primary color
+        
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Glow effect
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius * 2, 0, Math.PI * 2);
+        const gradient = ctx.createRadialGradient(node.x, node.y, radius, node.x, node.y, radius * 2);
+        gradient.addColorStop(0, `rgba(56, 189, 248, ${0.2 * pulse})`);
+        gradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
+      
+      time++;
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animate();
+    
+    return () => {
+      window.removeEventListener('resize', setCanvasDimensions);
+      cancelAnimationFrame(animationRef.current);
+    };
+  }, []);
 
   const textRef = useRef<HTMLHeadingElement>(null);
 
@@ -94,71 +215,11 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Interactive Neural Pathways Background */}
-      <div className="absolute inset-0 -z-10">
-        <Particles
-          id="tsparticles"
-          init={particlesInit}
-          options={{
-            background: {
-              color: {
-                value: "transparent",
-              },
-            },
-            fpsLimit: 60,
-            particles: {
-              color: {
-                value: "#ffffff",
-              },
-              links: {
-                color: scrollY > 100 ? "#38bdf8" : "#374151",
-                distance: 150,
-                enable: true,
-                opacity: 0.2,
-                width: 1,
-              },
-              collisions: {
-                enable: false,
-              },
-              move: {
-                direction: "none",
-                enable: true,
-                outModes: {
-                  default: "bounce",
-                },
-                random: true,
-                speed: 0.5,
-                straight: false,
-              },
-              number: {
-                density: {
-                  enable: true,
-                  area: 800,
-                },
-                value: 80,
-              },
-              opacity: {
-                value: 0.3,
-              },
-              shape: {
-                type: "circle",
-              },
-              size: {
-                value: { min: 1, max: 3 },
-              },
-            },
-            detectRetina: true,
-          }}
-        />
-      </div>
-      
-      {/* Glowing line that moves down as user scrolls */}
-      <motion.div 
-        className="absolute left-0 right-0 h-0.5 bg-secondary-400/50 z-0"
-        style={{ 
-          top: `${Math.min(scrollY / 5, 100)}%`,
-          opacity: Math.max(0, 1 - scrollY / 1000)
-        }}
+      {/* Neural Network Background */}
+      <canvas 
+        ref={canvasRef} 
+        className="absolute inset-0 -z-10"
+        style={{ opacity: Math.max(0.3, 1 - scrollY / 1000) }}
       />
       
       {/* Background gradient overlay */}
