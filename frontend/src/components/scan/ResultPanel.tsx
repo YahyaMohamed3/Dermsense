@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2 } from 'lucide-react';
+import { cn, typewriterEffect } from "../../lib/utils";
 
 export interface ScanResult {
   top1: {
@@ -15,7 +15,7 @@ export interface ScanResult {
   riskLevel: 'unknown' | 'low' | 'medium' | 'high';
   description: string;
   recommendation: string;
-  heatmapImage?: string; // ✅ Add this
+  heatmapImage?: string;
 }
 
 interface ResultPanelProps {
@@ -24,27 +24,79 @@ interface ResultPanelProps {
 
 export default function ResultPanel({ result }: ResultPanelProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
+  const [counterValue, setCounterValue] = useState(0);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  
+  // Digital counter effect for confidence score
+  useEffect(() => {
+    if (result) {
+      let startValue = 0;
+      const targetValue = result.top1.confidence;
+      const duration = 1500; // ms
+      const steps = 30;
+      const stepTime = duration / steps;
+      
+      const increment = targetValue / steps;
+      let currentStep = 0;
+      
+      const timer = setInterval(() => {
+        currentStep++;
+        const newValue = Math.min(increment * currentStep, targetValue);
+        setCounterValue(newValue);
+        
+        if (currentStep >= steps) {
+          clearInterval(timer);
+          setCounterValue(targetValue);
+          
+          // Show heatmap after confidence score animation completes
+          setTimeout(() => {
+            setShowHeatmap(true);
+          }, 500);
+        }
+      }, stepTime);
+      
+      return () => clearInterval(timer);
+    }
+  }, [result]);
+  
+  // Typewriter effect for description
+  useEffect(() => {
+    if (result) {
+      const cleanup = typewriterEffect(
+        result.description,
+        (text) => setDisplayedText(text),
+        30
+      );
+      
+      return cleanup;
+    }
+  }, [result]);
 
   const riskColors = {
     low: {
-      bg: 'bg-success-50 dark:bg-success-900/20',
-      text: 'text-success-900 dark:text-success-500',
+      bg: 'bg-success-900/20',
+      text: 'text-success-500',
       border: 'border-success-500',
+      badge: 'bg-success-500 text-white',
     },
     medium: {
-      bg: 'bg-warning-50 dark:bg-warning-900/20',
-      text: 'text-warning-900 dark:text-warning-500',
+      bg: 'bg-warning-900/20',
+      text: 'text-warning-500',
       border: 'border-warning-500',
+      badge: 'bg-warning-500 text-white',
     },
     high: {
-      bg: 'bg-error-50 dark:bg-error-900/20',
-      text: 'text-error-900 dark:text-error-500',
+      bg: 'bg-error-900/20',
+      text: 'text-error-500',
       border: 'border-error-500',
+      badge: 'bg-error-500 text-white',
     },
     unknown: {
-      bg: 'bg-gray-100 dark:bg-gray-800',
-      text: 'text-gray-600 dark:text-gray-300',
-      border: 'border-gray-400',
+      bg: 'bg-slate-800',
+      text: 'text-slate-300',
+      border: 'border-slate-400',
+      badge: 'bg-slate-500 text-white',
     },
   };
 
@@ -52,18 +104,18 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="card overflow-hidden rounded-2xl shadow-xl border dark:border-gray-700 bg-white dark:bg-gray-900 transition-all duration-300"
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+      className="card overflow-hidden rounded-2xl shadow-md border border-slate-700 transition-all duration-300 h-full"
     >
       <div className="card-header">
         <div className="flex items-center justify-between">
-          <h3 className="card-title">Analysis Results</h3>
+          <h3 className="card-title text-white">Analysis Results</h3>
           <span
             className={cn(
               'px-3 py-1 rounded-full text-sm font-medium',
-              riskColor.bg,
-              riskColor.text
+              riskColor.badge
             )}
           >
             {result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1)} Risk
@@ -73,51 +125,91 @@ export default function ResultPanel({ result }: ResultPanelProps) {
       </div>
 
       <div className="card-content space-y-6">
-        {/* Top 1 */}
-        <div>
-          <h4 className="text-lg font-medium mb-1">Top Condition</h4>
-          <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
-            {result.top1.label}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Confidence: {result.top1.confidence}%
-          </p>
-          <div className="h-2 mt-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${result.top1.confidence}%` }}
-              transition={{ duration: 1 }}
-              className="h-full bg-success-500 rounded-full"
-            />
-          </div>
-        </div>
-
-        {/* Top 2 */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-            Second Most Likely
-          </h4>
-          <p className="text-md font-semibold text-gray-800 dark:text-gray-200">
-            {result.top2.label} ({result.top2.confidence}%)
-          </p>
-        </div>
-
-        {/* Important Note */}
-        <div
-          className={cn(
-            'border rounded-lg p-4',
-            riskColor.border,
-            riskColor.bg
-          )}
-        >
-          <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium">Important Note</h4>
-              <p className="text-sm">
-                This is an AI-powered analysis. It is not a substitute for medical advice. 
-                Please consult a licensed dermatologist for further evaluation.
+        <div className="grid grid-cols-1 gap-6">
+          {/* Top 1 */}
+          <div>
+            <h4 className="text-lg font-medium mb-1 text-white">Primary Condition</h4>
+            <p className="text-2xl font-bold text-primary-400">
+              {result.top1.label}
+            </p>
+            <div className="flex items-center mt-2">
+              <p className="text-sm text-slate-400 mr-3">
+                Confidence: 
               </p>
+              <span className="font-mono text-white bg-primary-700 px-2 py-0.5 rounded">
+                {counterValue.toFixed(1)}%
+              </span>
+            </div>
+            <div className="h-2 mt-3 bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${result.top1.confidence}%` }}
+                transition={{ duration: 1 }}
+                className="h-full bg-success-500 rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Top 2 */}
+          <div>
+            <h4 className="text-sm font-medium text-slate-400 mb-1">
+              Secondary Possibility
+            </h4>
+            <p className="text-md font-semibold text-slate-200 flex items-center">
+              {result.top2.label} 
+              <span className="ml-2 text-white bg-slate-700 px-2 py-0.5 rounded text-sm">
+                {result.top2.confidence}%
+              </span>
+            </p>
+          </div>
+
+          {/* Heatmap Image */}
+          <AnimatePresence>
+            {showHeatmap && result.heatmapImage && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="border border-slate-700 rounded-xl p-4 bg-slate-800 shadow-inner"
+              >
+                <h4 className="font-semibold text-lg mb-2 text-white">AI Focus Area</h4>
+                <div className="relative rounded-lg overflow-hidden">
+                  <img
+                    src={result.heatmapImage}
+                    alt="Grad-CAM Heatmap"
+                    className="w-full rounded-lg border border-slate-700 shadow-md"
+                  />
+                  
+                  {/* Glowing corners */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-secondary-400/50 rounded-tl-lg"></div>
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-secondary-400/50 rounded-tr-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-secondary-400/50 rounded-bl-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-secondary-400/50 rounded-br-lg"></div>
+                </div>
+                <p className="text-sm mt-2 text-slate-400 leading-snug">
+                  Highlighted areas show where the AI focused during classification.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Important Note */}
+          <div
+            className={cn(
+              'border rounded-lg p-4',
+              riskColor.border,
+              riskColor.bg
+            )}
+          >
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-medium">Important Note</h4>
+                <p className="text-sm">
+                  This is an AI-powered analysis. It is not a substitute for medical advice. 
+                  Please consult a licensed dermatologist for further evaluation.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -125,56 +217,77 @@ export default function ResultPanel({ result }: ResultPanelProps) {
         {/* Expand Details */}
         <button
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-          className="flex items-center justify-between w-full py-2 px-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          className="flex items-center justify-between w-full py-3 px-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
         >
           <span className="font-medium flex items-center">
-            <Info className="w-4 h-4 mr-2" />
+            <Info className="w-4 h-4 mr-2" strokeWidth={1.5} />
             {isDetailsOpen ? 'Hide Details' : 'View Details'}
           </span>
-          {isDetailsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {isDetailsOpen ? 
+            <ChevronUp className="w-5 h-5" strokeWidth={1.5} /> : 
+            <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
+          }
         </button>
 
-        {isDetailsOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="mt-4 space-y-4"
-          >
-            {/* Description */}
-            <div>
-              <h4 className="font-medium mb-1">Description</h4>
-              <p className="text-gray-600 dark:text-gray-300">{result.description}</p>
-            </div>
+        <AnimatePresence>
+          {isDetailsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 space-y-4"
+            >
+              {/* Description with typewriter effect */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium mb-1 text-white">Description</h4>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-secondary-400 hover:text-secondary-300 p-2"
+                  >
+                    <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                  </motion.button>
+                </div>
+                <div className="bg-slate-800 p-4 rounded-lg">
+                  <p className="text-slate-300 min-h-[3rem] border-l-2 border-secondary-400 pl-3">
+                    {displayedText}
+                    <motion.span 
+                      animate={{ opacity: [1, 0, 1] }}
+                      transition={{ repeat: Infinity, duration: 0.8 }}
+                      className="inline-block w-2 h-4 bg-secondary-400 ml-1"
+                    />
+                  </p>
+                </div>
+              </div>
 
-            {/* Recommendation */}
-            <div>
-              <h4 className="font-medium mb-1">Recommendation</h4>
-              <p className="text-gray-600 dark:text-gray-300">{result.recommendation}</p>
-            </div>
-
-            {/* Grad-CAM Image */}
-            {result.heatmapImage && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="border rounded-xl p-4 bg-gray-50 dark:bg-gray-800 shadow-inner"
-              >
-                <h4 className="font-semibold text-lg mb-2">Visual Explanation (Grad-CAM)</h4>
-                <img
-                  src={result.heatmapImage}
-                  alt="Grad-CAM Heatmap"
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 shadow-md"
-                />
-                <p className="text-sm mt-2 text-gray-600 dark:text-gray-400 leading-snug">
-                  Highlighted areas show where the AI focused during classification.
-                  Use this visualization as supportive insight.
-                </p>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
+              {/* Recommendation */}
+              <div>
+                <h4 className="font-medium mb-1 text-white">Recommendation</h4>
+                <div className="bg-slate-800 p-4 rounded-lg">
+                  <p className="text-slate-300">{result.recommendation}</p>
+                </div>
+              </div>
+              
+              {/* Optional actions */}
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button className="btn btn-outline text-sm px-4 py-2">
+                  <Volume2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                  Listen to Explanation
+                </button>
+                
+                <button className="btn btn-outline text-sm px-4 py-2">
+                  Play Video Summary
+                </button>
+                
+                <button className="btn btn-primary text-sm px-4 py-2 ml-auto">
+                  Download Report
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

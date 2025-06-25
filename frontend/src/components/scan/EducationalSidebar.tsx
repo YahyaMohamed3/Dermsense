@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Info, ChevronDown, ChevronUp } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from "../../lib/utils";
 
 interface FaqItem {
   question: string;
@@ -58,13 +58,13 @@ export default function EducationalSidebar() {
   };
   
   return (
-    <div className="card">
+    <div className="card h-full">
       <div className="card-header">
         <h3 className="card-title">Educational Resources</h3>
         <p className="card-description">Learn about skin conditions and cancer types</p>
       </div>
       
-      <div className="card-content pb-0 max-h-[600px] overflow-y-auto scrollbar-hide">
+      <div className="card-content pb-0 max-h-[400px] overflow-y-auto scrollbar-hide">
         <div className="space-y-6">
           <section>
             <h4 className="text-lg font-medium mb-4">Common Skin Lesion Types</h4>
@@ -80,11 +80,11 @@ export default function EducationalSidebar() {
                   <img
                     src={lesion.image}
                     alt={lesion.name}
-                    className="w-16 h-16 rounded-md object-cover"
+                    className="w-16 h-16 rounded-md object-cover border border-slate-200 dark:border-slate-700"
                   />
                   <div>
                     <h5 className="font-medium">{lesion.name}</h5>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{lesion.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{lesion.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -102,14 +102,14 @@ export default function EducationalSidebar() {
                       "w-full px-4 py-3 text-left flex items-center justify-between",
                       expandedFaq === index
                         ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800"
                     )}
                   >
                     <span className="font-medium">{item.question}</span>
                     {expandedFaq === index ? (
-                      <ChevronUp className="w-5 h-5 flex-shrink-0" />
+                      <ChevronUp className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
                     ) : (
-                      <ChevronDown className="w-5 h-5 flex-shrink-0" />
+                      <ChevronDown className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
                     )}
                   </button>
                   
@@ -122,7 +122,7 @@ export default function EducationalSidebar() {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 border-t">
+                        <div className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t">
                           {item.answer}
                         </div>
                       </motion.div>
@@ -134,7 +134,7 @@ export default function EducationalSidebar() {
           </section>
           
           <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg p-4 flex items-start">
-            <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-3 mt-0.5 flex-shrink-0" />
+            <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
             <div>
               <h5 className="font-medium text-primary-800 dark:text-primary-300">Early Detection Matters</h5>
               <p className="text-sm text-primary-700 dark:text-primary-400 mt-1">
@@ -147,7 +147,7 @@ export default function EducationalSidebar() {
       
       <div className="card-footer flex-col items-start border-t mt-6">
         <h4 className="font-medium mt-2">Need Professional Advice?</h4>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
           This tool is not a substitute for professional medical advice. Always consult with a dermatologist.
         </p>
         <a
