@@ -4,75 +4,53 @@
 
 @layer base {
   :root {
+    /* Neuro-Glass Dark Theme */
+    --color-background: 15 23 42; /* slate-900 */
+    --color-foreground: 241 245 249; /* slate-100 */
+    --color-card: 30 41 59; /* slate-800 */
+    --color-card-foreground: 241 245 249; /* slate-100 */
+    --color-border: 51 65 85; /* slate-700 */
+    --color-input: 30 41 59; /* slate-800 */
+    --color-muted: 148 163 184; /* slate-400 */
+    
+    /* Original Cyan Theme - Keeping for reference */
     --color-primary-50: 236 253 254;
     --color-primary-100: 207 250 254;
     --color-primary-200: 165 243 252;
     --color-primary-300: 103 232 249;
     --color-primary-400: 34 211 238;
-    --color-primary-500: 6 182 212;
+    --color-primary-500: 0 246 255; /* Primary Accent */
     --color-primary-600: 8 145 178;
     --color-primary-700: 14 116 144;
     --color-primary-800: 21 94 117;
     --color-primary-900: 22 78 99;
     --color-primary-950: 8 51 68;
     
-    --color-secondary-50: 240 253 244;
-    --color-secondary-100: 220 252 231;
-    --color-secondary-200: 187 247 208;
-    --color-secondary-300: 134 239 172;
-    --color-secondary-400: 74 222 128;
-    --color-secondary-500: 34 197 94;
-    --color-secondary-600: 22 163 74;
-    --color-secondary-700: 21 128 61;
-    --color-secondary-800: 22 101 52;
-    --color-secondary-900: 20 83 45;
-    --color-secondary-950: 5 46 22;
+    --color-success-50: 236 253 245;
+    --color-success-500: 0 255 171; /* Clinical bright green */
+    --color-success-900: 6 78 59;
 
-    --color-accent-50: 255 247 237;
-    --color-accent-100: 255 237 213;
-    --color-accent-200: 254 215 170;
-    --color-accent-300: 253 186 116;
-    --color-accent-400: 251 146 60;
-    --color-accent-500: 249 115 22;
-    --color-accent-600: 234 88 12;
-    --color-accent-700: 194 65 12;
-    --color-accent-800: 154 52 18;
-    --color-accent-900: 124 45 18;
-    --color-accent-950: 67 20 7;
-
-    --color-success-50: 240 253 244;
-    --color-success-500: 34 197 94;
-    --color-success-900: 20 83 45;
-
-    --color-warning-50: 254 252 232;
-    --color-warning-500: 234 179 8;
-    --color-warning-900: 133 77 14;
+    --color-warning-50: 255 251 235;
+    --color-warning-500: 255 171 0; /* Sharp orange */
+    --color-warning-900: 120 53 15;
 
     --color-error-50: 254 242 242;
     --color-error-500: 239 68 68;
     --color-error-900: 127 29 29;
-
-    --color-background: 255 255 255;
-    --color-foreground: 17 24 39;
-    --color-card: 255 255 255;
-    --color-card-foreground: 17 24 39;
-    --color-border: 229 231 235;
-    --color-input: 243 244 246;
-    --color-muted: 107 114 128;
   }
 
   .dark {
-    --color-background: 17 24 39;
-    --color-foreground: 249 250 251;
-    --color-card: 31 41 55;
-    --color-card-foreground: 249 250 251;
-    --color-border: 55 65 81;
-    --color-input: 31 41 55;
-    --color-muted: 156 163 175;
+    --color-background: 15 23 42; /* slate-900 */
+    --color-foreground: 241 245 249; /* slate-100 */
+    --color-card: 30 41 59; /* slate-800 */
+    --color-card-foreground: 241 245 249; /* slate-100 */
+    --color-border: 51 65 85; /* slate-700 */
+    --color-input: 30 41 59; /* slate-800 */
+    --color-muted: 148 163 184; /* slate-400 */
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-inter antialiased;
   }
 
   * {
@@ -80,7 +58,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medium leading-tight tracking-tight;
+    @apply font-manrope font-bold leading-tight tracking-tight;
   }
 
   p {
@@ -96,7 +74,7 @@
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+    @apply bg-primary-500 text-black hover:bg-primary-400 active:bg-primary-600;
   }
   
   .btn-secondary {
@@ -104,7 +82,7 @@
   }
 
   .btn-outline {
-    @apply border border-input bg-background hover:bg-muted/20 active:bg-muted/40;
+    @apply border border-primary-500 bg-transparent text-primary-500 hover:bg-primary-500/10 active:bg-primary-500/20;
   }
 
   .btn-ghost {
@@ -150,6 +128,33 @@
   .container {
     @apply mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8;
   }
+  
+  /* Neuro-Glass Components */
+  .glass-panel {
+    @apply bg-slate-800/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl shadow-lg;
+  }
+  
+  .glow-border {
+    @apply border border-cyan-500 shadow-[0_0_10px_rgba(0,246,255,0.5)];
+  }
+  
+  .glow-text {
+    @apply text-cyan-500 drop-shadow-[0_0_8px_rgba(0,246,255,0.8)];
+  }
+  
+  .glow-hover {
+    @apply hover:shadow-[0_0_15px_rgba(0,246,255,0.7)] transition-shadow duration-300;
+  }
+  
+  .scanner-line {
+    @apply absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent;
+    animation: scanner 2s ease-in-out infinite;
+  }
+  
+  .pulse-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-500;
+    animation: pulse-subtle 2s infinite;
+  }
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -162,5 +167,5 @@
 }
 
 .glassmorphism {
-  @apply bg-white/80 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10;
+  @apply bg-slate-800/60 backdrop-blur-xl border border-cyan-500/20;
 }
