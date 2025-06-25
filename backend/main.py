@@ -50,7 +50,7 @@ async def upload_image(image: UploadFile = File(...)):
         top2_classes = [class_labels[i] for i in top2_indices]
         top2_confidences = [round(float(predictions[i]) * 100, 2) for i in top2_indices]
 
-        # 🔥 Grad-CAM
+        #  Grad-CAM
         heatmap = generate_gradcam(img_array, model, "top_activation", class_index=top2_indices[0])
         original = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
         overlay_img = apply_heatmap_overlay(original, heatmap)
