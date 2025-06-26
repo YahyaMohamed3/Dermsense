@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Microscope, Smartphone } from 'lucide-react';
@@ -13,10 +13,19 @@ export default function ScanPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [activeModel, setActiveModel] = useState<'clinical' | 'consumer'>('clinical');
   const [explanation, setExplanation] = useState<string | null>(null);
+  const [showSideBySide, setShowSideBySide] = useState(false);
+  
+  // Reset side-by-side view when starting a new analysis
+  useEffect(() => {
+    if (isProcessing) {
+      setShowSideBySide(false);
+    }
+  }, [isProcessing]);
   
   const handleImageUpload = async (file: File) => {
     setResult(null);
     setExplanation(null);
+    setShowSideBySide(false);
     setIsProcessing(true);
 
     try {
@@ -55,6 +64,11 @@ export default function ScanPage() {
         } associated with this condition.`;
         
         setExplanation(explanationText);
+        
+        // Animate to side-by-side view after results are ready
+        setTimeout(() => {
+          setShowSideBySide(true);
+        }, 500);
       }, 1000);
       
     } catch (error) {
@@ -80,6 +94,13 @@ export default function ScanPage() {
           content="Upload your skin image for AI-powered analysis and detection of potential skin conditions."
         />
       </Helmet>
+      
+      {/* Subtle background effects */}
+      <div className="fixed inset-0 -z-10 bg-slate-950">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-cyan-900/10 rounded-full blur-3xl"></div>
+      </div>
       
       <div className="container pt-28 pb-20">
         <div className="max-w-7xl mx-auto">
@@ -134,27 +155,59 @@ export default function ScanPage() {
             </div>
           </div>
           
-          {/* Part 1: Visual Core - Two Column Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {/* Image Uploader */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <ImageUploader 
-                onImageUpload={handleImageUpload} 
-                isProcessing={isProcessing} 
-              />
-            </motion.div>
-            
-            {/* Visual Analysis Panel */}
+          {/* Part 1: Visual Core - Responsive Layout */}
+          <div className="mb-12">
             <AnimatePresence mode="wait">
-              {result && (
-                <VisualAnalysisPanel 
-                  result={result}
-                  activeModel={activeModel}
-                />
+              {!showSideBySide ? (
+                // Full-width uploader when no result or during processing
+                <motion.div
+                  key="full-width"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full"
+                >
+                  <ImageUploader 
+                    onImageUpload={handleImageUpload} 
+                    isProcessing={isProcessing} 
+                  />
+                </motion.div>
+              ) : (
+                // Side-by-side view after processing is complete
+                <motion.div
+                  key="side-by-side"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                >
+                  {/* Original Image */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden h-[400px]"
+                  >
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-white mb-4">Original Image</h3>
+                      <div className="relative rounded-lg overflow-hidden h-[300px] flex items-center justify-center">
+                        <img
+                          src={result?.heatmapImage} // Using the same image for demo
+                          alt="Original skin image"
+                          className="h-full w-full object-contain rounded-lg border border-slate-700"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Visual Analysis Panel */}
+                  {result && (
+                    <VisualAnalysisPanel 
+                      result={result}
+                      activeModel={activeModel}
+                    />
+                  )}
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
