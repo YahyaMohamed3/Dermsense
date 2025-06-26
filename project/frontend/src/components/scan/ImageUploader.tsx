@@ -88,7 +88,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
       <div
         {...getRootProps()}
         className={cn(
-          'border-3 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden',
+          'border-3 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden bg-slate-800/60 backdrop-blur-lg',
           isDragActive 
             ? 'border-secondary-400 bg-primary-900/20' 
             : 'border-slate-700 hover:border-secondary-400 hover:bg-slate-800/50',

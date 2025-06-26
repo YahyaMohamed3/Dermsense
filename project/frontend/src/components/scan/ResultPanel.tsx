@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2, Download, Play } from 'lucide-react';
+import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2, Download, Play, ExternalLink } from 'lucide-react';
 import { cn, typewriterEffect } from "../../lib/utils";
 
 export interface ScanResult {
@@ -27,7 +27,6 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [counterValue, setCounterValue] = useState(0);
-  const [showHeatmap, setShowHeatmap] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   
@@ -51,11 +50,6 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
         if (currentStep >= steps) {
           clearInterval(timer);
           setCounterValue(targetValue);
-          
-          // Show heatmap after confidence score animation completes
-          setTimeout(() => {
-            setShowHeatmap(true);
-          }, 500);
         }
       }, stepTime);
       
@@ -153,204 +147,139 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
-      className="card overflow-hidden rounded-2xl shadow-md border border-slate-700 transition-all duration-300 h-full"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+      className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-2xl shadow-lg overflow-hidden"
       variants={containerVariants}
     >
-      <motion.div className="card-header" variants={itemVariants}>
-        <div className="flex items-center justify-between">
-          <h3 className="card-title text-white">Analysis Results</h3>
-          <span
-            className={cn(
-              'px-3 py-1 rounded-full text-sm font-medium',
-              riskColor.badge
-            )}
-          >
-            {result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1)} Risk
-          </span>
-        </div>
-        <p className="card-description">Based on the image you provided</p>
-      </motion.div>
-
-      <div className="card-content space-y-6">
-        <div className="grid grid-cols-1 gap-6">
-          {/* Top 1 */}
-          <motion.div variants={itemVariants}>
-            <h4 className="text-lg font-medium mb-1 text-white">Primary Condition</h4>
-            <p className="text-2xl font-bold text-primary-400">
-              {result.top1.label}
-            </p>
-            <div className="flex items-center mt-2">
-              <p className="text-sm text-slate-400 mr-3">
-                Confidence: 
-              </p>
-              <span className="font-mono text-white bg-primary-700 px-2 py-0.5 rounded">
-                {counterValue.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-2 mt-3 bg-slate-700 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${result.top1.confidence}%` }}
-                transition={{ duration: 1 }}
-                className="h-full bg-success-500 rounded-full"
-              />
-            </div>
-          </motion.div>
-
-          {/* Top 2 */}
-          <motion.div variants={itemVariants}>
-            <h4 className="text-sm font-medium text-slate-400 mb-1">
-              Secondary Possibility
-            </h4>
-            <p className="text-md font-semibold text-slate-200 flex items-center">
-              {result.top2.label} 
-              <span className="ml-2 text-white bg-slate-700 px-2 py-0.5 rounded text-sm">
-                {result.top2.confidence}%
-              </span>
-            </p>
-          </motion.div>
-
-          {/* Heatmap Image */}
-          <AnimatePresence>
-            {showHeatmap && result.heatmapImage && (
-              <motion.div
-                variants={itemVariants}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="border border-slate-700 rounded-xl p-4 bg-slate-800/80 shadow-inner"
-              >
-                <h4 className="font-semibold text-lg mb-2 text-white">AI Focus Area</h4>
-                <div className="relative rounded-lg overflow-hidden">
-                  <img
-                    src={result.heatmapImage}
-                    alt="Grad-CAM Heatmap"
-                    className="w-full rounded-lg border border-slate-700 shadow-md"
-                  />
-                  
-                  {/* Glowing corners */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-secondary-400/50 rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-secondary-400/50 rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-secondary-400/50 rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-secondary-400/50 rounded-br-lg"></div>
-                </div>
-                <p className="text-sm mt-2 text-slate-400 leading-snug">
-                  Highlighted areas show where the AI focused during classification.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Important Note */}
-          <motion.div
-            variants={itemVariants}
-            className={cn(
-              'border rounded-lg p-4',
-              riskColor.border,
-              riskColor.bg
-            )}
-          >
-            <div className="flex items-start">
-              <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-              <div>
-                <h4 className="font-medium">Important Note</h4>
-                <p className="text-sm">
-                  This is an AI-powered analysis. It is not a substitute for medical advice. 
-                  Please consult a licensed dermatologist for further evaluation.
-                </p>
+      <div className="p-6 md:p-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Column 1: Diagnosis */}
+          <div className="flex-1">
+            <motion.div variants={itemVariants} className="mb-6">
+              <h2 className="text-3xl font-bold text-white mb-2">{result.top1.label}</h2>
+              <div className="flex items-center">
+                <span className={cn(
+                  'px-3 py-1 rounded-full text-sm font-medium mr-3',
+                  riskColor.badge
+                )}>
+                  {result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1)} Risk
+                </span>
+                <span className="text-slate-400 text-sm">
+                  Confidence: <span className="font-mono text-white bg-slate-700 px-2 py-0.5 rounded ml-1">
+                    {counterValue.toFixed(1)}%
+                  </span>
+                </span>
               </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Expand Details */}
-        <motion.button
-          variants={itemVariants}
-          onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-          className="flex items-center justify-between w-full py-3 px-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-        >
-          <span className="font-medium flex items-center">
-            <Info className="w-4 h-4 mr-2" strokeWidth={1.5} />
-            {isDetailsOpen ? 'Hide Details' : 'View Details'}
-          </span>
-          {isDetailsOpen ? 
-            <ChevronUp className="w-5 h-5" strokeWidth={1.5} /> : 
-            <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
-          }
-        </motion.button>
-
-        <AnimatePresence>
-          {isDetailsOpen && (
+              <div className="h-2 mt-4 bg-slate-700 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${result.top1.confidence}%` }}
+                  transition={{ duration: 1 }}
+                  className={cn(
+                    "h-full rounded-full",
+                    result.riskLevel === 'low' ? 'bg-success-500' : 
+                    result.riskLevel === 'medium' ? 'bg-warning-500' : 
+                    result.riskLevel === 'high' ? 'bg-error-500' : 'bg-slate-500'
+                  )}
+                />
+              </div>
+            </motion.div>
+            
+            <motion.div variants={itemVariants} className="mb-6">
+              <h3 className="text-lg font-medium text-slate-200 mb-2">Secondary Possibility</h3>
+              <div className="flex items-center">
+                <span className="text-slate-300">{result.top2.label}</span>
+                <span className="ml-2 text-white bg-slate-700 px-2 py-0.5 rounded text-sm">
+                  {result.top2.confidence}%
+                </span>
+              </div>
+            </motion.div>
+            
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-4 space-y-4"
+              variants={itemVariants}
+              className={cn(
+                'border rounded-lg p-4 mt-6',
+                riskColor.border,
+                riskColor.bg
+              )}
             >
-              {/* Description with typewriter effect */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium mb-1 text-white">AI Explanation</h4>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-secondary-400 hover:text-secondary-300 p-2"
-                    onClick={handleGenerateAudio}
-                    disabled={isGeneratingAudio}
-                  >
-                    {isGeneratingAudio ? (
-                      <motion.div 
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Volume2 className="w-5 h-5" strokeWidth={1.5} />
-                      </motion.div>
-                    ) : (
-                      <Volume2 className="w-5 h-5" strokeWidth={1.5} />
-                    )}
-                  </motion.button>
-                </div>
-                <div className="bg-slate-800/80 p-4 rounded-lg">
-                  <p className="text-slate-300 min-h-[3rem] border-l-2 border-secondary-400 pl-3">
-                    {displayedText || "Generating explanation..."}
-                    {!displayedText && (
-                      <motion.span 
-                        animate={{ opacity: [0, 1, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                      >
-                        ⏳
-                      </motion.span>
-                    )}
-                    {displayedText && (
-                      <motion.span 
-                        animate={{ opacity: [1, 0, 1] }}
-                        transition={{ repeat: Infinity, duration: 0.8 }}
-                        className="inline-block w-2 h-4 bg-secondary-400 ml-1"
-                      />
-                    )}
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                <div>
+                  <h4 className="font-medium">Important Note</h4>
+                  <p className="text-sm">
+                    This is an AI-powered analysis. It is not a substitute for medical advice. 
+                    Please consult a licensed dermatologist for further evaluation.
                   </p>
                 </div>
               </div>
-
-              {/* Recommendation */}
-              <div>
-                <h4 className="font-medium mb-1 text-white">Recommendation</h4>
-                <div className="bg-slate-800/80 p-4 rounded-lg">
-                  <p className="text-slate-300">{result.recommendation}</p>
-                </div>
+            </motion.div>
+          </div>
+          
+          {/* Column 2: AI Explanation */}
+          <div className="flex-1">
+            <motion.div variants={itemVariants}>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium text-slate-200">AI-Generated Explanation</h3>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-secondary-400 hover:text-secondary-300 p-2"
+                  onClick={handleGenerateAudio}
+                  disabled={isGeneratingAudio}
+                >
+                  {isGeneratingAudio ? (
+                    <motion.div 
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                    </motion.div>
+                  ) : (
+                    <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                  )}
+                </motion.button>
               </div>
-              
-              {/* Optional actions */}
-              <div className="flex flex-wrap gap-3 mt-6">
+              <div className="bg-slate-800/80 p-4 rounded-lg min-h-[150px] border border-slate-700">
+                <p className="text-slate-300 border-l-2 border-secondary-400 pl-3">
+                  {displayedText || "Generating explanation..."}
+                  {!displayedText && (
+                    <motion.span 
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                    >
+                      ⏳
+                    </motion.span>
+                  )}
+                  {displayedText && (
+                    <motion.span 
+                      animate={{ opacity: [1, 0, 1] }}
+                      transition={{ repeat: Infinity, duration: 0.8 }}
+                      className="inline-block w-2 h-4 bg-secondary-400 ml-1"
+                    />
+                  )}
+                </p>
+              </div>
+            </motion.div>
+            
+            <motion.div variants={itemVariants} className="mt-6">
+              <h3 className="text-lg font-medium text-slate-200 mb-2">Recommendation</h3>
+              <div className="bg-slate-800/80 p-4 rounded-lg border border-slate-700">
+                <p className="text-slate-300">{result.recommendation}</p>
+              </div>
+            </motion.div>
+          </div>
+          
+          {/* Column 3: Actions */}
+          <div className="md:w-64">
+            <motion.div variants={itemVariants}>
+              <h3 className="text-lg font-medium text-slate-200 mb-4">Actions</h3>
+              <div className="space-y-3">
                 <motion.button 
-                  className="btn btn-outline text-sm px-4 py-2"
+                  className="btn btn-outline w-full text-sm px-4 py-2 justify-start"
                   whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleGenerateAudio}
@@ -376,7 +305,7 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
                 </motion.button>
                 
                 <motion.button 
-                  className="btn btn-outline text-sm px-4 py-2"
+                  className="btn btn-outline w-full text-sm px-4 py-2 justify-start"
                   whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handlePlayVideo}
@@ -402,7 +331,7 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
                 </motion.button>
                 
                 <motion.button 
-                  className="btn btn-primary text-sm px-4 py-2 ml-auto"
+                  className="btn btn-primary w-full text-sm px-4 py-2 justify-start"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleDownloadReport}
@@ -410,10 +339,20 @@ export default function ResultPanel({ result, explanation }: ResultPanelProps) {
                   <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   Download Report
                 </motion.button>
+                
+                <motion.a 
+                  href="#"
+                  className="btn btn-outline w-full text-sm px-4 py-2 justify-start"
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                  Find a Dermatologist
+                </motion.a>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Microscope, Smartphone } from 'lucide-react';
 import ImageUploader from '../components/scan/ImageUploader';
 import ResultPanel, { ScanResult } from '../components/scan/ResultPanel';
+import VisualAnalysisPanel from '../components/scan/VisualAnalysisPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
 import PrivacyNotice from '../components/scan/PrivacyNotice';
 
@@ -72,22 +74,23 @@ export default function ScanPage() {
   return (
     <>
       <Helmet>
-        <title>Skin Scan | DermaSense</title>
+        <title>Skin Analysis | DermaSense</title>
         <meta 
           name="description" 
           content="Upload your skin image for AI-powered analysis and detection of potential skin conditions."
         />
       </Helmet>
       
-      <div className="container pt-32 pb-20">
+      <div className="container pt-28 pb-20">
         <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-500 to-secondary-400 text-transparent bg-clip-text">
-              Skin Analysis Scanner
+              AI Skin Analysis
             </h1>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis. 
@@ -96,22 +99,24 @@ export default function ScanPage() {
           </motion.div>
           
           {/* Model Selector - Sliding Tab Design */}
-          <div className="flex justify-center mb-10">
-            <div className="relative inline-flex rounded-lg bg-slate-800 p-1 shadow-inner">
+          <div className="flex justify-center mb-12">
+            <div className="relative inline-flex rounded-lg bg-slate-800/80 p-1 shadow-inner">
               <button
                 onClick={() => setActiveModel('clinical')}
-                className={`relative z-10 px-6 py-3 text-base font-medium rounded-md transition-colors duration-200 ${
+                className={`relative z-10 px-8 py-3 text-base font-medium rounded-md transition-colors duration-200 flex items-center ${
                   activeModel === 'clinical' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
+                <Microscope className="w-5 h-5 mr-2" strokeWidth={1.5} />
                 Clinical Model
               </button>
               <button
                 onClick={() => setActiveModel('consumer')}
-                className={`relative z-10 px-6 py-3 text-base font-medium rounded-md transition-colors duration-200 ${
+                className={`relative z-10 px-8 py-3 text-base font-medium rounded-md transition-colors duration-200 flex items-center ${
                   activeModel === 'consumer' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
+                <Smartphone className="w-5 h-5 mr-2" strokeWidth={1.5} />
                 Consumer Model
               </button>
               <motion.div 
@@ -124,47 +129,62 @@ export default function ScanPage() {
                   left: activeModel === 'clinical' ? '0%' : '50%'
                 }}
               >
-                <div className="w-full h-full bg-primary-700 rounded-md" />
+                <div className="w-full h-full bg-primary-700/80 rounded-md" />
               </motion.div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Main Content Area - 9 columns */}
-            <div className="lg:col-span-9 order-2 lg:order-1">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Image Uploader */}
-                <div className="space-y-8">
-                  <ImageUploader 
-                    onImageUpload={handleImageUpload} 
-                    isProcessing={isProcessing} 
-                  />
-                </div>
-                
-                {/* Results Panel */}
-                <div>
-                  <AnimatePresence mode="wait">
-                    {result && (
-                      <ResultPanel 
-                        result={result} 
-                        explanation={explanation}
-                      />
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-            
-            {/* Educational Sidebar - 3 columns, now on the right */}
+          {/* Part 1: Visual Core - Two Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            {/* Image Uploader */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="lg:col-span-3 order-1 lg:order-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <EducationalSidebar />
+              <ImageUploader 
+                onImageUpload={handleImageUpload} 
+                isProcessing={isProcessing} 
+              />
             </motion.div>
+            
+            {/* Visual Analysis Panel */}
+            <AnimatePresence mode="wait">
+              {result && (
+                <VisualAnalysisPanel 
+                  result={result}
+                  activeModel={activeModel}
+                />
+              )}
+            </AnimatePresence>
           </div>
+          
+          {/* Part 2: Detailed Analysis Panel */}
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <ResultPanel 
+                  result={result} 
+                  explanation={explanation}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Educational Resources */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-12"
+          >
+            <EducationalSidebar />
+          </motion.div>
         </div>
       </div>
       
