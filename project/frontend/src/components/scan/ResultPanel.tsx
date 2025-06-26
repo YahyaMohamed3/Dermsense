@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2 } from 'lucide-react';
+import { AlertCircle, Info, ChevronDown, ChevronUp, Volume2, Download, Play } from 'lucide-react';
 import { cn, typewriterEffect } from "../../lib/utils";
 
 export interface ScanResult {
@@ -20,13 +20,16 @@ export interface ScanResult {
 
 interface ResultPanelProps {
   result: ScanResult;
+  explanation: string | null;
 }
 
-export default function ResultPanel({ result }: ResultPanelProps) {
+export default function ResultPanel({ result, explanation }: ResultPanelProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [counterValue, setCounterValue] = useState(0);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   
   // Digital counter effect for confidence score
   useEffect(() => {
@@ -60,18 +63,43 @@ export default function ResultPanel({ result }: ResultPanelProps) {
     }
   }, [result]);
   
-  // Typewriter effect for description
+  // Typewriter effect for explanation
   useEffect(() => {
-    if (result) {
+    if (explanation) {
       const cleanup = typewriterEffect(
-        result.description,
+        explanation,
         (text) => setDisplayedText(text),
         30
       );
       
       return cleanup;
     }
-  }, [result]);
+  }, [explanation]);
+
+  const handleGenerateAudio = () => {
+    setIsGeneratingAudio(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsGeneratingAudio(false);
+      // In a real implementation, you would play the audio here
+      alert("Audio explanation would play here in production");
+    }, 2000);
+  };
+
+  const handlePlayVideo = () => {
+    setIsPlayingVideo(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsPlayingVideo(false);
+      // In a real implementation, you would show a video modal here
+      alert("Video summary would play here in production");
+    }, 2000);
+  };
+
+  const handleDownloadReport = () => {
+    // In a real implementation, you would generate a PDF report here
+    alert("PDF report would download here in production");
+  };
 
   const riskColors = {
     low: {
@@ -102,14 +130,37 @@ export default function ResultPanel({ result }: ResultPanelProps) {
 
   const riskColor = riskColors[result.riskLevel];
 
+  // Animation variants for staggered children
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: 100 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
       className="card overflow-hidden rounded-2xl shadow-md border border-slate-700 transition-all duration-300 h-full"
+      variants={containerVariants}
     >
-      <div className="card-header">
+      <motion.div className="card-header" variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h3 className="card-title text-white">Analysis Results</h3>
           <span
@@ -122,12 +173,12 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           </span>
         </div>
         <p className="card-description">Based on the image you provided</p>
-      </div>
+      </motion.div>
 
       <div className="card-content space-y-6">
         <div className="grid grid-cols-1 gap-6">
           {/* Top 1 */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h4 className="text-lg font-medium mb-1 text-white">Primary Condition</h4>
             <p className="text-2xl font-bold text-primary-400">
               {result.top1.label}
@@ -148,10 +199,10 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                 className="h-full bg-success-500 rounded-full"
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Top 2 */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h4 className="text-sm font-medium text-slate-400 mb-1">
               Secondary Possibility
             </h4>
@@ -161,16 +212,17 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                 {result.top2.confidence}%
               </span>
             </p>
-          </div>
+          </motion.div>
 
           {/* Heatmap Image */}
           <AnimatePresence>
             {showHeatmap && result.heatmapImage && (
               <motion.div
+                variants={itemVariants}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="border border-slate-700 rounded-xl p-4 bg-slate-800 shadow-inner"
+                className="border border-slate-700 rounded-xl p-4 bg-slate-800/80 shadow-inner"
               >
                 <h4 className="font-semibold text-lg mb-2 text-white">AI Focus Area</h4>
                 <div className="relative rounded-lg overflow-hidden">
@@ -194,7 +246,8 @@ export default function ResultPanel({ result }: ResultPanelProps) {
           </AnimatePresence>
 
           {/* Important Note */}
-          <div
+          <motion.div
+            variants={itemVariants}
             className={cn(
               'border rounded-lg p-4',
               riskColor.border,
@@ -211,13 +264,16 @@ export default function ResultPanel({ result }: ResultPanelProps) {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Expand Details */}
-        <button
+        <motion.button
+          variants={itemVariants}
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
           className="flex items-center justify-between w-full py-3 px-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
         >
           <span className="font-medium flex items-center">
             <Info className="w-4 h-4 mr-2" strokeWidth={1.5} />
@@ -227,7 +283,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
             <ChevronUp className="w-5 h-5" strokeWidth={1.5} /> : 
             <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
           }
-        </button>
+        </motion.button>
 
         <AnimatePresence>
           {isDetailsOpen && (
@@ -241,23 +297,44 @@ export default function ResultPanel({ result }: ResultPanelProps) {
               {/* Description with typewriter effect */}
               <div>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium mb-1 text-white">Description</h4>
+                  <h4 className="font-medium mb-1 text-white">AI Explanation</h4>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     className="text-secondary-400 hover:text-secondary-300 p-2"
+                    onClick={handleGenerateAudio}
+                    disabled={isGeneratingAudio}
                   >
-                    <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                    {isGeneratingAudio ? (
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                      </motion.div>
+                    ) : (
+                      <Volume2 className="w-5 h-5" strokeWidth={1.5} />
+                    )}
                   </motion.button>
                 </div>
-                <div className="bg-slate-800 p-4 rounded-lg">
+                <div className="bg-slate-800/80 p-4 rounded-lg">
                   <p className="text-slate-300 min-h-[3rem] border-l-2 border-secondary-400 pl-3">
-                    {displayedText}
-                    <motion.span 
-                      animate={{ opacity: [1, 0, 1] }}
-                      transition={{ repeat: Infinity, duration: 0.8 }}
-                      className="inline-block w-2 h-4 bg-secondary-400 ml-1"
-                    />
+                    {displayedText || "Generating explanation..."}
+                    {!displayedText && (
+                      <motion.span 
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                      >
+                        ⏳
+                      </motion.span>
+                    )}
+                    {displayedText && (
+                      <motion.span 
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
+                        className="inline-block w-2 h-4 bg-secondary-400 ml-1"
+                      />
+                    )}
                   </p>
                 </div>
               </div>
@@ -265,25 +342,74 @@ export default function ResultPanel({ result }: ResultPanelProps) {
               {/* Recommendation */}
               <div>
                 <h4 className="font-medium mb-1 text-white">Recommendation</h4>
-                <div className="bg-slate-800 p-4 rounded-lg">
+                <div className="bg-slate-800/80 p-4 rounded-lg">
                   <p className="text-slate-300">{result.recommendation}</p>
                 </div>
               </div>
               
               {/* Optional actions */}
               <div className="flex flex-wrap gap-3 mt-6">
-                <button className="btn btn-outline text-sm px-4 py-2">
-                  <Volume2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                  Listen to Explanation
-                </button>
+                <motion.button 
+                  className="btn btn-outline text-sm px-4 py-2"
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleGenerateAudio}
+                  disabled={isGeneratingAudio}
+                >
+                  {isGeneratingAudio ? (
+                    <>
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="mr-2"
+                      >
+                        <Volume2 className="w-4 h-4" strokeWidth={1.5} />
+                      </motion.div>
+                      Generating Audio...
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                      Listen to Explanation
+                    </>
+                  )}
+                </motion.button>
                 
-                <button className="btn btn-outline text-sm px-4 py-2">
-                  Play Video Summary
-                </button>
+                <motion.button 
+                  className="btn btn-outline text-sm px-4 py-2"
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handlePlayVideo}
+                  disabled={isPlayingVideo}
+                >
+                  {isPlayingVideo ? (
+                    <>
+                      <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="mr-2"
+                      >
+                        <Play className="w-4 h-4" strokeWidth={1.5} />
+                      </motion.div>
+                      Loading Video...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                      Play Video Summary
+                    </>
+                  )}
+                </motion.button>
                 
-                <button className="btn btn-primary text-sm px-4 py-2 ml-auto">
+                <motion.button 
+                  className="btn btn-primary text-sm px-4 py-2 ml-auto"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDownloadReport}
+                >
+                  <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   Download Report
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           )}

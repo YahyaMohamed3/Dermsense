@@ -12,6 +12,15 @@ interface ImageUploaderProps {
 export default function ImageUploader({ onImageUpload, isProcessing }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [processingStage, setProcessingStage] = useState<'uploading' | 'analyzing'>('uploading');
+  
+  // Set processing stage to 'analyzing' after a delay
+  // This is just for UI feedback, not functional
+  if (isProcessing && processingStage === 'uploading') {
+    setTimeout(() => {
+      setProcessingStage('analyzing');
+    }, 1000);
+  }
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
@@ -72,7 +81,7 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
           isDragActive 
             ? 'border-secondary-400 bg-primary-900/20' 
             : 'border-slate-700 hover:border-secondary-400 hover:bg-slate-800/50',
-          isProcessing && 'opacity-70 cursor-not-allowed'
+          isProcessing && 'opacity-90 cursor-not-allowed'
         )}
       >
         <input {...getInputProps()} />
@@ -80,8 +89,30 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
         {isProcessing ? (
           <div className="py-8 flex flex-col items-center">
             <Loader2 className="w-16 h-16 text-secondary-400 animate-spin mb-6" strokeWidth={1.5} />
-            <p className="text-xl font-medium mb-2 text-white">Processing your image...</p>
-            <p className="text-base text-slate-400">Please wait while we analyze your skin.</p>
+            <p className="text-xl font-medium mb-2 text-white">
+              {processingStage === 'uploading' ? 'Uploading & Preprocessing...' : 'AI Analyzing...'}
+            </p>
+            <p className="text-base text-slate-400 mb-6">
+              {processingStage === 'uploading' 
+                ? 'Preparing your image for analysis' 
+                : 'Examining visual patterns and features'}
+            </p>
+            
+            {/* Indeterminate progress bar */}
+            <div className="w-full max-w-md h-1 bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-blue-500"
+                animate={{
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 1.5,
+                  ease: "linear",
+                }}
+                style={{ width: "50%" }}
+              />
+            </div>
             
             {/* Processing preview */}
             {preview && (
@@ -92,9 +123,6 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
                   className="w-full object-contain rounded-lg shadow-lg max-h-[300px]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                
-                {/* Scanner line animation */}
-                <div className="scanner-line"></div>
               </div>
             )}
           </div>

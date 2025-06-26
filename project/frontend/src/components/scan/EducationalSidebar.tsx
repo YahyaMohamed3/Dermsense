@@ -58,16 +58,16 @@ export default function EducationalSidebar() {
   };
   
   return (
-    <div className="card h-full">
+    <div className="card h-full bg-slate-800/60 backdrop-blur-lg border border-slate-700">
       <div className="card-header">
-        <h3 className="card-title">Educational Resources</h3>
-        <p className="card-description">Learn about skin conditions and cancer types</p>
+        <h3 className="card-title text-slate-100">Educational Resources</h3>
+        <p className="card-description text-slate-400">Learn about skin conditions and cancer types</p>
       </div>
       
       <div className="card-content pb-0 max-h-[400px] overflow-y-auto scrollbar-hide">
         <div className="space-y-6">
           <section>
-            <h4 className="text-lg font-medium mb-4">Common Skin Lesion Types</h4>
+            <h4 className="text-lg font-medium mb-4 text-slate-100">Common Skin Lesion Types</h4>
             <div className="space-y-4">
               {skinLesions.map((lesion, index) => (
                 <motion.div
@@ -80,11 +80,11 @@ export default function EducationalSidebar() {
                   <img
                     src={lesion.image}
                     alt={lesion.name}
-                    className="w-16 h-16 rounded-md object-cover border border-slate-200 dark:border-slate-700"
+                    className="w-16 h-16 rounded-md object-cover border border-slate-700 shadow-md"
                   />
                   <div>
-                    <h5 className="font-medium">{lesion.name}</h5>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{lesion.description}</p>
+                    <h5 className="font-medium text-slate-100">{lesion.name}</h5>
+                    <p className="text-sm text-slate-300">{lesion.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -92,37 +92,37 @@ export default function EducationalSidebar() {
           </section>
           
           <section>
-            <h4 className="text-lg font-medium mb-4">Frequently Asked Questions</h4>
+            <h4 className="text-lg font-medium mb-4 text-slate-100">Frequently Asked Questions</h4>
             <div className="space-y-3">
               {faqItems.map((item, index) => (
-                <div key={index} className="border rounded-lg overflow-hidden">
+                <div key={index} className="border border-slate-700 rounded-lg overflow-hidden">
                   <button
                     onClick={() => toggleFaq(index)}
                     className={cn(
                       "w-full px-4 py-3 text-left flex items-center justify-between",
                       expandedFaq === index
-                        ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-                        : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                        ? "bg-primary-900/30 text-primary-300"
+                        : "hover:bg-slate-800 text-slate-100"
                     )}
                   >
                     <span className="font-medium">{item.question}</span>
                     {expandedFaq === index ? (
-                      <ChevronUp className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+                      <ChevronUp className="w-5 h-5 flex-shrink-0 text-primary-400" strokeWidth={1.5} />
                     ) : (
-                      <ChevronDown className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+                      <ChevronDown className="w-5 h-5 flex-shrink-0 text-slate-400" strokeWidth={1.5} />
                     )}
                   </button>
                   
                   <AnimatePresence>
                     {expandedFaq === index && (
                       <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t">
+                        <div className="px-4 py-3 text-sm text-slate-300 border-t border-slate-700 bg-slate-800/50">
                           {item.answer}
                         </div>
                       </motion.div>
@@ -133,11 +133,11 @@ export default function EducationalSidebar() {
             </div>
           </section>
           
-          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg p-4 flex items-start">
-            <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+          <div className="bg-primary-900/20 border border-primary-800 rounded-lg p-4 flex items-start">
+            <Info className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
             <div>
-              <h5 className="font-medium text-primary-800 dark:text-primary-300">Early Detection Matters</h5>
-              <p className="text-sm text-primary-700 dark:text-primary-400 mt-1">
+              <h5 className="font-medium text-primary-300">Early Detection Matters</h5>
+              <p className="text-sm text-primary-400 mt-1">
                 Regular skin checks are crucial for early detection. Make it a habit to examine your skin monthly and consult a dermatologist annually.
               </p>
             </div>
@@ -145,17 +145,19 @@ export default function EducationalSidebar() {
         </div>
       </div>
       
-      <div className="card-footer flex-col items-start border-t mt-6">
-        <h4 className="font-medium mt-2">Need Professional Advice?</h4>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+      <div className="card-footer flex-col items-start border-t border-slate-700 mt-6">
+        <h4 className="font-medium mt-2 text-slate-100">Need Professional Advice?</h4>
+        <p className="text-sm text-slate-300 mb-3">
           This tool is not a substitute for professional medical advice. Always consult with a dermatologist.
         </p>
-        <a
+        <motion.a
           href="#"
-          className="btn btn-outline btn-sm w-full"
+          className="btn btn-outline btn-sm w-full text-primary-400 border-primary-600 hover:bg-primary-900/20"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           Find a Dermatologist Near You
-        </a>
+        </motion.a>
       </div>
     </div>
   );
