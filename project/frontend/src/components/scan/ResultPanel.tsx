@@ -20,7 +20,7 @@ export interface ScanResult {
 
 interface ResultPanelProps {
   result: ScanResult;
-  explanation: string | null;
+  explanation?: string | null;
 }
 
 export default function ResultPanel({ result, explanation }: ResultPanelProps) {
