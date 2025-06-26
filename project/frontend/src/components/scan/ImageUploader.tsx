@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
@@ -16,11 +16,22 @@ export default function ImageUploader({ onImageUpload, isProcessing }: ImageUplo
   
   // Set processing stage to 'analyzing' after a delay
   // This is just for UI feedback, not functional
-  if (isProcessing && processingStage === 'uploading') {
-    setTimeout(() => {
-      setProcessingStage('analyzing');
-    }, 1000);
-  }
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isProcessing && processingStage === 'uploading') {
+      timer = setTimeout(() => {
+        setProcessingStage('analyzing');
+      }, 1000);
+    }
+    
+    if (!isProcessing) {
+      setProcessingStage('uploading');
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isProcessing, processingStage]);
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
