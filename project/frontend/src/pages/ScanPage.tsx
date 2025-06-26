@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 import ImageUploader from '../components/scan/ImageUploader';
 import ResultPanel, { ScanResult } from '../components/scan/ResultPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
@@ -10,42 +9,47 @@ import PrivacyNotice from '../components/scan/PrivacyNotice';
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
-  const [activeModel, setActiveModel] = useState<'consumer' | 'clinical'>('clinical');
+  const [activeModel, setActiveModel] = useState<'clinical' | 'consumer'>('clinical');
   const [explanation, setExplanation] = useState<string | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   
   const handleImageUpload = async (file: File) => {
     setResult(null);
     setExplanation(null);
-    setAudioUrl(null);
-    setError(null);
     setIsProcessing(true);
 
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('model', activeModel);
-
     try {
-      // First API call to get prediction
-      const response = await axios.post('/api/uploadImage', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // Simulate API delay for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const resultData = response.data as ScanResult;
-      setResult(resultData);
+      // For demo, create a mock result based on the active model
+      const mockResult: ScanResult = activeModel === 'clinical' 
+        ? {
+            top1: { label: 'Benign Mole', confidence: 96.5 },
+            top2: { label: 'Melanoma', confidence: 3.2 },
+            riskLevel: 'low',
+            description: 'This appears to be a benign mole with regular borders and consistent coloration.',
+            recommendation: 'While this analysis suggests a benign condition, we recommend regular self-examinations and consulting with a dermatologist for any changes in appearance.',
+            heatmapImage: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300'
+          }
+        : {
+            top1: { label: 'Actinic Keratosis', confidence: 87.3 },
+            top2: { label: 'Basal Cell Carcinoma', confidence: 10.5 },
+            riskLevel: 'medium',
+            description: 'This appears to be an actinic keratosis with slightly irregular borders and some color variation.',
+            recommendation: 'We recommend consulting with a dermatologist for further evaluation as actinic keratosis can sometimes develop into squamous cell carcinoma.',
+            heatmapImage: 'https://images.pexels.com/photos/5726799/pexels-photo-5726799.jpeg?auto=compress&cs=tinysrgb&w=300'
+          };
       
-      // For demo purposes, we'll simulate the explanation API call
-      // In production, this would be a real API call to an explanation service
+      setResult(mockResult);
+      
+      // Simulate explanation generation with a slight delay
       setTimeout(() => {
-        const explanationText = `This appears to be a ${resultData.top1.label.toLowerCase()} with ${
-          resultData.riskLevel === 'low' ? 'regular borders and consistent coloration' : 
-          resultData.riskLevel === 'medium' ? 'slightly irregular borders and some color variation' :
-          'irregular borders and uneven coloration which are concerning features'
-        }. The AI model has identified specific visual patterns that are ${
-          resultData.top1.confidence > 90 ? 'strongly' : 'moderately'
+        const explanationText = `This appears to be a ${mockResult.top1.label.toLowerCase()} with ${
+          mockResult.riskLevel === 'low' ? 'regular borders and consistent coloration. The symmetrical shape and uniform pigmentation are typical characteristics of non-cancerous skin lesions.' : 
+          mockResult.riskLevel === 'medium' ? 'slightly irregular borders and some color variation. These features can sometimes be associated with precancerous conditions that require medical attention.' :
+          'irregular borders and uneven coloration which are concerning features. These characteristics are often associated with malignant skin conditions.'
+        } The AI model has identified specific visual patterns that are ${
+          mockResult.top1.confidence > 90 ? 'strongly' : 'moderately'
         } associated with this condition.`;
         
         setExplanation(explanationText);
@@ -53,7 +57,13 @@ export default function ScanPage() {
       
     } catch (error) {
       console.error('Error processing image:', error);
-      setError('An error occurred while processing your image. Please try again.');
+      setResult({
+        top1: { label: 'Error', confidence: 0 },
+        top2: { label: 'N/A', confidence: 0 },
+        riskLevel: 'unknown',
+        description: 'An error occurred while processing the image. Please try again.',
+        recommendation: 'If the problem persists, please contact support.'
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -129,16 +139,6 @@ export default function ScanPage() {
                     onImageUpload={handleImageUpload} 
                     isProcessing={isProcessing} 
                   />
-                  
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-error-900/20 border border-error-800 rounded-lg text-error-400"
-                    >
-                      {error}
-                    </motion.div>
-                  )}
                 </div>
                 
                 {/* Results Panel */}
