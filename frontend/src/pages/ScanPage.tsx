@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import ImageUploader from '../components/scan/ImageUploader';
 import ResultPanel, { ScanResult } from '../components/scan/ResultPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
@@ -9,10 +10,16 @@ import PrivacyNotice from '../components/scan/PrivacyNotice';
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
-  const [activeModel, setActiveModel] = useState<'standard' | 'advanced'>('standard');
+  const [activeModel, setActiveModel] = useState<'consumer' | 'clinical'>('clinical');
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const handleImageUpload = async (file: File) => {
     setResult(null);
+    setExplanation(null);
+    setAudioUrl(null);
+    setError(null);
     setIsProcessing(true);
 
     const formData = new FormData();
@@ -20,37 +27,36 @@ export default function ScanPage() {
     formData.append('model', activeModel);
 
     try {
-      // Simulate API delay for demo purposes
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // First API call to get prediction
+      const response = await axios.post('/api/uploadImage', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
-      // For demo, create a mock result
-      // In production, this would be an actual API call
-      const mockResult: ScanResult = {
-        top1: { label: 'Benign Mole', confidence: 96.5 },
-        top2: { label: 'Melanoma', confidence: 3.2 },
-        riskLevel: 'low',
-        description: 'This appears to be a benign mole with regular borders and consistent coloration. The symmetrical shape and uniform pigmentation are typical characteristics of non-cancerous skin lesions.',
-        recommendation: 'While this analysis suggests a benign condition, we recommend regular self-examinations and consulting with a dermatologist for any changes in appearance.',
-        heatmapImage: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300'
-      };
+      const resultData = response.data as ScanResult;
+      setResult(resultData);
       
-      setResult(mockResult);
+      // For demo purposes, we'll simulate the explanation API call
+      // In production, this would be a real API call to an explanation service
+      setTimeout(() => {
+        const explanationText = `This appears to be a ${resultData.top1.label.toLowerCase()} with ${
+          resultData.riskLevel === 'low' ? 'regular borders and consistent coloration' : 
+          resultData.riskLevel === 'medium' ? 'slightly irregular borders and some color variation' :
+          'irregular borders and uneven coloration which are concerning features'
+        }. The AI model has identified specific visual patterns that are ${
+          resultData.top1.confidence > 90 ? 'strongly' : 'moderately'
+        } associated with this condition.`;
+        
+        setExplanation(explanationText);
+      }, 1000);
+      
     } catch (error) {
       console.error('Error processing image:', error);
-      setResult({
-        top1: { label: 'Error', confidence: 0 },
-        top2: { label: 'N/A', confidence: 0 },
-        riskLevel: 'unknown',
-        description: 'An error occurred while processing the image. Please try again.',
-        recommendation: 'If the problem persists, please contact support.'
-      });
+      setError('An error occurred while processing your image. Please try again.');
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const toggleModel = () => {
-    setActiveModel(activeModel === 'standard' ? 'advanced' : 'standard');
   };
   
   return (
@@ -79,44 +85,43 @@ export default function ScanPage() {
             </p>
           </motion.div>
           
+          {/* Model Selector - Sliding Tab Design */}
           <div className="flex justify-center mb-10">
-            <div className="inline-flex rounded-md shadow-sm">
+            <div className="relative inline-flex rounded-lg bg-slate-800 p-1 shadow-inner">
               <button
-                onClick={() => setActiveModel('standard')}
-                className={`px-6 py-3 text-base font-medium rounded-l-lg border-2 ${
-                  activeModel === 'standard'
-                    ? 'bg-primary-700 text-white border-primary-700'
-                    : 'bg-slate-800 text-slate-300 border-slate-600 hover:bg-slate-700'
+                onClick={() => setActiveModel('clinical')}
+                className={`relative z-10 px-6 py-3 text-base font-medium rounded-md transition-colors duration-200 ${
+                  activeModel === 'clinical' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Standard Model
+                Clinical Model
               </button>
               <button
-                onClick={() => setActiveModel('advanced')}
-                className={`px-6 py-3 text-base font-medium rounded-r-lg border-2 ${
-                  activeModel === 'advanced'
-                    ? 'bg-primary-700 text-white border-primary-700'
-                    : 'bg-slate-800 text-slate-300 border-slate-600 hover:bg-slate-700'
+                onClick={() => setActiveModel('consumer')}
+                className={`relative z-10 px-6 py-3 text-base font-medium rounded-md transition-colors duration-200 ${
+                  activeModel === 'consumer' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Advanced Model
+                Consumer Model
               </button>
+              <motion.div 
+                className="absolute inset-0 z-0 rounded-md"
+                layoutId="modelSwitchBackground"
+                transition={{ type: "spring", duration: 0.5 }}
+                style={{ 
+                  width: '50%', 
+                  height: '100%',
+                  left: activeModel === 'clinical' ? '0%' : '50%'
+                }}
+              >
+                <div className="w-full h-full bg-primary-700 rounded-md" />
+              </motion.div>
             </div>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Educational Sidebar - 3 columns */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="lg:col-span-3"
-            >
-              <EducationalSidebar />
-            </motion.div>
-            
             {/* Main Content Area - 9 columns */}
-            <div className="lg:col-span-9">
+            <div className="lg:col-span-9 order-2 lg:order-1">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Image Uploader */}
                 <div className="space-y-8">
@@ -124,18 +129,41 @@ export default function ScanPage() {
                     onImageUpload={handleImageUpload} 
                     isProcessing={isProcessing} 
                   />
+                  
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-error-900/20 border border-error-800 rounded-lg text-error-400"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
                 </div>
                 
                 {/* Results Panel */}
                 <div>
                   <AnimatePresence mode="wait">
                     {result && (
-                      <ResultPanel result={result} />
+                      <ResultPanel 
+                        result={result} 
+                        explanation={explanation}
+                      />
                     )}
                   </AnimatePresence>
                 </div>
               </div>
             </div>
+            
+            {/* Educational Sidebar - 3 columns, now on the right */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="lg:col-span-3 order-1 lg:order-2"
+            >
+              <EducationalSidebar />
+            </motion.div>
           </div>
         </div>
       </div>

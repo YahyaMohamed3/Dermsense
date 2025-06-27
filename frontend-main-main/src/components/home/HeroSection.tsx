@@ -119,7 +119,7 @@ export default function HeroSection() {
                 color: "#4066c0",
                 distance: 150,
                 enable: true,
-                opacity: 0.09,
+                opacity: 0.08,
                 width: 1.2,
               },
               move: {

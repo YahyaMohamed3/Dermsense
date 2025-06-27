@@ -1,0 +1,107 @@
+# Virtual Environment
+venv/
+env/
+.env
+.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Machine Learning / Data Science
+*.h5
+*.pkl
+*.pickle
+*.keras
+*.ckpt
+saved_model/
+checkpoints/
+logs/
+tensorboard_logs/
+*.tfrecord
+*.tfevents.*
+
+# Large datasets (keep structure but not the actual images)
+skin_data/acne/*.jpg
+skin_data/acne/*.jpeg
+skin_data/acne/*.png
+skin_data/benign_mole/*.jpg
+skin_data/benign_mole/*.jpeg
+skin_data/benign_mole/*.png
+skin_data/eczema/*.jpg
+skin_data/eczema/*.jpeg
+skin_data/eczema/*.png
+skin_data/fungal_infection/*.jpg
+skin_data/fungal_infection/*.jpeg
+skin_data/fungal_infection/*.png
+skin_data/keratosis/*.jpg
+skin_data/keratosis/*.jpeg
+skin_data/keratosis/*.png
+skin_data/melanoma/*.jpg
+skin_data/melanoma/*.jpeg
+skin_data/melanoma/*.png
+skin_data/psoriasis/*.jpg
+skin_data/psoriasis/*.jpeg
+skin_data/psoriasis/*.png
+skin_data/rash/*.jpg
+skin_data/rash/*.jpeg
+skin_data/rash/*.png
+skin_data/uncertain/*.jpg
+skin_data/uncertain/*.jpeg
+skin_data/uncertain/*.png
+skin_data/processed/
+skin_data/dermnet_raw/
+*.zip
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Node modules (for frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.bolt/
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
