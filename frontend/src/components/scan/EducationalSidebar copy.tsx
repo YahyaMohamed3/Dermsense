@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Info, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from "../../lib/utils";
 
 interface FaqItem {
@@ -58,14 +58,16 @@ export default function EducationalSidebar() {
   };
   
   return (
-    <div className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-white mb-6">Educational Resources</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Common Skin Lesion Types */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Common Skin Lesion Types</h3>
+    <div className="card h-full">
+      <div className="card-header">
+        <h3 className="card-title">Educational Resources</h3>
+        <p className="card-description">Learn about skin conditions and cancer types</p>
+      </div>
+      
+      <div className="card-content pb-0 max-h-[400px] overflow-y-auto scrollbar-hide">
+        <div className="space-y-6">
+          <section>
+            <h4 className="text-lg font-medium mb-4">Common Skin Lesion Types</h4>
             <div className="space-y-4">
               {skinLesions.map((lesion, index) => (
                 <motion.div
@@ -73,55 +75,54 @@ export default function EducationalSidebar() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex gap-3 items-start group"
+                  className="flex gap-3 items-start"
                 >
                   <img
                     src={lesion.image}
                     alt={lesion.name}
-                    className="w-16 h-16 rounded-md object-cover border border-slate-700 shadow-md group-hover:border-primary-500 transition-colors"
+                    className="w-16 h-16 rounded-md object-cover border border-slate-200 dark:border-slate-700"
                   />
                   <div>
-                    <h4 className="font-medium text-slate-100 group-hover:text-primary-400 transition-colors">{lesion.name}</h4>
-                    <p className="text-sm text-slate-300">{lesion.description}</p>
+                    <h5 className="font-medium">{lesion.name}</h5>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{lesion.description}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </section>
           
-          {/* FAQ Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Frequently Asked Questions</h3>
+          <section>
+            <h4 className="text-lg font-medium mb-4">Frequently Asked Questions</h4>
             <div className="space-y-3">
               {faqItems.map((item, index) => (
-                <div key={index} className="border border-slate-700 rounded-lg overflow-hidden">
+                <div key={index} className="border rounded-lg overflow-hidden">
                   <button
                     onClick={() => toggleFaq(index)}
                     className={cn(
                       "w-full px-4 py-3 text-left flex items-center justify-between",
                       expandedFaq === index
-                        ? "bg-primary-900/30 text-primary-300"
-                        : "hover:bg-slate-800 text-slate-100"
+                        ? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800"
                     )}
                   >
                     <span className="font-medium">{item.question}</span>
                     {expandedFaq === index ? (
-                      <ChevronUp className="w-5 h-5 flex-shrink-0 text-primary-400" strokeWidth={1.5} />
+                      <ChevronUp className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
                     ) : (
-                      <ChevronDown className="w-5 h-5 flex-shrink-0 text-slate-400" strokeWidth={1.5} />
+                      <ChevronDown className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
                     )}
                   </button>
                   
                   <AnimatePresence>
                     {expandedFaq === index && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 py-3 text-sm text-slate-300 border-t border-slate-700 bg-slate-800/50">
+                        <div className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 border-t">
                           {item.answer}
                         </div>
                       </motion.div>
@@ -130,32 +131,31 @@ export default function EducationalSidebar() {
                 </div>
               ))}
             </div>
+          </section>
+          
+          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg p-4 flex items-start">
+            <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+            <div>
+              <h5 className="font-medium text-primary-800 dark:text-primary-300">Early Detection Matters</h5>
+              <p className="text-sm text-primary-700 dark:text-primary-400 mt-1">
+                Regular skin checks are crucial for early detection. Make it a habit to examine your skin monthly and consult a dermatologist annually.
+              </p>
+            </div>
           </div>
         </div>
-        
-        {/* Early Detection Notice */}
-        <div className="mt-8 bg-primary-900/20 border border-primary-800 rounded-lg p-4 flex items-start">
-          <Info className="w-5 h-5 text-primary-400 mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-          <div>
-            <h3 className="font-medium text-primary-300">Early Detection Matters</h3>
-            <p className="text-sm text-primary-400 mt-1">
-              Regular skin checks are crucial for early detection. Make it a habit to examine your skin monthly and consult a dermatologist annually.
-            </p>
-          </div>
-        </div>
-        
-        {/* Find a Dermatologist */}
-        <div className="mt-6">
-          <motion.a
-            href="#"
-            className="flex items-center justify-center w-full btn btn-primary py-3 px-4"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <ExternalLink className="w-5 h-5 mr-2" strokeWidth={1.5} />
-            Find a Dermatologist Near You
-          </motion.a>
-        </div>
+      </div>
+      
+      <div className="card-footer flex-col items-start border-t mt-6">
+        <h4 className="font-medium mt-2">Need Professional Advice?</h4>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
+          This tool is not a substitute for professional medical advice. Always consult with a dermatologist.
+        </p>
+        <a
+          href="#"
+          className="btn btn-outline btn-sm w-full"
+        >
+          Find a Dermatologist Near You
+        </a>
       </div>
     </div>
   );
