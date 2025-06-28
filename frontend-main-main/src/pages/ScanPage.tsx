@@ -3,45 +3,49 @@ import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Microscope, Smartphone, RotateCcw } from 'lucide-react';
 import ImageUploader from '../components/scan/ImageUploader';
-import ResultPanel, { ScanResult } from '../components/scan/ResultPanel';
+import ResultPanel, { ScanResult, Explanation } from '../components/scan/ResultPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
 import PrivacyNotice from '../components/scan/PrivacyNotice';
 
+// Define a more specific type for the full analysis result from the V2 endpoint
+export interface AnalysisResult {
+  prediction: ScanResult;
+  explanation: Explanation;
+  heatmapImage: string;
+  originalImageBase64: string;
+}
+
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState<ScanResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [activeModel, setActiveModel] = useState<'clinical' | 'consumer'>('clinical');
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [recommendation, setRecommendation] = useState<string | null>(null);
   const [showSideBySide, setShowSideBySide] = useState(false);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+  const [caseSubmissionStatus, setCaseSubmissionStatus] = useState<'idle' | 'submitting' | 'submitted' | 'error'>('idle');
 
   useEffect(() => {
-    if (isProcessing) setShowSideBySide(false);
+    if (isProcessing) {
+      setShowSideBySide(false);
+      setCaseSubmissionStatus('idle'); // Reset on new analysis
+    }
   }, [isProcessing]);
 
   const handleNewAnalysis = () => {
-    setResult(null);
-    setExplanation(null);
-    setRecommendation(null);
+    setAnalysisResult(null);
     setShowSideBySide(false);
     setOriginalImageUrl(null);
+    setCaseSubmissionStatus('idle');
   };
 
   const handleImageUpload = async (file: File) => {
-    setResult(null);
-    setExplanation(null);
-    setRecommendation(null);
+    setAnalysisResult(null);
     setShowSideBySide(false);
     setIsProcessing(true);
     setOriginalImageUrl(URL.createObjectURL(file));
 
     try {
-      const endpoint =
-        activeModel === "clinical"
-          ? "http://localhost:8000/api/predict/clinical"
-          : "http://localhost:8000/api/predict/consumer";
-
+      // Use the new, more powerful V2 endpoint
+      const endpoint = `http://localhost:8000/api/v2/analyze?mode=${activeModel}`;
       const formData = new FormData();
       formData.append("image", file);
 
@@ -50,64 +54,75 @@ export default function ScanPage() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to get prediction from backend.");
-
-      const data = await res.json();
-
-      let llmExplanation = "";
-      let llmRecommendation = "";
-      try {
-        const mode = activeModel === 'clinical' ? 'clinical' : 'consumer';
-        const explanationRes = await fetch(
-          `http://localhost:8000/api/explain?mode=${mode}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              lesion_name: data.top1.label,
-              secondary_lesion_name: data.top2.label
-            }),
-          }
-        );
-        if (explanationRes.ok) {
-          const { text, recommendation } = await explanationRes.json();
-          llmExplanation = text;
-          llmRecommendation = recommendation || "";
-          setExplanation(text);
-          setRecommendation(recommendation || "");
-        } else {
-          setExplanation("");
-          setRecommendation("");
-        }
-      } catch (err) {
-        setExplanation("");
-        setRecommendation("");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Failed to get analysis from backend.");
       }
 
-      setResult({
-        top1: data.top1,
-        top2: data.top2,
-        riskLevel: data.riskLevel,
-        heatmapImage: data.heatmapImage ?? data.gradCamImage,
-        description: llmExplanation,
-        recommendation: llmRecommendation,
-      });
-
+      const data: AnalysisResult = await res.json();
+      setAnalysisResult(data);
       setTimeout(() => setShowSideBySide(true), 500);
+
     } catch (error) {
       console.error("Error processing image:", error);
-      setResult({
-        top1: { label: "Error", confidence: 0 },
-        top2: { label: "N/A", confidence: 0 },
-        riskLevel: "unknown",
-        description: "An error occurred while processing the image. Please try again.",
-        recommendation: "If the problem persists, please contact support.",
+      
+      // FIX: Check if error is an instance of Error before accessing .message
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      
+      // Create a dummy error result to display
+      setAnalysisResult({
+        prediction: {
+            top1: { label: "Error", confidence: 0 },
+            top2: { label: "N/A", confidence: 0 },
+            riskLevel: "unknown",
+        },
+        explanation: {
+            explanation_text: `An error occurred while processing the image: ${errorMessage}`,
+            recommendation: "Please try again. If the problem persists, contact support."
+        },
         heatmapImage: "",
+        originalImageBase64: ""
       });
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const handleSubmitForReview = async () => {
+    if (!analysisResult || caseSubmissionStatus === 'submitting' || caseSubmissionStatus === 'submitted') return;
+
+    setCaseSubmissionStatus('submitting');
+    try {
+        const { prediction, explanation, originalImageBase64, heatmapImage } = analysisResult;
+        
+        // This payload now correctly matches the backend's SubmitCaseRequest model
+        const payload = {
+            image_base64: originalImageBase64,
+            heatmap_image_base64: heatmapImage,
+            prediction_label: prediction.top1.label,
+            prediction_confidence: prediction.top1.confidence,
+            risk_level: prediction.riskLevel,
+            ai_explanation: explanation.explanation_text || explanation.technical_summary || "N/A",
+        };
+
+        const res = await fetch("http://localhost:8000/api/cases/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.detail || "Failed to submit case for review.");
+        }
+
+        setCaseSubmissionStatus('submitted');
+    } catch (error) {
+        console.error("Error submitting case:", error);
+        setCaseSubmissionStatus('error');
+    }
+  };
+
 
   return (
     <>
@@ -142,7 +157,7 @@ export default function ScanPage() {
             </p>
           </motion.div>
 
-          {/* Model Selector - Sliding Tab Design */}
+          {/* Model Selector */}
           <div className="flex justify-center mb-12">
             <div className="relative inline-flex rounded-lg bg-slate-800/80 p-1 shadow-inner">
               <button
@@ -174,7 +189,7 @@ export default function ScanPage() {
             </div>
           </div>
 
-          {/* Part 1: Visual Core - Responsive Layout */}
+          {/* Image Uploader & Results Display */}
           <div className="mb-12">
             <AnimatePresence mode="wait">
               {!showSideBySide ? (
@@ -200,7 +215,6 @@ export default function ScanPage() {
                   transition={{ duration: 0.3 }}
                   className="relative"
                 >
-                  {/* Start New Analysis button */}
                   <div className="w-full flex justify-center md:justify-end mb-8">
                     <button
                       onClick={handleNewAnalysis}
@@ -241,7 +255,7 @@ export default function ScanPage() {
                         <h3 className="text-xl font-semibold text-white mb-4">AI Visual Explanation</h3>
                         <div className="relative rounded-lg overflow-hidden h-[300px] flex items-center justify-center">
                           <img
-                            src={result?.heatmapImage ?? ""}
+                            src={analysisResult?.heatmapImage ?? ""}
                             alt="AI Grad-CAM Heatmap"
                             className="h-full w-full object-contain rounded-lg border border-slate-700"
                           />
@@ -254,19 +268,21 @@ export default function ScanPage() {
             </AnimatePresence>
           </div>
 
-          {/* Part 2: Detailed Analysis Panel */}
+          {/* Detailed Analysis Panel */}
           <AnimatePresence>
-            {result && (
+            {analysisResult && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
+                {/* FIX: Removed the invalid 'analysisResult' prop. The component only needs 'result', 'explanation', etc. which are passed correctly. */}
                 <ResultPanel
-                  result={result}
-                  explanation={explanation}
-                  recommendation={recommendation}
+                  result={analysisResult.prediction}
+                  explanation={analysisResult.explanation}
+                  onSubmitForReview={handleSubmitForReview}
+                  caseSubmissionStatus={caseSubmissionStatus}
                 />
               </motion.div>
             )}

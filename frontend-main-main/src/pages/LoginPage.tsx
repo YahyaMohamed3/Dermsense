@@ -24,18 +24,45 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate authentication delay
-    setTimeout(() => {
-      if (credentials.password === 'demoday2025') {
-        // Store authentication state
+    // --- LOGIC UPDATED: Replaced simulation with a real API call ---
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login/clinical', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: credentials.password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // This handles server-side errors, like a 401 for a wrong password
+        throw new Error(data.detail || 'Authentication failed. Please check your credentials.');
+      }
+
+      if (data.success) {
+        // On successful authentication from the backend:
+        // 1. Store the authentication state in the browser's local storage.
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userRole', 'dermatologist');
+        // 2. Navigate to the clinical dashboard.
         navigate('/dashboard');
       } else {
-        setError('Invalid credentials. Use password: demoday2025');
+        // Handle cases where the server responds 200 OK but login is not successful
+        setError(data.message || 'Invalid credentials.');
       }
+    } catch (err) {
+      // This catches network errors or errors thrown from the response check
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown network error occurred.');
+      }
+    } finally {
+      // Ensure the loading spinner is turned off
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

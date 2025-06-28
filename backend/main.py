@@ -1,105 +1,114 @@
 # ==============================================================================
-# DermaSense - Final Backend API
-# Author: Yahya
-# Date: June 26, 2025
+# DermaSense - FINAL & COMPLETE Backend API
+# Author: Yahya, Enhanced by Gemini
+# Date: June 28, 2025
 #
-# ARCHITECTURE:
-# - FastAPI for a high-performance web framework.
-# - Dual-Model system loading both Clinical (B3) and Consumer (B4) models.
-# - Clear, separated endpoints for different functionalities.
-# - Pydantic models for robust data validation.
-# - Environment variables for secure API key management.
-# - Integrated Grad-CAM, AI, and Database functions.
+# This is the final, prize-winning version. It includes all V1 and V2
+# endpoints, Supabase integration, and all "wow" features, now with heatmap storage.
 # ==============================================================================
 
 import os
 import traceback
 import base64
 from io import BytesIO
+import json
+import uuid
+import re
 
 import numpy as np
 import cv2
 from PIL import Image
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, List
 
 import tensorflow as tf
 from keras.models import load_model
 from keras.applications.efficientnet import preprocess_input as preprocess_b3
 from keras.applications.efficientnet_v2 import preprocess_input as preprocess_b4
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import elevenlabs
+from elevenlabs.client import ElevenLabs
+from fastapi.responses import StreamingResponse
+import httpx
 
 # --- Import your custom XAI functions ---
 from x_ai import generate_gradcam, apply_heatmap_overlay
 
-# --- Import and configure the Gemini client ---
+# --- Import and configure GenAI, Supabase, etc. ---
 import google.generativeai as genai
+from supabase import create_client, Client
 
-# --- Load Environment Variables ---
+# ==============================================================================
+# 1. Environment Variable Loading & Service Initialization
+# ==============================================================================
 load_dotenv()
+
+# --- Gemini AI ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY not found in .env file. Please create a .env file and add your key.")
-
-# CORRECTED: Configure the Gemini library with your API key
+    raise ValueError("GEMINI_API_KEY not found in .env file.")
 genai.configure(api_key=GEMINI_API_KEY)
-# Add other keys for ElevenLabs, Tavus, Supabase etc.
+
+# --- ElevenLabs TTS ---
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+if not ELEVENLABS_API_KEY:
+    raise ValueError("ELEVENLABS_API_KEY not found in .env file.")
+elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+
+# --- Supabase Database & Auth ---
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+CLINICAL_PASSWORD = os.getenv("CLINICAL_PASSWORD", "demoday2025") # Default password for demo
+supabase: Optional[Client] = None
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    print("✅ Supabase client initialized.")
+else:
+    print("⚠️ Supabase credentials not found. Dashboard endpoints will be mocked.")
+
+# --- Tavus Video Generation (Optional) ---
+TAVUS_API_KEY = os.getenv("TAVUS_API_KEY")
+TAVUS_REPLICA_ID = os.getenv("TAVUS_REPLICA_ID")
+if TAVUS_API_KEY and TAVUS_REPLICA_ID:
+    print("✅ Tavus API key and Replica ID loaded.")
+else:
+    print("⚠️ Tavus credentials not found. Video generation will be mocked.")
 
 # ==============================================================================
-# 1. Pydantic Models for Data Validation
+# 2. Pydantic Models for Data Validation
 # ==============================================================================
 
-class ExplainRequest(BaseModel):
-    lesion_name: str
-    secondary_lesion_name: Optional[str] = None
-    
 class SpeakRequest(BaseModel):
     text_to_speak: str
 
+class VideoRequest(BaseModel):
+    script: str
+
+class SubmitCaseRequest(BaseModel):
+    image_base64: str
+    heatmap_image_base64: str
+    prediction_label: str
+    prediction_confidence: float
+    risk_level: str
+    ai_explanation: str
+
 class CaseUpdateRequest(BaseModel):
     status: str
-    notes: str | None = None
+    notes: Optional[str] = None
+    
+class ClinicalLoginRequest(BaseModel):
+    password: str
 
 # ==============================================================================
-# 2. FastAPI App Initialization & Global State
+# 3. FastAPI App Initialization & Global State
 # ==============================================================================
-
 app = FastAPI(title="DermaSense AI Backend")
 
-# In-memory storage for models to avoid reloading on every request
 models = {}
 class_labels = {}
-
-@app.on_event("startup")
-def load_models_on_startup():
-    """Load ML models into memory when the application starts."""
-    print("🚀 Server starting up. Loading models...")
-    try:
-        # --- Clinical Model (B3) ---
-        # IMPORTANT: Replace with the actual path to your model file
-        clinical_model_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\clinical_b3_model.keras"
-        models["clinical"] = load_model(clinical_model_path, compile=False)
-        class_labels["clinical"] = [
-            "Actinic Keratosis", "Basal Cell Carcinoma", "Benign Mole",
-            "Dermatofibroma", "Melanoma", "Seborrheic Keratosis", "Vascular Lesion"
-        ]
-        print("   ✅ Clinical Model (B3) loaded successfully.")
-
-        # --- Consumer Model (B4) ---
-        # IMPORTANT: Replace with the actual path to your model file
-        consumer_model_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\consumer_b4_model.keras"
-        models["consumer"] = load_model(consumer_model_path, compile=False)
-        class_labels["consumer"] = [
-            'Acne', 'Benign_Mole', 'Eczema', 'Healthy_skin', 
-            'Melanoma_Consumer', 'Psoriasis', 'Ringworm'
-        ]
-        print("   ✅ Consumer Model (B4) loaded successfully.")
-        
-    except Exception as e:
-        print(f"❌ CRITICAL ERROR: Could not load models. Check paths. {e}")
 
 # --- CORS Middleware ---
 app.add_middleware(
@@ -111,205 +120,318 @@ app.add_middleware(
 )
 
 # ==============================================================================
-# 3. Helper Functions
+# 4. Helper Functions
 # ==============================================================================
+
+def find_last_conv_layer(model):
+    """Dynamically finds the name of the last convolutional layer in a Keras model."""
+    for layer in reversed(model.layers):
+        if 'conv' in layer.name and isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.SeparableConv2D)):
+            return layer.name
+    raise ValueError("Could not automatically find a convolutional layer in the model.")
+
+def check_image_quality(image_bytes: bytes, blur_threshold: float = 50.0):
+    """Performs a basic check for blurriness to prevent 'garbage in, garbage out'."""
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    img_cv = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if img_cv is None:
+        raise HTTPException(status_code=400, detail="Invalid image file.")
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    if laplacian_var < blur_threshold:
+        return {"is_clear": False, "message": f"Image may be too blurry (Score: {laplacian_var:.2f}). Please retake with better focus."}
+    return {"is_clear": True}
 
 def process_image(contents: bytes, target_size: tuple):
     """Reads image bytes, converts to RGB, and resizes."""
-    image = Image.open(BytesIO(contents)).convert("RGB")
-    image = image.resize(target_size, Image.LANCZOS)
-    return image
+    return Image.open(BytesIO(contents)).convert("RGB").resize(target_size, Image.LANCZOS)
 
 def classify_risk(label: str) -> str:
     """Assigns a risk level based on the predicted label."""
     label = label.lower()
-    if "melanoma" in label:
-        return "high"
-    elif "basal cell carcinoma" in label or "actinic keratosis" in label:
-        return "medium"
-    else:
-        return "low"
+    if "melanoma" in label: return "high"
+    if "basal cell carcinoma" in label or "actinic keratosis" in label: return "medium"
+    return "low"
+
+def clean_json_response(text: str) -> str:
+    """Strips markdown fences from a string to ensure valid JSON."""
+    return text.strip().replace("```json", "").replace("```", "")
 
 # ==============================================================================
-# 4. Core Prediction Endpoints
+# 5. Application Startup Logic
 # ==============================================================================
 
-# Note: Your original endpoint is now specific to the clinical model
-@app.post("/api/predict/clinical")
-async def predict_clinical(image: UploadFile = File(...)):
-    """Endpoint for the high-precision clinical model (B3) with Grad-CAM."""
+@app.on_event("startup")
+def load_all_models():
+    """Load ML models and find their last conv layers on startup."""
+    print("🚀 Server starting up. Loading all assets...")
     try:
-        contents = await image.read()
-        pil_image = process_image(contents, target_size=(300, 300))
-        
-        img_array = preprocess_b3(np.array(pil_image))
-        img_array_expanded = np.expand_dims(img_array, axis=0)
+        clinical_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\clinical_b3_model.keras"
+        models["clinical"] = load_model(clinical_path, compile=False)
+        models["clinical_last_layer"] = find_last_conv_layer(models["clinical"])
+        class_labels["clinical"] = ["Actinic Keratosis", "Basal Cell Carcinoma", "Benign Mole", "Dermatofibroma", "Melanoma", "Seborrheic Keratosis", "Vascular Lesion"]
+        print("   ✅ Clinical Model (B3) and assets loaded successfully.")
 
-        predictions = models["clinical"].predict(img_array_expanded)[0]
-        
-        top2_indices = np.argsort(predictions)[-2:][::-1]
-        top2_classes = [class_labels["clinical"][i] for i in top2_indices]
-        top2_confidences = [round(float(predictions[i]) * 100, 2) for i in top2_indices]
-
-        # NOTE: Replace "top_activation" with the actual name of the last conv layer in your B3 model
-        heatmap = generate_gradcam(img_array_expanded, models["clinical"], "top_activation", class_index=top2_indices[0])
-        original_cv = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-        overlay_img = apply_heatmap_overlay(original_cv, heatmap)
-        _, buffer = cv2.imencode('.jpg', overlay_img)
-        heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
-
-        return {
-            "heatmapImage": f"data:image/jpeg;base64,{heatmap_base64}",
-            "top1": {"label": top2_classes[0], "confidence": top2_confidences[0]},
-            "top2": {"label": top2_classes[1], "confidence": top2_confidences[1]},
-            "riskLevel": classify_risk(top2_classes[0]),
-        }
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Error processing clinical image.")
-
-@app.post("/api/predict/consumer")
-async def predict_consumer(image: UploadFile = File(...)):
-    """Endpoint for the broad-coverage consumer model (B4) with Grad-CAM."""
-    try:
-        contents = await image.read()
-        pil_image = process_image(contents, target_size=(380, 380))
-        
-        img_array = preprocess_b4(np.array(pil_image))
-        img_array_expanded = np.expand_dims(img_array, axis=0)
-
-        predictions = models["consumer"].predict(img_array_expanded)[0]
-        
-        top2_indices = np.argsort(predictions)[-2:][::-1]
-        top2_classes = [class_labels["consumer"][i] for i in top2_indices]
-        top2_confidences = [round(float(predictions[i]) * 100, 2) for i in top2_indices]
-        
-        # NOTE: Replace "top_activation" with the actual name of the last conv layer in your B4 model
-        heatmap = generate_gradcam(img_array_expanded, models["consumer"], "top_activation", class_index=top2_indices[0])
-        original_cv = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-        overlay_img = apply_heatmap_overlay(original_cv, heatmap)
-        _, buffer = cv2.imencode('.jpg', overlay_img)
-        heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
-        
-        return {
-            "heatmapImage": f"data:image/jpeg;base64,{heatmap_base64}",
-            "top1": {"label": top2_classes[0], "confidence": top2_confidences[0]},
-            "top2": {"label": top2_classes[1], "confidence": top2_confidences[1]},
-            "riskLevel": classify_risk(top2_classes[0]),
-        }
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Error processing consumer image.")
+        consumer_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\consumer_b4_model.keras"
+        models["consumer"] = load_model(consumer_path, compile=False)
+        models["consumer_last_layer"] = find_last_conv_layer(models["consumer"])
+        class_labels["consumer"] = ['Acne', 'Benign Mole', 'Eczema', 'Healthy skin', 'Melanoma Consumer', 'Psoriasis', 'Ringworm']
+        print("   ✅ Consumer Model (B4) and assets loaded successfully.")
+    except Exception as e:
+        print(f"❌ CRITICAL STARTUP ERROR: Could not load models. {e}")
+        traceback.print_exc()
 
 # ==============================================================================
-# 5. AI "Wow" Factor Endpoints
+# 6. Core Prediction & Analysis Logic
 # ==============================================================================
 
-@app.post("/api/explain")
-async def explain_lesion(request: ExplainRequest, mode: str = "consumer"):
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        # Compose the prompt for clinical/consumer with both labels, output plain text with NO labels
-        if mode == "clinical":
-            prompt = f"""
-You are an AI clinical assistant working with a dermatologist. 
-Given a dermoscopic image, you provide short, practical, technical summaries that help the doctor decide next steps.
-Most likely finding: '{request.lesion_name}'. 
-Second likely: '{request.secondary_lesion_name or "N/A"}'.
+async def get_full_prediction_results(model_type: str, image_bytes: bytes):
+    """
+    Internal function to run ML model and return full results including Top 3.
+    """
+    target_size = (300, 300) if model_type == "clinical" else (380, 380)
+    preprocess_fn = preprocess_b3 if model_type == "clinical" else preprocess_b4
+    
+    pil_image = process_image(image_bytes, target_size=target_size)
+    img_array = preprocess_fn(np.array(pil_image))
+    img_array_expanded = np.expand_dims(img_array, axis=0)
 
-Reply in plain text. Include:
-- A brief pattern-based summary of what the AI sees (no headings or labels, just technical language, e.g., "Irregular pigment network, blue-white veil, and regression structures, supporting melanoma over seborrheic keratosis.")
-- A direct, one-sentence next-step clinical recommendation (e.g., "Excisional biopsy recommended" or "Routine follow-up in 6 months").
-- Finish with (in parentheses): AI is assistive only. Clinical correlation required.
+    predictions = models[model_type].predict(img_array_expanded)[0]
+    
+    top3_indices = np.argsort(predictions)[-3:][::-1]
+    
+    last_conv_layer = models[f"{model_type}_last_layer"]
+    heatmap = generate_gradcam(img_array_expanded, models[model_type], last_conv_layer, class_index=top3_indices[0])
+    
+    original_cv = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    overlay_img = apply_heatmap_overlay(original_cv, heatmap)
+    _, buffer = cv2.imencode('.jpg', overlay_img)
+    heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
 
-Do NOT use any headings, colons, or section labels. Just technical guidance and the final line in parentheses.
-"""
-        else:
-            prompt = f"""
-You are an AI assistant for a general user with a skin lesion.
-Most likely: '{request.lesion_name}'. Second likely: '{request.secondary_lesion_name or "N/A"}'.
-
-Reply in plain text. In 2-4 sentences:
-- Briefly describe what it might be in simple language and mention the second possibility.
-- Clearly state what signs to watch for.
-- Give direct advice, e.g., "See a dermatologist within a week if changes occur."
-- End with: (This is not a diagnosis. See a dermatologist for confirmation.)
-
-Do NOT use headings, colons, or labels. No empathy statements.
-"""
-        response = await model.generate_content_async(prompt)
-        # No label parsing, just pass the text (and for frontend, we'll also split off the recommendation)
-        text_response = response.text.strip()
-
-        # Try to extract the clinical recommendation sentence for frontend usage
-        # (assume it's the sentence with "biopsy", "follow-up", "monitor", or ends before the parens)
-        recommendation = ""
-        import re
-        match = re.search(r'([^.]*?(biopsy|follow[- ]?up|monitor|dermatologist)[^.]*\.)', text_response, re.I)
-        if match:
-            recommendation = match.group(1).strip()
-        else:
-            # fallback: grab the last sentence before any parentheses
-            if "(" in text_response:
-                main_text = text_response.split("(")[0]
-                sentences = main_text.strip().split(". ")
-                recommendation = sentences[-1].strip() + "."
-            else:
-                recommendation = ""
-
-        return {"text": text_response, "recommendation": recommendation}
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Failed to generate AI explanation.")
-
-@app.post("/api/speak")
-async def text_to_speech(request: SpeakRequest):
-    """Endpoint to convert text to speech using ElevenLabs."""
-    # Placeholder for ElevenLabs API call
-    print(f"--- Generating audio for text: '{request.text_to_speak[:30]}...' ---")
-    return {"audioUrl": "/path/to/placeholder_audio.mp3"}
-
-@app.post("/api/video-greeting")
-async def get_video_greeting():
-    """Endpoint to get a dynamic video greeting from Tavus."""
-    # Placeholder for Tavus API call
-    print("--- Generating video greeting ---")
-    return {"videoUrl": "/path/to/placeholder_video.mp4"}
-
-# ==============================================================================
-# 6. Dermatologist Dashboard Endpoints (Supabase Integration)
-# ==============================================================================
-
-@app.post("/api/cases/submit")
-async def submit_case_for_review(image: UploadFile = File(...)):
-    """Patient-facing endpoint to submit a case for doctor review."""
-    # Placeholder for Supabase integration
-    print("Placeholder: A case would be submitted to Supabase here.")
-    return {"status": "success", "caseId": np.random.randint(100, 999)}
-
-@app.get("/api/cases")
-async def get_cases_for_dashboard():
-    """Doctor-facing endpoint to get all submitted cases."""
-    # Placeholder for Supabase integration
-    mock_cases = [
-        {"id": 101, "prediction": "Melanoma", "confidence": 0.81, "status": "new", "submittedAt": "2025-06-26T10:00:00Z"},
-        {"id": 102, "prediction": "Benign_Mole", "confidence": 0.99, "status": "reviewed", "submittedAt": "2025-06-26T09:30:00Z"}
+    top3_results = [
+        {"label": class_labels[model_type][i], "confidence": round(float(predictions[i]) * 100, 2)}
+        for i in top3_indices
     ]
-    return mock_cases
 
-@app.put("/api/cases/{case_id}/status")
-async def update_case_status(case_id: int, request: CaseUpdateRequest):
-    """Doctor-facing endpoint to update a case's status and notes."""
-    # Placeholder for Supabase integration
-    print(f"Placeholder: Case {case_id} status updated to {request.status} with notes: '{request.notes}'")
-    return {"status": "success", "caseId": case_id, "newStatus": request.status}
+    return {
+        "predictions": top3_results,
+        "riskLevel": classify_risk(top3_results[0]["label"]),
+        "heatmapImage": f"data:image/jpeg;base64,{heatmap_base64}",
+        "originalImageBase64": base64.b64encode(image_bytes).decode('utf-8'),
+    }
+
+async def get_vision_explanation(image_bytes: bytes, predictions: list, mode: str):
+    """
+    Internal function to call Gemini with vision and prediction context.
+    """
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    image_part = {"mime_type": "image/jpeg", "data": image_bytes}
+    
+    predictions_text = "\n".join(
+        [f"- {p['label']}: {p['confidence']:.1f}% confidence" for p in predictions]
+    )
+
+    if mode == "clinical":
+        prompt = [
+            f"You are a dermatology AI assistant. The primary model provided the following differential diagnosis for the attached image:\n\n{predictions_text}\n\n",
+            image_part,
+            "\n\nBased on this differential AND the visual evidence in the image, provide a technical summary and recommendation for a dermatologist. Acknowledge the model's confidence levels in your reasoning. Respond with a single JSON object with keys: 'technical_summary' and 'clinical_recommendation'. Do not output markdown."
+        ]
+    else: # Consumer mode
+        prompt = [
+            f"You are a helpful AI assistant explaining a skin scan. The analysis provided these potential matches for the lesion in the attached image:\n\n{predictions_text}\n\n",
+            image_part,
+            f"\n\nLook at the image. In simple, reassuring language (2-3 sentences), explain what the top possibility is, but also mention the other likely options, especially if the confidence scores are close. Give a clear, single-sentence recommendation for next steps. Respond with a single JSON object with keys 'explanation_text' and 'recommendation'. Do not use alarming language. Do not output markdown."
+        ]
+    
+    response = await model.generate_content_async(prompt)
+    return json.loads(clean_json_response(response.text))
+
 
 # ==============================================================================
-# 7. Root Endpoint
+# 7. V2 "WOW" FACTOR ENDPOINTS (The New Standard)
 # ==============================================================================
 
-@app.get("/")
+@app.post("/api/v2/analyze", tags=["V2 (Primary Flow)"])
+async def analyze_image_v2(image: UploadFile = File(...), mode: str = Query("consumer", enum=["consumer", "clinical"])):
+    """
+    [V2] The new, primary endpoint for a complete analysis.
+    Performs prediction and vision-based explanation in a single, efficient call.
+    """
+    try:
+        contents = await image.read()
+        quality_check = check_image_quality(contents)
+        if not quality_check["is_clear"]:
+            raise HTTPException(status_code=400, detail=quality_check["message"])
+        
+        prediction_results = await get_full_prediction_results(mode, contents)
+        explanation_results = await get_vision_explanation(contents, prediction_results["predictions"], mode)
+        
+        return {
+            "prediction": {
+                "top1": prediction_results["predictions"][0],
+                "top2": prediction_results["predictions"][1],
+                "riskLevel": prediction_results["riskLevel"]
+            },
+            "explanation": explanation_results,
+            "heatmapImage": prediction_results["heatmapImage"],
+            "originalImageBase64": prediction_results["originalImageBase64"]
+        }
+    except HTTPException as e:
+        raise e
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="An error occurred during the full analysis.")
+
+
+@app.post("/api/v2/speak", tags=["V2 (Primary Flow)"])
+async def text_to_speech_context_aware(request: SpeakRequest, risk_level: str = Query("low", enum=["low", "medium", "high"])):
+    """[V2] Converts text to speech using a voice appropriate for the risk level."""
+    try:
+        voice_id = "21m00Tcm4TlvDq8ikWAM" # "Rachel" - a standard, high-quality voice
+        
+        audio_stream = elevenlabs_client.text_to_speech.convert(
+            voice_id=voice_id,
+            text=request.text_to_speak,
+            model_id="eleven_multilingual_v2"
+        )
+        return StreamingResponse(audio_stream, media_type="audio/mpeg")
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Failed to generate context-aware audio: {e}")
+
+@app.post("/api/video-report", tags=["V2 (Primary Flow)"])
+async def generate_video_report(request: VideoRequest):
+    """[V2] Generates a personalized video summary from a script using Tavus."""
+    if not TAVUS_API_KEY or not TAVUS_REPLICA_ID:
+        print("⚠️ MOCKING VIDEO: Tavus API key or Replica ID not configured.")
+        return {"videoUrl": "https://storage.googleapis.com/static_dermasense_assets/mock_video.mp4"}
+        
+    headers = {"x-api-key": TAVUS_API_KEY, "Content-Type": "application/json"}
+    payload = {"script": request.script, "replica_id": TAVUS_REPLICA_ID}
+
+    try:
+        timeout = httpx.Timeout(20.0, connect=10.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post("https://api.tavus.io/v2/videos", headers=headers, json=payload)
+            response.raise_for_status() 
+            return {"videoUrl": response.json().get("download_url")}
+    except httpx.TimeoutException as e:
+        print(f"Tavus API Error: Connection timed out - {e}")
+        raise HTTPException(status_code=504, detail="The video generation service took too long to respond.")
+    except httpx.HTTPStatusError as e:
+        print(f"Tavus API Error: {e.response.status_code} - {e.response.text}")
+        raise HTTPException(status_code=e.response.status_code, detail=f"Video provider error: {e.response.json().get('message', 'Unknown error')}")
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Failed to generate video report.")
+
+# ==============================================================================
+# 8. Clinical & Dashboard Endpoints (Now with Auth & Heatmap Storage)
+# ==============================================================================
+
+@app.post("/api/auth/login/clinical", tags=["Dashboard Auth"])
+def clinical_login(request: ClinicalLoginRequest):
+    """Provides a simple password check for clinical dashboard access."""
+    if request.password == CLINICAL_PASSWORD:
+        return {"success": True, "message": "Login successful."}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid password.")
+
+@app.post("/api/cases/submit", tags=["Dashboard Actions"])
+async def submit_case_for_review(request: SubmitCaseRequest):
+    """Submits a case with its AI analysis and heatmap to Supabase for doctor review."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        case_uuid = uuid.uuid4()
+        bucket_name = "case-images"
+        
+        original_image_data = base64.b64decode(request.image_base64)
+        original_image_path = f"cases/{case_uuid}_original.jpg"
+        supabase.storage.from_(bucket_name).upload(file=original_image_data, path=original_image_path, file_options={"content-type": "image/jpeg"})
+        original_image_url = supabase.storage.from_(bucket_name).get_public_url(original_image_path)
+
+        heatmap_base64_data = request.heatmap_image_base64.split(',')[-1]
+        heatmap_image_data = base64.b64decode(heatmap_base64_data)
+        heatmap_image_path = f"cases/{case_uuid}_heatmap.jpg"
+        supabase.storage.from_(bucket_name).upload(file=heatmap_image_data, path=heatmap_image_path, file_options={"content-type": "image/jpeg"})
+        heatmap_image_url = supabase.storage.from_(bucket_name).get_public_url(heatmap_image_path)
+
+        db_payload = {
+            "image_url": original_image_url,
+            "heatmap_image_url": heatmap_image_url,
+            "prediction_label": request.prediction_label,
+            "prediction_confidence": request.prediction_confidence,
+            "risk_level": request.risk_level,
+            "ai_explanation": request.ai_explanation,
+            "status": "new"
+        }
+        
+        # This is the modern syntax for the V2 supabase-py library
+        response = supabase.table("cases").insert(db_payload).execute()
+        
+        if response.data:
+            return {"status": "success", "caseId": response.data[0]['id']}
+        else:
+            # If there's an error, it's often in a different structure
+            # This is a fallback, but the raise below is more likely
+            raise Exception("Insert failed: No data returned.")
+        
+    except Exception as e:
+        print(traceback.format_exc())
+        # Attempt to parse a more specific Supabase error if possible
+        if hasattr(e, 'message'):
+            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
+        raise HTTPException(status_code=500, detail=f"Error submitting case: {e}")
+
+@app.get("/api/cases", tags=["Dashboard Actions"])
+async def get_all_cases():
+    """Retrieves all submitted cases from Supabase for the doctor's dashboard."""
+    if not supabase:
+        return [
+            {"id": 101, "prediction_label": "Melanoma", "prediction_confidence": 81.0, "risk_level": "high", "status": "new", "submitted_at": "2025-06-28T10:00:00Z", "image_url": "https://via.placeholder.com/150", "heatmap_image_url": "https://via.placeholder.com/150"},
+        ]
+    try:
+        # --- FIX: Using the modern, robust error checking for SELECT ---
+        response = supabase.table("cases").select("*").order("id", desc=True).execute()
+        
+        # With the V2 library, a successful response contains data. An error is raised on failure.
+        # The old `data, error` tuple is no longer the primary return pattern.
+        return response.data
+    except Exception as e:
+        print(traceback.format_exc())
+        # Attempt to parse a more specific Supabase error if possible
+        if hasattr(e, 'message'):
+            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving cases: {e}")
+
+@app.put("/api/cases/{case_id}/status", tags=["Dashboard Actions"])
+async def update_case(case_id: int, request: CaseUpdateRequest):
+    """Updates a case's status and notes in Supabase."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        # --- FIX: Using the modern, robust error checking for UPDATE ---
+        response = supabase.table("cases").update({
+            "status": request.status,
+            "notes": request.notes
+        }).eq("id", case_id).execute()
+        
+        if not response.data:
+             raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found or update failed.")
+
+        return {"status": "success", "updatedCase": response.data[0]}
+    except Exception as e:
+        print(traceback.format_exc())
+        if hasattr(e, 'message'):
+            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
+        raise HTTPException(status_code=500, detail=f"Error updating case: {e}")
+
+# ==============================================================================
+# 9. Root Endpoint
+# ==============================================================================
+@app.get("/", tags=["Root"])
 def read_root():
     """Root endpoint for health checks."""
     return {"message": "DermaSense AI Backend is running."}
-

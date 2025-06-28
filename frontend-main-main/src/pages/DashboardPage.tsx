@@ -1,114 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Download, Printer, Share2 } from 'lucide-react';
-import { formatDate } from '../lib/utils';
+import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Download, Printer, Share2, Save, Loader, X } from 'lucide-react';
 
-// --- TYPE DEFINITIONS (for TypeScript) ---
+// --- Helper Utility ---
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// --- TYPE DEFINITIONS ---
 interface Case {
   id: number;
   created_at: string;
-  prediction: string;
-  confidence: number;
+  prediction_label: string;
+  prediction_confidence: number;
   status: 'new' | 'reviewed' | 'flagged';
   patient_id?: string;
   image_url?: string;
-  heatmap_url?: string;
+  heatmap_image_url?: string;
+  notes?: string;
 }
 
-// --- DUMMY DATA (for immediate UI development) ---
-const DUMMY_CASES: Case[] = [
-  { 
-    id: 101, 
-    created_at: '2025-01-15T10:00:00Z', 
-    prediction: 'Melanoma', 
-    confidence: 0.81, 
-    status: 'new',
-    patient_id: 'PT-2025-001',
-    image_url: 'https://images.pexels.com/photos/4225880/pexels-photo-4225880.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/4225880/pexels-photo-4225880.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  { 
-    id: 102, 
-    created_at: '2025-01-15T09:30:00Z', 
-    prediction: 'Benign Mole', 
-    confidence: 0.99, 
-    status: 'new',
-    patient_id: 'PT-2025-002',
-    image_url: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  { 
-    id: 103, 
-    created_at: '2025-01-14T15:00:00Z', 
-    prediction: 'Actinic Keratosis', 
-    confidence: 0.92, 
-    status: 'reviewed',
-    patient_id: 'PT-2025-003',
-    image_url: 'https://images.pexels.com/photos/5726794/pexels-photo-5726794.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/5726794/pexels-photo-5726794.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  { 
-    id: 104, 
-    created_at: '2025-01-14T11:00:00Z', 
-    prediction: 'Basal Cell Carcinoma', 
-    confidence: 0.95, 
-    status: 'flagged',
-    patient_id: 'PT-2025-004',
-    image_url: 'https://images.pexels.com/photos/5726799/pexels-photo-5726799.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/5726799/pexels-photo-5726799.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  { 
-    id: 105, 
-    created_at: '2025-01-14T08:45:00Z', 
-    prediction: 'Seborrheic Keratosis', 
-    confidence: 0.88, 
-    status: 'new',
-    patient_id: 'PT-2025-005',
-    image_url: 'https://images.pexels.com/photos/4225880/pexels-photo-4225880.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/4225880/pexels-photo-4225880.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  { 
-    id: 106, 
-    created_at: '2025-01-13T16:20:00Z', 
-    prediction: 'Dermatofibroma', 
-    confidence: 0.76, 
-    status: 'reviewed',
-    patient_id: 'PT-2025-006',
-    image_url: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300',
-    heatmap_url: 'https://images.pexels.com/photos/5726706/pexels-photo-5726706.jpeg?auto=compress&cs=tinysrgb&w=300'
-  }
+const statusOptions: Array<{ value: Case['status']; label: string; icon: React.ElementType; color: string }> = [
+  { value: 'new', label: 'New', icon: Clock, color: 'text-primary-600' },
+  { value: 'reviewed', label: 'Reviewed', icon: CheckCircle, color: 'text-success-600' },
+  { value: 'flagged', label: 'Flagged', icon: AlertTriangle, color: 'text-warning-600' }
 ];
 
-// --- STYLING (using Tailwind CSS) ---
 const statusStyles = {
-  new: {
-    bg: 'bg-primary-100 dark:bg-primary-900/30',
-    text: 'text-primary-800 dark:text-primary-300',
-    icon: Clock,
-    label: 'New'
-  },
-  reviewed: {
-    bg: 'bg-success-100 dark:bg-success-900/30',
-    text: 'text-success-800 dark:text-success-300',
-    icon: CheckCircle,
-    label: 'Reviewed'
-  },
-  flagged: {
-    bg: 'bg-warning-100 dark:bg-warning-900/30',
-    text: 'text-warning-800 dark:text-warning-300',
-    icon: AlertTriangle,
-    label: 'Flagged'
-  },
+  new: { bg: 'bg-primary-100 dark:bg-primary-900/30', text: 'text-primary-800 dark:text-primary-300', icon: Clock, label: 'New' },
+  reviewed: { bg: 'bg-success-100 dark:bg-success-900/30', text: 'text-success-800 dark:text-success-300', icon: CheckCircle, label: 'Reviewed' },
+  flagged: { bg: 'bg-warning-100 dark:bg-warning-900/30', text: 'text-warning-800 dark:text-warning-300', icon: AlertTriangle, label: 'Flagged' }
 };
 
 const riskLevelColors = {
-  'Melanoma': 'text-error-600 dark:text-error-400',
-  'Basal Cell Carcinoma': 'text-warning-600 dark:text-warning-400',
-  'Actinic Keratosis': 'text-warning-600 dark:text-warning-400',
-  'Benign Mole': 'text-success-600 dark:text-success-400',
-  'Seborrheic Keratosis': 'text-primary-600 dark:text-primary-400',
-  'Dermatofibroma': 'text-primary-600 dark:text-primary-400',
+  'Melanoma': 'text-error-600 dark:text-error-400', 'Basal Cell Carcinoma': 'text-warning-600 dark:text-warning-400', 'Actinic Keratosis': 'text-warning-600 dark:text-warning-400',
+  'Benign Mole': 'text-success-600 dark:text-success-400', 'Seborrheic Keratosis': 'text-primary-600 dark:text-primary-400', 'Dermatofibroma': 'text-primary-600 dark:text-primary-400',
   'Vascular Lesion': 'text-primary-600 dark:text-primary-400'
 };
 
@@ -118,20 +51,36 @@ const DashboardPage: React.FC = () => {
   const [filteredCases, setFilteredCases] = useState<Case[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'new' | 'flagged'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'new' | 'reviewed' | 'flagged'>('all');
   const [expandedCase, setExpandedCase] = useState<number | null>(null);
+  const [currentNotes, setCurrentNotes] = useState('');
+  const [currentStatus, setCurrentStatus] = useState<Case['status']>('new');
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
 
-  // --- DATA FETCHING (Using dummy data for now) ---
+  // Modal for viewing images
+  const [modal, setModal] = useState<{ open: boolean; url: string; label: string } | null>(null);
+
   useEffect(() => {
-    // Simulate loading delay
-    setTimeout(() => {
-      setCases(DUMMY_CASES);
-      setFilteredCases(DUMMY_CASES);
-      setIsLoading(false);
-    }, 1000);
+    const fetchCases = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('http://localhost:8000/api/cases');
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.detail || 'Failed to fetch clinical cases.');
+        }
+        const data: Case[] = await response.json();
+        setCases(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCases();
   }, []);
 
-  // --- FILTERING LOGIC ---
   useEffect(() => {
     if (activeFilter === 'all') {
       setFilteredCases(cases);
@@ -140,21 +89,64 @@ const DashboardPage: React.FC = () => {
     }
   }, [activeFilter, cases]);
 
-  // --- STATISTICS ---
+  // Status and note editing logic
+  const handleCaseClick = (caseItem: Case) => {
+    if (expandedCase === caseItem.id) {
+      setExpandedCase(null);
+      setCurrentNotes('');
+      setCurrentStatus('new');
+    } else {
+      setExpandedCase(caseItem.id);
+      setCurrentNotes(caseItem.notes || '');
+      setCurrentStatus(caseItem.status);
+    }
+  };
+
+  // Update case (status/notes)
+  const handleUpdateCase = async (caseId: number) => {
+    setIsUpdating(caseId);
+    try {
+      const response = await fetch(`http://localhost:8000/api/cases/${caseId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: currentStatus, notes: currentNotes })
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Failed to update case status.');
+      }
+      const updatedCaseResponse = await response.json();
+      const updatedCase: Case = updatedCaseResponse.updatedCase;
+      setCases(prevCases =>
+        prevCases.map(c => c.id === caseId ? updatedCase : c)
+      );
+      setExpandedCase(null);
+    } catch (err) {
+      alert(`Error updating case: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  // Modal logic
+  useEffect(() => {
+    if (modal?.open) {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setModal(null);
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }
+  }, [modal]);
+
   const stats = {
     total: cases.length,
     new: cases.filter(c => c.status === 'new').length,
     reviewed: cases.filter(c => c.status === 'reviewed').length,
     flagged: cases.filter(c => c.status === 'flagged').length,
-    highRisk: cases.filter(c => ['Melanoma', 'Basal Cell Carcinoma'].includes(c.prediction)).length
+    highRisk: cases.filter(c => ['Melanoma', 'Basal Cell Carcinoma'].includes(c.prediction_label)).length
   };
 
-  // --- CASE DETAIL VIEW (EXPANDED ROW) ---
-  const handleCaseClick = (caseId: number) => {
-    setExpandedCase(expandedCase === caseId ? null : caseId);
-  };
-
-  // --- UI RENDER ---
   return (
     <>
       <Helmet>
@@ -180,13 +172,7 @@ const DashboardPage: React.FC = () => {
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-            <motion.div 
-              className="card p-4 hover:shadow-md transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              whileHover={{ y: -5 }}
-            >
+            <motion.div className="card p-4 hover:shadow-md transition-shadow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ y: -5 }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Total Cases</p>
@@ -197,14 +183,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="card p-4 hover:shadow-md transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ y: -5 }}
-            >
+            <motion.div className="card p-4 hover:shadow-md transition-shadow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ y: -5 }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">New Cases</p>
@@ -215,14 +194,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="card p-4 hover:shadow-md transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              whileHover={{ y: -5 }}
-            >
+            <motion.div className="card p-4 hover:shadow-md transition-shadow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -5 }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Reviewed</p>
@@ -233,14 +205,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="card p-4 hover:shadow-md transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              whileHover={{ y: -5 }}
-            >
+            <motion.div className="card p-4 hover:shadow-md transition-shadow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} whileHover={{ y: -5 }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Flagged</p>
@@ -251,14 +216,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="card p-4 hover:shadow-md transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              whileHover={{ y: -5 }}
-            >
+            <motion.div className="card p-4 hover:shadow-md transition-shadow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} whileHover={{ y: -5 }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">High Risk</p>
@@ -297,6 +255,16 @@ const DashboardPage: React.FC = () => {
                   New Cases ({stats.new})
                 </button>
                 <button
+                  onClick={() => setActiveFilter('reviewed')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                    activeFilter === 'reviewed'
+                      ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-300 shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-success-50 dark:hover:bg-success-900/20'
+                  }`}
+                >
+                  Reviewed ({stats.reviewed})
+                </button>
+                <button
                   onClick={() => setActiveFilter('flagged')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     activeFilter === 'flagged'
@@ -308,7 +276,6 @@ const DashboardPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            
             <div className="flex gap-2">
               <button className="btn btn-outline btn-sm px-3 py-2">
                 <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} />
@@ -332,7 +299,6 @@ const DashboardPage: React.FC = () => {
               <span className="ml-3">Loading cases...</span>
             </div>
           )}
-
           {error && (
             <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-4 mb-6">
               <p className="text-error-800 dark:text-error-400">{error}</p>
@@ -346,31 +312,18 @@ const DashboardPage: React.FC = () => {
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Case Details
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        AI Prediction
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Confidence
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Date Submitted
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Actions
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Case Details</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">AI Prediction</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Confidence</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date Submitted</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredCases.map((caseItem, index) => {
                       const StatusIcon = statusStyles[caseItem.status].icon;
                       const isExpanded = expandedCase === caseItem.id;
-                      
                       return (
                         <React.Fragment key={caseItem.id}>
                           <motion.tr
@@ -379,42 +332,27 @@ const DashboardPage: React.FC = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
                             className={`hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${isExpanded ? 'bg-slate-50 dark:bg-slate-800' : ''}`}
-                            onClick={() => handleCaseClick(caseItem.id)}
+                            onClick={() => handleCaseClick(caseItem)}
                           >
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="flex-shrink-0 h-12 w-12">
-                                  <img
-                                    className="h-12 w-12 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
-                                    src={caseItem.image_url}
-                                    alt="Case thumbnail"
-                                  />
+                                  <img className="h-12 w-12 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-sm" src={caseItem.image_url} alt="Case thumbnail" />
                                 </div>
                                 <div className="ml-4">
-                                  <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                    Case #{caseItem.id}
-                                  </div>
-                                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                                    {caseItem.patient_id}
-                                  </div>
+                                  <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Case #{caseItem.id}</div>
+                                  <div className="text-sm text-slate-500 dark:text-slate-400">{caseItem.patient_id || 'N/A'}</div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`text-sm font-medium ${riskLevelColors[caseItem.prediction as keyof typeof riskLevelColors] || 'text-slate-900 dark:text-slate-100'}`}>
-                                {caseItem.prediction}
-                              </span>
+                              <span className={`text-sm font-medium ${riskLevelColors[caseItem.prediction_label as keyof typeof riskLevelColors] || 'text-slate-900 dark:text-slate-100'}`}>{caseItem.prediction_label}</span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <div className="text-sm font-mono font-medium text-slate-900 dark:text-slate-100">
-                                  {(caseItem.confidence * 100).toFixed(1)}%
-                                </div>
+                                <div className="text-sm font-mono font-medium text-slate-900 dark:text-slate-100">{caseItem.prediction_confidence.toFixed(1)}%</div>
                                 <div className="ml-2 w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                                  <div
-                                    className="bg-primary-600 dark:bg-secondary-400 h-2 rounded-full"
-                                    style={{ width: `${caseItem.confidence * 100}%` }}
-                                  ></div>
+                                  <div className="bg-primary-600 dark:bg-secondary-400 h-2 rounded-full" style={{ width: `${caseItem.prediction_confidence}%` }}></div>
                                 </div>
                               </div>
                             </td>
@@ -434,7 +372,7 @@ const DashboardPage: React.FC = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCaseClick(caseItem.id);
+                                  handleCaseClick(caseItem);
                                 }}
                                 className="text-primary-600 dark:text-secondary-400 hover:text-primary-900 dark:hover:text-secondary-300 px-3 py-1 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                               >
@@ -442,112 +380,76 @@ const DashboardPage: React.FC = () => {
                               </button>
                             </td>
                           </motion.tr>
-                          
-                          {/* Expanded Case View */}
                           <AnimatePresence>
                             {isExpanded && (
                               <motion.tr
+                                layout
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.3 }}
-                                layout
                               >
-                                <td colSpan={6} className="px-6 py-4">
-                                  <div className="glass-panel p-6 rounded-xl">
+                                <td colSpan={6} className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50">
+                                  <div className="p-6 rounded-xl">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                      {/* Original Image */}
                                       <div>
                                         <h3 className="text-lg font-semibold mb-3">Original Image</h3>
                                         <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-md group">
-                                          <img
-                                            src={caseItem.image_url}
-                                            alt="Patient skin lesion"
-                                            className="w-full h-64 object-cover"
-                                          />
+                                          <img src={caseItem.image_url} alt="Patient skin lesion" className="w-full h-64 object-cover" />
                                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
-                                            <button className="btn btn-sm btn-primary">
+                                            <button
+                                              className="btn btn-sm btn-primary"
+                                              onClick={e => { e.stopPropagation(); setModal({ open: true, url: caseItem.image_url || '', label: 'Original Lesion Image' }); }}>
                                               View Full Size
                                             </button>
                                           </div>
                                         </div>
                                       </div>
-                                      
-                                      {/* Grad-CAM Heatmap */}
                                       <div>
-                                        <h3 className="text-lg font-semibold mb-3">AI Focus Area</h3>
+                                        <h3 className="text-lg font-semibold mb-3">AI Focus Area (Heatmap)</h3>
                                         <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-md group">
-                                          <img
-                                            src={caseItem.heatmap_url}
-                                            alt="AI analysis heatmap"
-                                            className="w-full h-64 object-cover"
-                                          />
+                                          <img src={caseItem.heatmap_image_url} alt="AI analysis heatmap" className="w-full h-64 object-cover" />
                                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
-                                            <button className="btn btn-sm btn-primary">
+                                            <button
+                                              className="btn btn-sm btn-primary"
+                                              onClick={e => { e.stopPropagation(); setModal({ open: true, url: caseItem.heatmap_image_url || '', label: 'AI Heatmap' }); }}>
                                               View Full Size
                                             </button>
                                           </div>
                                         </div>
-                                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                                          Highlighted areas show where the AI focused during analysis
-                                        </p>
                                       </div>
                                     </div>
-                                    
-                                    {/* Analysis Results */}
-                                    <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                      <h3 className="text-lg font-semibold mb-3">AI Analysis Results</h3>
-                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                          <p className="text-sm text-slate-600 dark:text-slate-400">Primary Diagnosis</p>
-                                          <p className={`text-lg font-semibold ${riskLevelColors[caseItem.prediction as keyof typeof riskLevelColors] || 'text-slate-800 dark:text-slate-200'}`}>
-                                            {caseItem.prediction}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-slate-600 dark:text-slate-400">Confidence Level</p>
-                                          <p className="text-lg font-semibold">{(caseItem.confidence * 100).toFixed(1)}%</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-slate-600 dark:text-slate-400">Risk Assessment</p>
-                                          <p className={`text-lg font-semibold ${
-                                            ['Melanoma', 'Basal Cell Carcinoma'].includes(caseItem.prediction) 
-                                              ? 'text-error-600 dark:text-error-400' 
-                                              : 'text-success-600 dark:text-success-400'
-                                          }`}>
-                                            {['Melanoma', 'Basal Cell Carcinoma'].includes(caseItem.prediction) ? 'High Risk' : 'Low Risk'}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Clinical Notes */}
                                     <div className="mt-6">
                                       <h3 className="text-lg font-semibold mb-3">Clinical Notes</h3>
                                       <textarea
+                                        value={currentNotes}
+                                        onChange={e => setCurrentNotes(e.target.value)}
                                         className="w-full h-24 p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        placeholder="Add your clinical observations and notes..."
+                                        placeholder="Add your clinical observations and diagnosis..."
                                       />
                                     </div>
-                                    
-                                    {/* Action Buttons */}
-                                    <div className="mt-6 flex flex-wrap gap-3">
-                                      <button className="btn btn-primary px-4 py-2">
-                                        <CheckCircle className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                                        Mark as Reviewed
-                                      </button>
-                                      <button className="btn btn-outline border-warning-500 text-warning-600 hover:bg-warning-50 dark:border-warning-400 dark:text-warning-400 dark:hover:bg-warning-900/20 px-4 py-2">
-                                        <AlertTriangle className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                                        Flag for Follow-up
-                                      </button>
-                                      <button className="btn btn-outline px-4 py-2">
-                                        <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                                        Print Report
-                                      </button>
-                                      <button 
-                                        className="btn btn-ghost ml-auto"
-                                        onClick={() => setExpandedCase(null)}
+                                    <div className="mt-6 flex flex-wrap gap-3 items-center">
+                                      <label className="mr-2 font-medium text-slate-600 dark:text-slate-300">Status:</label>
+                                      <select
+                                        value={currentStatus}
+                                        onChange={e => setCurrentStatus(e.target.value as Case['status'])}
+                                        className="rounded-lg border px-3 py-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-800 dark:border-slate-600"
                                       >
+                                        {statusOptions.map(option =>
+                                          <option key={option.value} value={option.value}>{option.label}</option>
+                                        )}
+                                      </select>
+                                      <button
+                                        onClick={() => handleUpdateCase(caseItem.id)}
+                                        disabled={isUpdating === caseItem.id}
+                                        className="btn btn-success px-4 py-2"
+                                      >
+                                        {isUpdating === caseItem.id
+                                          ? <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                          : <Save className="w-4 h-4 mr-2" />}
+                                        Save Changes
+                                      </button>
+                                      <button className="btn btn-ghost ml-auto" onClick={() => setExpandedCase(null)}>
                                         Close
                                       </button>
                                     </div>
@@ -562,7 +464,6 @@ const DashboardPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-
               {filteredCases.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-slate-500 dark:text-slate-400">No cases found for the selected filter.</p>
@@ -572,6 +473,37 @@ const DashboardPage: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Full Size Image Modal */}
+      <AnimatePresence>
+        {modal?.open && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setModal(null)}
+          >
+            <motion.div
+              className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 relative max-w-full max-h-full flex flex-col items-center"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-3 right-3 text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                onClick={() => setModal(null)}
+                aria-label="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <h3 className="mb-4 text-xl font-semibold">{modal.label}</h3>
+              <img src={modal.url} alt={modal.label} className="rounded-lg max-h-[75vh] max-w-full object-contain shadow" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
