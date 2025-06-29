@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3, Home, Shield, Info } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
-import { cn } from "../../lib/utils";
-import Logo from '../ui/Logo';
+import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3, Home, Shield, Info, User } from 'lucide-react';
+import { authAPI } from '../../services/api'
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState('dark');
   const navigate = useNavigate();
   const location = useLocation();
   
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const isAuthenticated = authAPI.isAuthenticated();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,10 +34,13 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
-    navigate('/');
+    authAPI.logout();
+    navigate('/login');
     closeMobileMenu();
   };
 
@@ -51,186 +52,371 @@ export default function Navbar() {
     ] : [])
   ];
 
+  // Generate floating particles for background
+  const particles = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    duration: Math.random() * 10 + 8,
+  }));
+
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        isScrolled
-          ? 'bg-slate-900/80 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
-      )}
-    >
-      <div className="container flex h-20 items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2 group" onClick={closeMobileMenu}>
-          <div className="relative">
-            <Logo className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" />
-            <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-2xl text-white">DermaSense</span>
-            <span className="text-xs text-secondary-400 -mt-1">AI Skin Analysis</span>
-          </div>
-        </Link>
-
-        <nav className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.name}
-              to={link.path}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors relative group',
-                  isActive 
-                    ? 'text-secondary-400' 
-                    : 'text-slate-300 hover:text-white'
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {link.icon}
-                  {link.name}
-                  {isActive && (
-                    <motion.span 
-                      layoutId="navbar-active-pill"
-                      className="absolute inset-0 bg-slate-800/80 -z-10 rounded-lg"
-                      transition={{ type: "spring", duration: 0.6 }}
-                    />
-                  )}
-                  <span className="absolute inset-0 rounded-lg bg-slate-800/0 group-hover:bg-slate-800/40 transition-colors -z-10"></span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="flex items-center">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-800 transition-colors mr-2"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={theme}
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
-              </motion.div>
-            </AnimatePresence>
-          </button>
-          
-          {isAuthenticated ? (
-            <div className="hidden md:flex items-center space-x-2">
-              <Link 
-                to="/dashboard" 
-                className="btn btn-outline btn-md px-4 py-2"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Dashboard
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="btn btn-ghost btn-md px-4 py-2 text-error-600 hover:text-error-700 hover:bg-error-50 dark:hover:bg-error-900/20"
-              >
-                <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="hidden md:flex items-center space-x-2">
-              <Link 
-                to="/scan" 
-                className="btn btn-primary btn-md px-4 py-2"
-              >
-                <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Scan Now
-              </Link>
-              <Link 
-                to="/login" 
-                className="btn btn-outline btn-md px-4 py-2"
-              >
-                Clinical Login
-              </Link>
-            </div>
-          )}
-
-          <button
-            onClick={toggleMobileMenu}
-            className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800"
-            aria-expanded={isMobileMenuOpen}
-          >
-            <span className="sr-only">Open main menu</span>
-            {isMobileMenuOpen ? <X className="block h-6 w-6" strokeWidth={1.5} /> : <Menu className="block h-6 w-6" strokeWidth={1.5} />}
-          </button>
-        </div>
-      </div>
-
+    <>
+      {/* Animated background particles - only visible when scrolled */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {isScrolled && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-slate-900 shadow-lg border-t border-slate-800"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed top-0 left-0 right-0 h-20 z-40 overflow-hidden pointer-events-none"
           >
-            <div className="pt-2 pb-4 space-y-1 px-4">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.name}
-                  to={link.path}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center px-3 py-2 rounded-md text-base font-medium',
-                      isActive
-                        ? 'bg-primary-900/30 text-primary-300'
-                        : 'hover:bg-slate-800 text-slate-300'
-                    )
-                  }
-                  onClick={closeMobileMenu}
-                >
-                  {link.icon}
-                  {link.name}
-                </NavLink>
-              ))}
-              
-              <div className="pt-2 border-t border-slate-800">
-                {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-error-600 hover:bg-error-900/20"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    Logout
-                  </button>
-                ) : (
-                  <>
-                    <Link
-                      to="/scan"
-                      className="flex items-center justify-center w-full btn btn-primary btn-md mb-2 px-4 py-2"
-                      onClick={closeMobileMenu}
-                    >
-                      <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                      Scan Now
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center w-full btn btn-outline btn-md px-4 py-2"
-                      onClick={closeMobileMenu}
-                    >
-                      Clinical Login
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
+            {particles.map((particle) => (
+              <motion.div
+                key={particle.id}
+                className="absolute bg-blue-400/10 rounded-full"
+                style={{
+                  left: `${particle.x}%`,
+                  top: `${particle.y}%`,
+                  width: `${particle.size}px`,
+                  height: `${particle.size}px`,
+                }}
+                animate={{
+                  x: [0, Math.random() * 30 - 15, 0],
+                  y: [0, -20, 0],
+                  opacity: [0, 0.6, 0],
+                }}
+                transition={{
+                  duration: particle.duration,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
+          isScrolled
+            ? 'bg-gradient-to-r from-gray-900/95 via-blue-900/95 to-black/95 backdrop-blur-xl shadow-2xl border-b border-white/10'
+            : 'bg-transparent'
+        }`}
+      >
+        {/* Flowing background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 opacity-60" />
+        
+        <div className="container mx-auto flex h-20 items-center justify-between px-4 relative z-10">
+          {/* Logo Section */}
+          <Link to="/" className="flex items-center space-x-3 group" onClick={closeMobileMenu}>
+            <motion.div 
+              className="relative"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div 
+                className="w-12 h-12 bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center relative overflow-hidden"
+                style={{ borderRadius: '1rem 0.3rem 1rem 0.3rem' }}
+              >
+                <User className="w-6 h-6 text-white" />
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+              </div>
+              <div className="absolute -inset-1 bg-blue-400/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </motion.div>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl text-white group-hover:text-blue-200 transition-colors duration-300">DermaSense</span>
+              <span className="text-xs text-blue-300/80 -mt-1">AI Skin Analysis</span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-2">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.name}
+                to={link.path}
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-2 text-sm font-medium transition-all duration-500 relative group ${
+                    isActive 
+                      ? 'text-blue-300' 
+                      : 'text-blue-200/80 hover:text-white'
+                  }`
+                }
+                style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+              >
+                {({ isActive }) => (
+                  <>
+                    {link.icon}
+                    {link.name}
+                    {isActive && (
+                      <motion.span 
+                        layoutId="navbar-active-pill"
+                        className="absolute inset-0 bg-white/10 backdrop-blur-sm border border-white/20 -z-10"
+                        style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+                        transition={{ type: "spring", duration: 0.6 }}
+                      />
+                    )}
+                    <span 
+                      className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500 -z-10 backdrop-blur-sm"
+                      style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+                    ></span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-3">
+            {/* Theme Toggle */}
+            <motion.button
+              onClick={toggleTheme}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 bg-white/5 hover:bg-white/10 border border-white/20 transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+              style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <motion.div
+                className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+              />
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={theme}
+                  initial={{ y: -20, opacity: 0, rotate: -180 }}
+                  animate={{ y: 0, opacity: 1, rotate: 0 }}
+                  exit={{ y: 20, opacity: 0, rotate: 180 }}
+                  transition={{ duration: 0.4 }}
+                  className="relative z-10"
+                >
+                  {theme === 'dark' ? 
+                    <Sun className="w-5 h-5 text-yellow-400" strokeWidth={1.5} /> : 
+                    <Moon className="w-5 h-5 text-blue-300" strokeWidth={1.5} />
+                  }
+                </motion.div>
+              </AnimatePresence>
+            </motion.button>
+            
+            {/* Authentication Actions */}
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center space-x-2">
+                <Link 
+                  to="/dashboard" 
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 border border-blue-500/30 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+                  style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                  />
+                  <div className="relative z-10 flex items-center">
+                    <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Dashboard
+                  </div>
+                </Link>
+                <motion.button
+                  onClick={handleLogout}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+                  style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                  />
+                  <div className="relative z-10 flex items-center">
+                    <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Logout
+                  </div>
+                </motion.button>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-2">
+                <Link 
+                  to="/scan" 
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-medium transition-all duration-500 relative overflow-hidden group"
+                  style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                  />
+                  <div className="relative z-10 flex items-center">
+                    <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Scan Now
+                  </div>
+                </Link>
+                <Link 
+                  to="/login" 
+                  className="flex items-center px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/20 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+                  style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                  />
+                  <div className="relative z-10 flex items-center">
+                    <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Clinical Login
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <motion.button
+              onClick={toggleMobileMenu}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex md:hidden items-center justify-center p-2 bg-white/5 hover:bg-white/10 border border-white/20 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm"
+              style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className="sr-only">Open main menu</span>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isMobileMenuOpen ? 'close' : 'open'}
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isMobileMenuOpen ? 
+                    <X className="block h-6 w-6" strokeWidth={1.5} /> : 
+                    <Menu className="block h-6 w-6" strokeWidth={1.5} />
+                  }
+                </motion.div>
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="md:hidden bg-gradient-to-r from-gray-900/95 via-blue-900/95 to-black/95 backdrop-blur-xl border-t border-white/10 relative overflow-hidden"
+            >
+              {/* Mobile menu background particles */}
+              <div className="absolute inset-0 overflow-hidden">
+                {particles.slice(0, 8).map((particle) => (
+                  <motion.div
+                    key={`mobile-${particle.id}`}
+                    className="absolute bg-blue-400/10 rounded-full"
+                    style={{
+                      left: `${particle.x}%`,
+                      top: `${particle.y}%`,
+                      width: `${particle.size}px`,
+                      height: `${particle.size}px`,
+                    }}
+                    animate={{
+                      x: [0, Math.random() * 20 - 10, 0],
+                      opacity: [0, 0.4, 0],
+                    }}
+                    transition={{
+                      duration: particle.duration,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="pt-4 pb-6 space-y-2 px-4 relative z-10">
+                {navLinks.map((link, index) => (
+                  <motion.div
+                    key={link.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.4 }}
+                  >
+                    <NavLink
+                      to={link.path}
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-3 text-base font-medium transition-all duration-500 backdrop-blur-sm ${
+                          isActive
+                            ? 'bg-blue-500/20 border border-blue-500/30 text-blue-200'
+                            : 'hover:bg-white/10 text-blue-200/80 hover:text-white border border-transparent hover:border-white/20'
+                        }`
+                      }
+                      style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                      onClick={closeMobileMenu}
+                    >
+                      {link.icon}
+                      {link.name}
+                    </NavLink>
+                  </motion.div>
+                ))}
+                
+                <div className="pt-4 border-t border-white/20 space-y-2">
+                  {isAuthenticated ? (
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4, duration: 0.4 }}
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-3 text-base font-medium text-red-200 hover:text-white bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-all duration-500 backdrop-blur-sm"
+                      style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                      Logout
+                    </motion.button>
+                  ) : (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.4 }}
+                      >
+                        <Link
+                          to="/scan"
+                          className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-medium transition-all duration-500"
+                          style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                          onClick={closeMobileMenu}
+                        >
+                          <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                          Scan Now
+                        </Link>
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5, duration: 0.4 }}
+                      >
+                        <Link
+                          to="/login"
+                          className="flex items-center justify-center w-full px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/20 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm"
+                          style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+                          onClick={closeMobileMenu}
+                        >
+                          <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                          Clinical Login
+                        </Link>
+                      </motion.div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+    </>
   );
 }

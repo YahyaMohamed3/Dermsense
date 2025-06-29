@@ -7,6 +7,8 @@ import ScanPage from './pages/ScanPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
+import SignupPage from './pages/SignupPage';
+import PatientLoginPage from './pages/PatientLoginPage';
 
 function App() {
   const location = useLocation();
@@ -18,6 +20,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="scan" element={<ScanPage />} />
+          <Route path="signUp" element={<SignupPage />} />
+          <Route path="PateintLogIn" element={<PatientLoginPage />} />
           <Route 
             path="dashboard" 
             element={

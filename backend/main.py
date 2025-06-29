@@ -1,6 +1,6 @@
 # ==============================================================================
 # DermaSense - FINAL & COMPLETE Backend API
-# Author: Yahya, Enhanced by Gemini
+# Author: Yahya
 # Date: June 28, 2025
 #
 # This is the final, prize-winning version. It includes all V1 and V2
@@ -435,3 +435,71 @@ async def update_case(case_id: int, request: CaseUpdateRequest):
 def read_root():
     """Root endpoint for health checks."""
     return {"message": "DermaSense AI Backend is running."}
+
+# ==============================================================================
+# 9. Patient Authentication Endpoints
+# ==============================================================================
+
+class PatientSignupRequest(BaseModel):
+    email: str
+    password: str
+    full_name: Optional[str] = None
+
+class PatientLoginRequest(BaseModel):
+    email: str
+    password: str
+
+@app.post("/api/auth/patient/signup", tags=["Patient Auth"])
+async def patient_signup(request: PatientSignupRequest):
+    """Handles new patient registration using Supabase Auth."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    
+    try:
+        # Create the user in Supabase's 'auth.users' table
+        auth_response = supabase.auth.sign_up({
+            "email": request.email,
+            "password": request.password,
+        })
+
+        # Check if the user object is valid
+        if not auth_response.user or not auth_response.user.id:
+            raise HTTPException(status_code=400, detail="Could not create user. The email might already be in use.")
+
+        # Insert the user's role and name into our public 'profiles' table
+        profile_data, error = supabase.table("profiles").insert({
+            "id": auth_response.user.id,
+            "full_name": request.full_name,
+            "role": "patient"
+        }).execute()
+        
+        if error:
+            # If profile insert fails, this is a server error
+            print(f"Failed to create profile for user {auth_response.user.id}: {error}")
+            # Optionally, you could try to delete the auth user here for cleanup
+            raise HTTPException(status_code=500, detail="Could not create user profile.")
+
+        return {"message": "Signup successful. Please check your email to verify your account."}
+
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred during signup: {str(e)}")
+
+
+@app.post("/api/auth/patient/login", tags=["Patient Auth"])
+async def patient_login(request: PatientLoginRequest):
+    """Handles patient login and returns a JWT session token."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        # Sign in the user and get back a session object
+        response = supabase.auth.sign_in_with_password({
+            "email": request.email,
+            "password": request.password
+        })
+        # The session object contains the access_token (JWT) and user details
+        return response
+    except Exception as e:
+        print(traceback.format_exc())
+        # The Supabase client often raises an error with a specific message for bad credentials
+        raise HTTPException(status_code=401, detail=str(e) or "Invalid login credentials.")
