@@ -31,6 +31,19 @@ export default function HomePage() {
         />
       </Helmet>
       
+      {/* Built with Bolt Badge */}
+      <div className="fixed top-24 right-4 z-50">
+        <a 
+          href="https://bolt.new" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-3 py-2 bg-black/80 hover:bg-black text-white text-sm font-medium rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 border border-white/10"
+        >
+          <span className="mr-1.5">⚡</span>
+          Built with Bolt.new
+        </a>
+      </div>
+      
       <HeroSection />
 
       {/* Features Section - immediately after hero */}
@@ -86,9 +99,9 @@ export default function HomePage() {
               className="glass-panel p-8 rounded-xl relative group"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative group">
                 <UploadCloud className="w-8 h-8" strokeWidth={1.5} />
-                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">1. Upload Securely</h3>
               <p className="text-slate-300">
@@ -106,9 +119,9 @@ export default function HomePage() {
               className="glass-panel p-8 rounded-xl relative group"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative group">
                 <Cpu className="w-8 h-8" strokeWidth={1.5} />
-                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">2. On-Device AI Analysis</h3>
               <p className="text-slate-300">
@@ -126,9 +139,9 @@ export default function HomePage() {
               className="glass-panel p-8 rounded-xl relative group"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
-              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative">
+              <div className="w-16 h-16 rounded-full bg-primary-900/50 flex items-center justify-center text-secondary-400 mb-6 relative group">
                 <Sparkles className="w-8 h-8" strokeWidth={1.5} />
-                <div className="absolute -inset-1 bg-secondary-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-secondary-400/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">3. Receive Instant Insight</h3>
               <p className="text-slate-300">
@@ -191,7 +204,7 @@ export default function HomePage() {
               whileHover={{ scale: 1.05 }}
               className="glass-panel p-6 rounded-xl"
             >
-              <h3 className="text-lg font-semibold mb-3 text-white">EfficientNet-B3 SOTA Model</h3>
+              <h3 className="text-lg font-semibold mb-3 text-white">EfficientNetB1 + SE Attention, Focal Loss</h3>
               <p className="text-slate-300 text-sm">
                 Our core clinical model achieves 97% Top-2 accuracy, competitive with published research.
               </p>
@@ -490,7 +503,7 @@ export default function HomePage() {
               transition={{ duration: 0.4, delay: 0.3 }}
               className="glass-panel p-6 rounded-xl text-center"
             >
-              <div className="text-4xl font-bold text-secondary-400 mb-2">&lt;3s</div>
+              <div className="text-4xl font-bold text-secondary-400 mb-2">{"<3s"}</div>
               <div className="text-sm text-slate-300">Analysis Time</div>
             </motion.div>
             
@@ -556,6 +569,19 @@ export default function HomePage() {
               <span className="relative z-10">Analyze Clinical Image</span>
               <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 relative z-10" strokeWidth={1.5} />
             </Link>
+            
+            {/* Built with Bolt.new Badge */}
+            <div className="mt-8 flex justify-center">
+              <a 
+                href="https://bolt.new" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-4 py-2 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-white border border-white/10 transition-colors"
+              >
+                <span className="mr-2">⚡</span>
+                Built with Bolt.new
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
