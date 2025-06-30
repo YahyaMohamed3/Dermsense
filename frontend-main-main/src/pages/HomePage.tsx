@@ -554,9 +554,7 @@ export default function HomePage() {
               <span className="absolute inset-0 w-0 bg-gradient-to-r from-secondary-400/20 to-secondary-400/0 group-hover:w-full transition-all duration-700"></span>
               <Microscope className="w-6 h-6 mr-3 relative z-10" strokeWidth={1.5} />
               <span className="relative z-10">Analyze Clinical Image</span>
-              <ArrowRight className="w-5 h-5
-  )
-} ml-2 transition-transform group-hover:translate-x-1 relative z-10" strokeWidth={1.5} />
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 relative z-10" strokeWidth={1.5} />
             </Link>
             
             {/* Built with Bolt.new Badge */}
@@ -575,6 +573,5 @@ export default function HomePage() {
         </div>
       </section>
     </>
-  )
   );
 }
