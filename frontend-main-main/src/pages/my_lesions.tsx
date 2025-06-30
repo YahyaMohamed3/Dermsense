@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, ArrowRight, Bot, Sparkles, ShieldCheck, ShieldAlert, History, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { api } from '../services/api';
-import LesionReview from '../components/PateintDashboard/lesionReview';
-import ScanHistory from '../components/PateintDashboard/scanHistory';
+import LesionReview from '../components/PateintDashboard/LesionReview';
+import ScanHistory from '../components/PateintDashboard/ScanHistory';
 
 interface Prediction {
     label: string;
