@@ -31,6 +31,19 @@ export default function HomePage() {
         />
       </Helmet>
       
+      {/* Built with Bolt Badge */}
+      <div className="fixed top-24 right-4 z-50">
+        <a 
+          href="https://bolt.new" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-3 py-2 bg-black/80 hover:bg-black text-white text-sm font-medium rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 border border-white/10"
+        >
+          <span className="mr-1.5">⚡</span>
+          Built with Bolt.new
+        </a>
+      </div>
+      
       <HeroSection />
 
       {/* Features Section - immediately after hero */}
