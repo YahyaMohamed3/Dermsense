@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, LogIn } from 'lucide-react';
-import { authAPI } from '../services/api';
+// --- FIX: Import the unified 'api' object ---
+import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const PatientLoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -44,21 +46,31 @@ const PatientLoginPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await authAPI.login({
+      // --- FIX: Use the new api.login method ---
+      await api.login({
         email: formData.email,
         password: formData.password
       });
+      
+      // --- NEW: Dispatch an event to notify the Navbar to update ---
+      window.dispatchEvent(new Event('authChange'));
 
-      navigate('/dashboard');
+      toast.success("Login successful!");
+      
+      // --- FIX: Navigate to the correct patient dashboard ---
+      navigate('/mylesion');
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during login';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    console.log('Google login clicked');
+    toast.error("Google login is not implemented yet.");
   };
 
   // Generate particles for background animation
@@ -172,7 +184,7 @@ const PatientLoginPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md relative z-10 mt-4"
       >
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 relative overflow-hidden"
              style={{

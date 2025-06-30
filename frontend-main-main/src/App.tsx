@@ -9,7 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
 import PatientLoginPage from './pages/PatientLoginPage';
-
+import MyLesionsPage from './pages/my_lesions';
 function App() {
   const location = useLocation();
   
@@ -22,6 +22,7 @@ function App() {
           <Route path="scan" element={<ScanPage />} />
           <Route path="signUp" element={<SignupPage />} />
           <Route path="PateintLogIn" element={<PatientLoginPage />} />
+          <Route path='Mylesion' element={<MyLesionsPage/>} />
           <Route 
             path="dashboard" 
             element={

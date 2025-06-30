@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion';
-import { ScanResult } from './ResultPanel';
 
-interface VisualAnalysisPanelProps {
-  result: ScanResult;
-  activeModel: 'clinical' | 'consumer';
+// FIX: Replaced the incorrect import with a local interface.
+// The component only requires 'heatmapImage' from the result object.
+interface ScanResult {
+  heatmapImage?: string;
 }
 
-export default function VisualAnalysisPanel({ result, activeModel }: VisualAnalysisPanelProps) {
+// FIX: Removed the 'activeModel' prop as it was unused.
+interface VisualAnalysisPanelProps {
+  result: ScanResult;
+}
+
+export default function VisualAnalysisPanel({ result }: VisualAnalysisPanelProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}

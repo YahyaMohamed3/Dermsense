@@ -2,14 +2,23 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Microscope, Smartphone, RotateCcw } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+
 import ImageUploader from '../components/scan/ImageUploader';
-import ResultPanel, { ScanResult, Explanation } from '../components/scan/ResultPanel';
+import ResultPanel, { Explanation } from '../components/scan/ResultPanel';
 import EducationalSidebar from '../components/scan/EducationalSidebar';
 import PrivacyNotice from '../components/scan/PrivacyNotice';
+import { api } from '../services/api';
 
-// Define a more specific type for the full analysis result from the V2 endpoint
+interface Prediction {
+    label: string;
+    confidence: number;
+}
+
 export interface AnalysisResult {
-  prediction: ScanResult;
+  predictions: Prediction[];
+  riskLevel: 'low' | 'medium' | 'high' | 'unknown';
   explanation: Explanation;
   heatmapImage: string;
   originalImageBase64: string;
@@ -18,15 +27,19 @@ export interface AnalysisResult {
 export default function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [activeModel, setActiveModel] = useState<'clinical' | 'consumer'>('clinical');
+  const [activeModel, setActiveModel] = useState<'clinical' | 'consumer'>('consumer');
   const [showSideBySide, setShowSideBySide] = useState(false);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [caseSubmissionStatus, setCaseSubmissionStatus] = useState<'idle' | 'submitting' | 'submitted' | 'error'>('idle');
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const lesionId = location.state?.lesionId;
+
   useEffect(() => {
     if (isProcessing) {
       setShowSideBySide(false);
-      setCaseSubmissionStatus('idle'); // Reset on new analysis
+      setCaseSubmissionStatus('idle');
     }
   }, [isProcessing]);
 
@@ -35,6 +48,7 @@ export default function ScanPage() {
     setShowSideBySide(false);
     setOriginalImageUrl(null);
     setCaseSubmissionStatus('idle');
+    navigate('/scan', { state: {}, replace: true });
   };
 
   const handleImageUpload = async (file: File) => {
@@ -44,7 +58,6 @@ export default function ScanPage() {
     setOriginalImageUrl(URL.createObjectURL(file));
 
     try {
-      // Use the new, more powerful V2 endpoint
       const endpoint = `http://localhost:8000/api/v2/analyze?mode=${activeModel}`;
       const formData = new FormData();
       formData.append("image", file);
@@ -58,27 +71,32 @@ export default function ScanPage() {
         const errData = await res.json();
         throw new Error(errData.detail || "Failed to get analysis from backend.");
       }
+      
+      const responseData = await res.json();
 
-      const data: AnalysisResult = await res.json();
-      setAnalysisResult(data);
+      const formattedResult: AnalysisResult = {
+        predictions: [
+          ...(responseData.prediction?.top1 ? [responseData.prediction.top1] : []),
+          ...(responseData.prediction?.top2 ? [responseData.prediction.top2] : [])
+        ],
+        riskLevel: responseData.prediction?.riskLevel,
+        explanation: responseData.explanation,
+        heatmapImage: responseData.heatmapImage,
+        originalImageBase64: responseData.originalImageBase64,
+      };
+      
+      setAnalysisResult(formattedResult);
       setTimeout(() => setShowSideBySide(true), 500);
 
     } catch (error) {
-      console.error("Error processing image:", error);
-      
-      // FIX: Check if error is an instance of Error before accessing .message
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-      
-      // Create a dummy error result to display
+      toast.error(errorMessage);
       setAnalysisResult({
-        prediction: {
-            top1: { label: "Error", confidence: 0 },
-            top2: { label: "N/A", confidence: 0 },
-            riskLevel: "unknown",
-        },
+        predictions: [{ label: "Analysis Error", confidence: 0 }],
+        riskLevel: "unknown",
         explanation: {
             explanation_text: `An error occurred while processing the image: ${errorMessage}`,
-            recommendation: "Please try again. If the problem persists, contact support."
+            recommendation: "Please try again. If the problem persists, check the console or contact support."
         },
         heatmapImage: "",
         originalImageBase64: ""
@@ -93,32 +111,32 @@ export default function ScanPage() {
 
     setCaseSubmissionStatus('submitting');
     try {
-        const { prediction, explanation, originalImageBase64, heatmapImage } = analysisResult;
+        const { predictions, riskLevel, explanation, originalImageBase64, heatmapImage } = analysisResult;
         
-        // This payload now correctly matches the backend's SubmitCaseRequest model
+        // FIX: Add the 'is_private' flag to the payload.
+        // It's true if a lesionId exists, ensuring it's treated as a private tracking scan.
         const payload = {
             image_base64: originalImageBase64,
             heatmap_image_base64: heatmapImage,
-            prediction_label: prediction.top1.label,
-            prediction_confidence: prediction.top1.confidence,
-            risk_level: prediction.riskLevel,
+            predictions: predictions,
+            risk_level: riskLevel,
             ai_explanation: explanation.explanation_text || explanation.technical_summary || "N/A",
+            lesion_id: lesionId || null,
+            is_private: !!lesionId, // This will be true if lesionId is present, false otherwise
         };
 
-        const res = await fetch("http://localhost:8000/api/cases/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        await api.submitCase(payload);
 
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.detail || "Failed to submit case for review.");
-        }
-
+        toast.success("Scan saved successfully! Returning to your dashboard...");
         setCaseSubmissionStatus('submitted');
+
+        setTimeout(() => {
+            navigate('/mylesion');
+        }, 1500);
+
     } catch (error) {
-        console.error("Error submitting case:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        toast.error(errorMessage);
         setCaseSubmissionStatus('error');
     }
   };
@@ -142,7 +160,6 @@ export default function ScanPage() {
 
       <div className="container pt-28 pb-20">
         <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,11 +170,9 @@ export default function ScanPage() {
             </h1>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Upload a clear image of your skin concern for instant AI-powered analysis.
-              Get insights and recommendations in seconds.
             </p>
           </motion.div>
 
-          {/* Model Selector */}
           <div className="flex justify-center mb-12">
             <div className="relative inline-flex rounded-lg bg-slate-800/80 p-1 shadow-inner">
               <button
@@ -177,19 +192,18 @@ export default function ScanPage() {
               <motion.div
                 className="absolute inset-0 z-0 rounded-md"
                 layoutId="modelSwitchBackground"
-                transition={{ type: "spring", duration: 0.5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 style={{
                   width: '50%',
                   height: '100%',
                   left: activeModel === 'clinical' ? '0%' : '50%'
                 }}
               >
-                <div className="w-full h-full bg-primary-700/80 rounded-md" />
+                <div className="w-full h-full bg-blue-600/80 rounded-md" />
               </motion.div>
             </div>
           </div>
 
-          {/* Image Uploader & Results Display */}
           <div className="mb-12">
             <AnimatePresence mode="wait">
               {!showSideBySide ? (
@@ -198,7 +212,7 @@ export default function ScanPage() {
                   initial={{ opacity: 1, y: 0 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 40 }}
-                  transition={{ duration: 0.17 }}
+                  transition={{ duration: 0.2 }}
                   className="w-full"
                 >
                   <ImageUploader
@@ -218,47 +232,44 @@ export default function ScanPage() {
                   <div className="w-full flex justify-center md:justify-end mb-8">
                     <button
                       onClick={handleNewAnalysis}
-                      className="flex items-center gap-3 px-7 py-3 rounded-full bg-primary-700 hover:bg-primary-600 active:scale-95 text-white font-bold text-lg shadow-lg transition-all duration-150 border-none outline-none focus:ring-2 focus:ring-primary-400"
-                      style={{ minWidth: 210, marginBottom: 8 }}
+                      className="flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-semibold shadow-lg transition-all duration-150"
                     >
-                      <RotateCcw className="w-5 h-5 mr-2" />
-                      Start New Analysis
+                      <RotateCcw className="w-5 h-5" />
+                      Analyze Another Image
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Original Image */}
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden h-[400px]"
+                      className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden h-full"
                     >
                       <div className="p-6">
                         <h3 className="text-xl font-semibold text-white mb-4">Original Image</h3>
-                        <div className="relative rounded-lg overflow-hidden h-[300px] flex items-center justify-center">
-                          <img
-                            src={originalImageUrl ?? ""}
+                        <div className="relative rounded-lg overflow-hidden aspect-square flex items-center justify-center bg-slate-900">
+                          {originalImageUrl && <img
+                            src={originalImageUrl}
                             alt="Original skin image"
-                            className="h-full w-full object-contain rounded-lg border border-slate-700"
-                          />
+                            className="h-full w-full object-contain"
+                          />}
                         </div>
                       </div>
                     </motion.div>
-                    {/* Grad-CAM Visual Explanation */}
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden h-[400px]"
+                      className="bg-slate-800/60 backdrop-blur-lg border border-slate-700 rounded-xl shadow-lg overflow-hidden h-full"
                     >
                       <div className="p-6">
                         <h3 className="text-xl font-semibold text-white mb-4">AI Visual Explanation</h3>
-                        <div className="relative rounded-lg overflow-hidden h-[300px] flex items-center justify-center">
-                          <img
-                            src={analysisResult?.heatmapImage ?? ""}
+                        <div className="relative rounded-lg overflow-hidden aspect-square flex items-center justify-center bg-slate-900">
+                           {analysisResult?.heatmapImage && <img
+                            src={analysisResult.heatmapImage}
                             alt="AI Grad-CAM Heatmap"
-                            className="h-full w-full object-contain rounded-lg border border-slate-700"
-                          />
+                            className="h-full w-full object-contain"
+                          />}
                         </div>
                       </div>
                     </motion.div>
@@ -268,7 +279,6 @@ export default function ScanPage() {
             </AnimatePresence>
           </div>
 
-          {/* Detailed Analysis Panel */}
           <AnimatePresence>
             {analysisResult && (
               <motion.div
@@ -277,18 +287,19 @@ export default function ScanPage() {
                 exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                {/* FIX: Removed the invalid 'analysisResult' prop. The component only needs 'result', 'explanation', etc. which are passed correctly. */}
                 <ResultPanel
-                  result={analysisResult.prediction}
+                  predictions={analysisResult.predictions}
+                  riskLevel={analysisResult.riskLevel}
                   explanation={analysisResult.explanation}
                   onSubmitForReview={handleSubmitForReview}
                   caseSubmissionStatus={caseSubmissionStatus}
+                  isLoggedIn={!!api.getAuthToken()}
+                  lesionId={lesionId}
                 />
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Educational Resources */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

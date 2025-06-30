@@ -1,6 +1,6 @@
 # ==============================================================================
 # DermaSense - FINAL & COMPLETE Backend API
-# Author: Yahya
+# Author: Yahya, Enhanced by Gemini
 # Date: June 28, 2025
 #
 # This is the final, prize-winning version. It includes all V1 and V2
@@ -26,13 +26,15 @@ from keras.models import load_model
 from keras.applications.efficientnet import preprocess_input as preprocess_b3
 from keras.applications.efficientnet_v2 import preprocess_input as preprocess_b4
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import elevenlabs
 from elevenlabs.client import ElevenLabs
 from fastapi.responses import StreamingResponse
 import httpx
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 
 # --- Import your custom XAI functions ---
 from x_ai import generate_gradcam, apply_heatmap_overlay
@@ -87,13 +89,15 @@ class SpeakRequest(BaseModel):
 class VideoRequest(BaseModel):
     script: str
 
+# FIX: Add an 'is_private' flag to differentiate tracking scans from clinical cases.
 class SubmitCaseRequest(BaseModel):
     image_base64: str
     heatmap_image_base64: str
-    prediction_label: str
-    prediction_confidence: float
+    predictions: List[dict]
     risk_level: str
     ai_explanation: str
+    lesion_id: Optional[int] = None
+    is_private: Optional[bool] = False # Default to False for public submission
 
 class CaseUpdateRequest(BaseModel):
     status: str
@@ -102,6 +106,19 @@ class CaseUpdateRequest(BaseModel):
 class ClinicalLoginRequest(BaseModel):
     password: str
 
+class PatientSignupRequest(BaseModel):
+    email: str
+    password: str
+    full_name: Optional[str] = None
+
+class PatientLoginRequest(BaseModel):
+    email: str
+    password: str
+    
+class LesionCreateRequest(BaseModel):
+    body_part: str
+    nickname: str
+
 # ==============================================================================
 # 3. FastAPI App Initialization & Global State
 # ==============================================================================
@@ -109,6 +126,7 @@ app = FastAPI(title="DermaSense AI Backend")
 
 models = {}
 class_labels = {}
+security = HTTPBearer()
 
 # --- CORS Middleware ---
 app.add_middleware(
@@ -157,6 +175,19 @@ def clean_json_response(text: str) -> str:
     """Strips markdown fences from a string to ensure valid JSON."""
     return text.strip().replace("```json", "").replace("```", "")
 
+def get_current_user(token: HTTPAuthorizationCredentials = Security(security)):
+    """Dependency to validate JWT and get user from Supabase."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        user_response = supabase.auth.get_user(token.credentials)
+        user = user_response.user
+        if not user:
+             raise HTTPException(status_code=401, detail="User not found for token.")
+        return user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token.")
+
 # ==============================================================================
 # 5. Application Startup Logic
 # ==============================================================================
@@ -192,8 +223,8 @@ async def get_full_prediction_results(model_type: str, image_bytes: bytes):
     target_size = (300, 300) if model_type == "clinical" else (380, 380)
     preprocess_fn = preprocess_b3 if model_type == "clinical" else preprocess_b4
     
-    pil_image = process_image(image_bytes, target_size=target_size)
-    img_array = preprocess_fn(np.array(pil_image))
+    pil_image_for_model = process_image(image_bytes, target_size=target_size)
+    img_array = preprocess_fn(np.array(pil_image_for_model))
     img_array_expanded = np.expand_dims(img_array, axis=0)
 
     predictions = models[model_type].predict(img_array_expanded)[0]
@@ -203,8 +234,10 @@ async def get_full_prediction_results(model_type: str, image_bytes: bytes):
     last_conv_layer = models[f"{model_type}_last_layer"]
     heatmap = generate_gradcam(img_array_expanded, models[model_type], last_conv_layer, class_index=top3_indices[0])
     
-    original_cv = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    original_pil = Image.open(BytesIO(image_bytes)).convert("RGB")
+    original_cv = cv2.cvtColor(np.array(original_pil), cv2.COLOR_RGB2BGR)
     overlay_img = apply_heatmap_overlay(original_cv, heatmap)
+    
     _, buffer = cv2.imencode('.jpg', overlay_img)
     heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
 
@@ -327,7 +360,7 @@ async def generate_video_report(request: VideoRequest):
         raise HTTPException(status_code=500, detail="Failed to generate video report.")
 
 # ==============================================================================
-# 8. Clinical & Dashboard Endpoints (Now with Auth & Heatmap Storage)
+# 8. Clinical & Dashboard Endpoints
 # ==============================================================================
 
 @app.post("/api/auth/login/clinical", tags=["Dashboard Auth"])
@@ -339,7 +372,7 @@ def clinical_login(request: ClinicalLoginRequest):
         raise HTTPException(status_code=401, detail="Invalid password.")
 
 @app.post("/api/cases/submit", tags=["Dashboard Actions"])
-async def submit_case_for_review(request: SubmitCaseRequest):
+async def submit_case_for_review(request: SubmitCaseRequest, current_user: dict = Depends(get_current_user)):
     """Submits a case with its AI analysis and heatmap to Supabase for doctor review."""
     if not supabase:
         raise HTTPException(status_code=503, detail="Database service is not configured.")
@@ -348,62 +381,55 @@ async def submit_case_for_review(request: SubmitCaseRequest):
         bucket_name = "case-images"
         
         original_image_data = base64.b64decode(request.image_base64)
-        original_image_path = f"cases/{case_uuid}_original.jpg"
+        original_image_path = f"cases/{current_user.id}/{case_uuid}_original.jpg"
         supabase.storage.from_(bucket_name).upload(file=original_image_data, path=original_image_path, file_options={"content-type": "image/jpeg"})
         original_image_url = supabase.storage.from_(bucket_name).get_public_url(original_image_path)
 
         heatmap_base64_data = request.heatmap_image_base64.split(',')[-1]
         heatmap_image_data = base64.b64decode(heatmap_base64_data)
-        heatmap_image_path = f"cases/{case_uuid}_heatmap.jpg"
+        heatmap_image_path = f"cases/{current_user.id}/{case_uuid}_heatmap.jpg"
         supabase.storage.from_(bucket_name).upload(file=heatmap_image_data, path=heatmap_image_path, file_options={"content-type": "image/jpeg"})
         heatmap_image_url = supabase.storage.from_(bucket_name).get_public_url(heatmap_image_path)
+
+        # FIX: Determine the status based on the 'is_private' flag.
+        status = "private" if request.is_private else "new"
 
         db_payload = {
             "image_url": original_image_url,
             "heatmap_image_url": heatmap_image_url,
-            "prediction_label": request.prediction_label,
-            "prediction_confidence": request.prediction_confidence,
+            "predictions": request.predictions,
             "risk_level": request.risk_level,
             "ai_explanation": request.ai_explanation,
-            "status": "new"
+            "status": status, # Use the determined status
+            "patient_id": current_user.id,
+            "lesion_id": request.lesion_id
         }
         
-        # This is the modern syntax for the V2 supabase-py library
-        response = supabase.table("cases").insert(db_payload).execute()
+        data, error = supabase.table("cases").insert(db_payload).execute()
         
-        if response.data:
-            return {"status": "success", "caseId": response.data[0]['id']}
-        else:
-            # If there's an error, it's often in a different structure
-            # This is a fallback, but the raise below is more likely
-            raise Exception("Insert failed: No data returned.")
-        
+        if error and not isinstance(error, tuple):
+            raise Exception(str(error.message))
+
+        return {"status": "success", "caseId": data[1][0]['id']}
     except Exception as e:
         print(traceback.format_exc())
-        # Attempt to parse a more specific Supabase error if possible
-        if hasattr(e, 'message'):
-            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
         raise HTTPException(status_code=500, detail=f"Error submitting case: {e}")
 
 @app.get("/api/cases", tags=["Dashboard Actions"])
 async def get_all_cases():
     """Retrieves all submitted cases from Supabase for the doctor's dashboard."""
     if not supabase:
-        return [
-            {"id": 101, "prediction_label": "Melanoma", "prediction_confidence": 81.0, "risk_level": "high", "status": "new", "submitted_at": "2025-06-28T10:00:00Z", "image_url": "https://via.placeholder.com/150", "heatmap_image_url": "https://via.placeholder.com/150"},
-        ]
+        return [{"id": 101, "predictions": [{"label": "Melanoma", "confidence": 81.0}], "risk_level": "high", "status": "new", "submitted_at": "2025-06-28T10:00:00Z", "image_url": "https://via.placeholder.com/150", "heatmap_image_url": "https://via.placeholder.com/150"}]
     try:
-        # --- FIX: Using the modern, robust error checking for SELECT ---
-        response = supabase.table("cases").select("*").order("id", desc=True).execute()
+        # FIX: Filter out private cases from the clinical dashboard view.
+        data, error = supabase.table("cases").select("*").neq("status", "private").order("id", desc=True).execute()
         
-        # With the V2 library, a successful response contains data. An error is raised on failure.
-        # The old `data, error` tuple is no longer the primary return pattern.
-        return response.data
+        if error and not isinstance(error, tuple):
+             raise Exception(str(error))
+        
+        return data[1]
     except Exception as e:
         print(traceback.format_exc())
-        # Attempt to parse a more specific Supabase error if possible
-        if hasattr(e, 'message'):
-            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
         raise HTTPException(status_code=500, detail=f"Error retrieving cases: {e}")
 
 @app.put("/api/cases/{case_id}/status", tags=["Dashboard Actions"])
@@ -412,72 +438,66 @@ async def update_case(case_id: int, request: CaseUpdateRequest):
     if not supabase:
         raise HTTPException(status_code=503, detail="Database service is not configured.")
     try:
-        # --- FIX: Using the modern, robust error checking for UPDATE ---
-        response = supabase.table("cases").update({
+        data, error = supabase.table("cases").update({
             "status": request.status,
             "notes": request.notes
         }).eq("id", case_id).execute()
         
-        if not response.data:
+        if error and not isinstance(error, tuple):
+             raise Exception(str(error))
+
+        if not data[1]:
              raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found or update failed.")
 
-        return {"status": "success", "updatedCase": response.data[0]}
+        return {"status": "success", "updatedCase": data[1][0]}
     except Exception as e:
         print(traceback.format_exc())
-        if hasattr(e, 'message'):
-            raise HTTPException(status_code=500, detail=f"Database Error: {e.message}")
         raise HTTPException(status_code=500, detail=f"Error updating case: {e}")
 
 # ==============================================================================
-# 9. Root Endpoint
-# ==============================================================================
-@app.get("/", tags=["Root"])
-def read_root():
-    """Root endpoint for health checks."""
-    return {"message": "DermaSense AI Backend is running."}
-
-# ==============================================================================
-# 9. Patient Authentication Endpoints
+# 9. Patient Authentication Endpoints (For Future Lesion Tracking)
 # ==============================================================================
 
-class PatientSignupRequest(BaseModel):
-    email: str
-    password: str
-    full_name: Optional[str] = None
+@app.get("/api/auth/patient/me", tags=["Patient Auth"])
+async def get_my_profile(current_user: dict = Depends(get_current_user)):
+    """Retrieves the profile data for the currently authenticated patient."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        data, error = supabase.table("profiles").select("*").eq("id", current_user.id).single().execute()
 
-class PatientLoginRequest(BaseModel):
-    email: str
-    password: str
+        if error and not isinstance(error, tuple):
+            raise HTTPException(status_code=404, detail="User profile not found.")
+
+        return data[1]
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred while fetching user profile: {str(e)}")
+
 
 @app.post("/api/auth/patient/signup", tags=["Patient Auth"])
 async def patient_signup(request: PatientSignupRequest):
     """Handles new patient registration using Supabase Auth."""
     if not supabase:
         raise HTTPException(status_code=503, detail="Database service is not configured.")
-    
     try:
-        # Create the user in Supabase's 'auth.users' table
+        # Step 1: Create the user in Supabase Auth. This is all this function will do now.
         auth_response = supabase.auth.sign_up({
             "email": request.email,
             "password": request.password,
+            # Pass the full_name in the user_metadata so the trigger can access it
+            "options": {
+                "data": {
+                    "full_name": request.full_name
+                }
+            }
         })
-
-        # Check if the user object is valid
-        if not auth_response.user or not auth_response.user.id:
-            raise HTTPException(status_code=400, detail="Could not create user. The email might already be in use.")
-
-        # Insert the user's role and name into our public 'profiles' table
-        profile_data, error = supabase.table("profiles").insert({
-            "id": auth_response.user.id,
-            "full_name": request.full_name,
-            "role": "patient"
-        }).execute()
         
-        if error:
-            # If profile insert fails, this is a server error
-            print(f"Failed to create profile for user {auth_response.user.id}: {error}")
-            # Optionally, you could try to delete the auth user here for cleanup
-            raise HTTPException(status_code=500, detail="Could not create user profile.")
+        # The database trigger will handle creating the profile automatically.
+        # We no longer need to insert into the 'profiles' table from here.
+
+        if not auth_response.user:
+            raise HTTPException(status_code=400, detail="Could not create user. The email might already be in use.")
 
         return {"message": "Signup successful. Please check your email to verify your account."}
 
@@ -485,21 +505,192 @@ async def patient_signup(request: PatientSignupRequest):
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"An error occurred during signup: {str(e)}")
 
-
 @app.post("/api/auth/patient/login", tags=["Patient Auth"])
 async def patient_login(request: PatientLoginRequest):
     """Handles patient login and returns a JWT session token."""
     if not supabase:
         raise HTTPException(status_code=503, detail="Database service is not configured.")
     try:
-        # Sign in the user and get back a session object
         response = supabase.auth.sign_in_with_password({
             "email": request.email,
             "password": request.password
         })
-        # The session object contains the access_token (JWT) and user details
         return response
     except Exception as e:
         print(traceback.format_exc())
-        # The Supabase client often raises an error with a specific message for bad credentials
         raise HTTPException(status_code=401, detail=str(e) or "Invalid login credentials.")
+
+# ==============================================================================
+# 10. Lesion Tracking Endpoints (Protected)
+# ==============================================================================
+
+@app.post("/api/lesions", tags=["Lesion Tracking"])
+async def create_lesion(request: LesionCreateRequest, current_user: dict = Depends(get_current_user)):
+    """Creates a new lesion record for the currently authenticated patient."""
+    db_payload = { "patient_id": current_user.id, "body_part": request.body_part, "nickname": request.nickname }
+    data, error = supabase.table("lesions").insert(db_payload).execute()
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=str(error))
+    return data[1][0]
+
+@app.get("/api/lesions", tags=["Lesion Tracking"])
+async def get_patient_lesions(current_user: dict = Depends(get_current_user)):
+    """Gets all tracked lesions for the currently authenticated patient."""
+    data, error = supabase.table("lesions").select("*").eq("patient_id", current_user.id).order("id", desc=True).execute()
+    print(data)
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=str(error))
+    return data[1]
+
+@app.get("/api/lesions/{lesion_id}/scans", tags=["Lesion Tracking"])
+async def get_lesion_scans(lesion_id: int, current_user: dict = Depends(get_current_user)):
+    """Gets all scans for a specific lesion belonging to the current patient."""
+    data, error = supabase.table("cases").select("*").eq("lesion_id", lesion_id).eq("patient_id", current_user.id).order("submitted_at", desc=True).execute()
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=str(error))
+    return data[1]
+
+@app.delete("/api/lesions/{lesion_id}", tags=["Lesion Tracking"])
+async def delete_lesion(lesion_id: int, current_user: dict = Depends(get_current_user)):
+    """Deletes a lesion and all its associated scans for the current patient."""
+    data, error = supabase.table("lesions").delete().eq("id", lesion_id).eq("patient_id", current_user.id).execute()
+
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=f"Failed to delete lesion: {error.message}")
+
+    if not data or not data[1]:
+        raise HTTPException(status_code=404, detail="Lesion not found or you do not have permission to delete it.")
+    
+    return {"message": "Lesion and all associated scans deleted successfully."}
+
+
+@app.post("/api/lesions/{lesion_id}/scans", tags=["Lesion Tracking"])
+async def add_scan_to_lesion(lesion_id: int, image: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Performs a full analysis and saves it as a scan for a specific lesion."""
+    lesion_res_data, lesion_res_error = supabase.table("lesions").select("id").eq("id", lesion_id).eq("patient_id", current_user.id).execute()
+    if lesion_res_error and not isinstance(lesion_res_error, tuple):
+        raise HTTPException(status_code=500, detail=str(lesion_res_error))
+    if not lesion_res_data[1]:
+        raise HTTPException(status_code=404, detail="Lesion not found or access denied.")
+
+    analysis_results = await analyze_image_v2(image, mode="consumer")
+    
+    prediction_data = analysis_results["prediction"]
+    
+    submit_req = SubmitCaseRequest(
+        image_base64=analysis_results["originalImageBase64"],
+        heatmap_image_base64=analysis_results["heatmapImage"],
+        predictions=[prediction_data["top1"], prediction_data["top2"]],
+        risk_level=prediction_data["riskLevel"],
+        ai_explanation=analysis_results["explanation"]["explanation_text"],
+        lesion_id=lesion_id,
+        is_private=True # Always private when adding through the lesion tracking flow
+    )
+    
+    return await submit_case_for_review(submit_req, current_user)
+
+
+# ==============================================================================
+# 11. AI Comparison Endpoint (The "Winning Move" Feature)
+# ==============================================================================
+
+async def get_comparison_explanation(image1_bytes: bytes, image2_bytes: bytes, analysis1: dict, analysis2: dict, time_diff_str: str):
+    """
+    Uses Gemini's multimodal capabilities to compare two scans of the same lesion.
+    """
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    img1_part = {"mime_type": "image/jpeg", "data": image1_bytes}
+    img2_part = {"mime_type": "image/jpeg", "data": image2_bytes}
+
+    prev_pred = (analysis1.get('predictions') or [{}])[0]
+    latest_pred = (analysis2.get('predictions') or [{}])[0]
+
+    prompt_text = f"""
+    You are an expert dermatology AI assistant performing a temporal analysis on a single skin lesion.
+    Analyze the two provided images, 'Scan 1 (Older)' and 'Scan 2 (Newer)', which were taken approximately {time_diff_str} apart.
+
+    PREVIOUS SCAN (Scan 1):
+    - AI's Top Prediction: {prev_pred.get('label', 'N/A')}
+    - AI's Confidence: {prev_pred.get('confidence', 0):.1f}%
+
+    CURRENT SCAN (Scan 2):
+    - AI's Top Prediction: {latest_pred.get('label', 'N/A')}
+    - AI's Confidence: {latest_pred.get('confidence', 0):.1f}%
+
+    INSTRUCTIONS:
+    1.  Visually compare Scan 1 and Scan 2.
+    2.  Provide a clinical summary focusing on any evolution or changes in the lesion's characteristics (the "E" in the ABCDEs of melanoma).
+    3.  Specifically comment on any observable changes in: Asymmetry, Border irregularity, Color variegation, and Diameter.
+    4.  Conclude with a clear recommendation based on the observed changes. If there are significant changes suggesting progression towards malignancy (e.g., new colors, rapid growth, border changes), state the urgency for an in-person dermatological consultation.
+
+    Respond with a single JSON object with two keys: "change_summary" and "change_recommendation". Do not output markdown.
+    """
+    
+    full_prompt = [prompt_text, "Scan 1 (Older):", img1_part, "Scan 2 (Newer):", img2_part]
+    
+    response = await model.generate_content_async(full_prompt)
+    return json.loads(clean_json_response(response.text))
+
+
+@app.get("/api/lesions/{lesion_id}/compare", tags=["Lesion Tracking"])
+async def compare_lesion_scans(lesion_id: int, current_user: dict = Depends(get_current_user)):
+    """Compares the two most recent scans for a given lesion and provides an AI analysis."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+        
+    try:
+        data, error = supabase.table("cases").select("*").eq("lesion_id", lesion_id).eq("patient_id", current_user.id).order("submitted_at", desc=True).limit(2).execute()
+        
+        if error and not isinstance(error, tuple):
+             raise Exception(str(error))
+        
+        scans = data[1]
+        if len(scans) < 2:
+            raise HTTPException(status_code=404, detail="Fewer than two scans found for this lesion. Comparison not possible.")
+
+        latest_scan = scans[0]
+        previous_scan = scans[1]
+        
+        async with httpx.AsyncClient() as client:
+            latest_image_res = await client.get(latest_scan['image_url'])
+            previous_image_res = await client.get(previous_scan['image_url'])
+            latest_image_res.raise_for_status()
+            previous_image_res.raise_for_status()
+
+        from datetime import datetime, timezone
+        
+        def parse_datetime(dt_str):
+            try:
+                return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+            except ValueError:
+                return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
+
+        t1 = parse_datetime(previous_scan['submitted_at'])
+        t2 = parse_datetime(latest_scan['submitted_at'])
+        
+        time_difference = t2 - t1
+        days_diff = time_difference.days
+        
+        comparison_result = await get_comparison_explanation(
+            image1_bytes=previous_image_res.content,
+            image2_bytes=latest_image_res.content,
+            analysis1=previous_scan,
+            analysis2=latest_scan,
+            time_diff_str=f"{days_diff} days"
+        )
+        
+        return comparison_result
+
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred during comparison: {str(e)}")
+
+
+# ==============================================================================
+# 12. Root Endpoint
+# ==============================================================================
+@app.get("/", tags=["Root"])
+def read_root():
+    """Root endpoint for health checks."""
+    return {"message": "DermaSense AI Backend is running."}

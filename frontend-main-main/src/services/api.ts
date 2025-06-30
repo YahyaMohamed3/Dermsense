@@ -1,82 +1,125 @@
-interface PatientSignupRequest {
+import { Navigate } from "react-router-dom";
+
+// --- TYPE DEFINITIONS ---
+export interface PatientSignupRequest {
   email: string;
   password: string;
   full_name?: string;
 }
 
-interface PatientLoginRequest {
+export interface PatientLoginRequest {
   email: string;
   password: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   session: {
     access_token: string;
     refresh_token: string;
+    [key: string]: any;
   };
   user: {
     id: string;
     email: string;
+    [key: string]: any;
   };
 }
 
-const API_BASE_URL = 'http://localhost:8000'; // Update this to your backend URL
+export interface LesionData {
+    nickname: string;
+    body_part: string;
+}
 
-export const authAPI = {
-  async signup(data: PatientSignupRequest): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/patient/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+export interface CaseStatusUpdate {
+    status: string;
+    notes?: string;
+}
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Signup failed');
-    }
+export type SubmitCasePayload = Record<string, any>;
 
-    return response.json();
-  },
 
-  async login(data: PatientLoginRequest): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/patient/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+// --- CORE LOGIC ---
+const API_BASE_URL = 'http://localhost:8000';
+const AUTH_TOKEN_KEY = 'derma-sense-auth-token';
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Login failed');
-    }
+/**
+ * Retrieves the authentication token from localStorage.
+ * This function is exported for potential direct use but is also included in the 'api' object.
+ * @returns The token string or null if not found.
+ */
+export const getAuthToken = (): string | null => {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
+};
 
-    const result = await response.json();
-    
-    // Save session to localStorage
-    if (result.session?.access_token) {
-      localStorage.setItem('access_token', result.session.access_token);
-      localStorage.setItem('refresh_token', result.session.refresh_token);
-      localStorage.setItem('user', JSON.stringify(result.user));
-    }
+/**
+ * A robust helper function for making all API requests.
+ */
+const apiFetch = async (url: string, options: RequestInit = {}) => {
+  const token = getAuthToken();
 
-    return result;
-  },
+  const headers = new Headers(options.headers);
+  headers.set('Content-Type', 'application/json');
 
-  logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-  },
-
-  getToken(): string | null {
-    return localStorage.getItem('access_token');
-  },
-
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
+
+  const response = await fetch(`${API_BASE_URL}${url}`, { ...options, headers });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'An unknown server error occurred.' }));
+    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+  
+  return response.json();
+};
+
+// --- UNIFIED API SERVICE OBJECT ---
+export const api = {
+  // --- Authentication ---
+  async signup(data: PatientSignupRequest) {
+    return apiFetch('/api/auth/patient/signup', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async login(data: PatientLoginRequest): Promise<LoginResponse> {
+    const response: LoginResponse = await apiFetch('/api/auth/patient/login', { method: 'POST', body: JSON.stringify(data) });
+    if (response.session?.access_token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, response.session.access_token);
+    }
+    return response;
+  },
+  logout() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  },
+
+  // FIX: This line makes getAuthToken available as a method on the 'api' object.
+  getAuthToken: getAuthToken,
+  
+  // --- Clinical-Specific Auth ---
+  async clinicalLogin(password: string) {
+    const response = await apiFetch('/api/auth/login/clinical', { method: 'POST', body: JSON.stringify({ password }) });
+    if (response.success) {
+      localStorage.setItem('isClinicalAuthenticated', 'true');
+    }
+    return response;
+  },
+  clinicalLogout() {
+      localStorage.removeItem('isClinicalAuthenticated');
+  },
+  
+  // --- Patient & Lesion Data ---
+  getMyProfile: () => apiFetch('/api/auth/patient/me'),
+  getMyLesions: () => apiFetch('/api/lesions'),
+  getLesionScans: (lesionId: number) => apiFetch(`/api/lesions/${lesionId}/scans`),
+  getLesionComparison: (lesionId: number) => apiFetch(`/api/lesions/${lesionId}/compare`),
+  createLesion: (data: LesionData) => apiFetch('/api/lesions', { method: 'POST', body: JSON.stringify(data) }),
+  deleteLesion: (lesionId: number) => apiFetch(`/api/lesions/${lesionId}`, { method: 'DELETE' }),
+
+  // --- Case & Scan Management ---
+  submitCase: (payload: SubmitCasePayload) => apiFetch('/api/cases/submit', { method: 'POST', body: JSON.stringify(payload) }),
+  getCases: () => apiFetch('/api/cases'),
+  updateCaseStatus: (caseId: number, data: CaseStatusUpdate) => apiFetch(`/api/cases/${caseId}/status`, { method: 'PUT', body: JSON.stringify(data) }),
 };

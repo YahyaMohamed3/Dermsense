@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, UserCheck } from 'lucide-react';
-import { authAPI } from '../services/api';
+// --- FIX: Import the unified 'api' object ---
+import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,12 +18,16 @@ const SignupPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [confirmTouched, setConfirmTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+    if (name === 'confirmPassword') setConfirmTouched(true);
+    if (name === 'password') setPasswordTouched(true);
   };
 
   const validateForm = () => {
@@ -56,26 +62,39 @@ const SignupPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await authAPI.signup({
+      // --- FIX: Use the new api.signup method ---
+      const response = await api.signup({
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name
       });
 
       setSuccess(response.message);
+      toast.success(response.message);
+      
+      // --- FIX: Redirect to the login page after success ---
       setTimeout(() => {
-        navigate('/login');
+        navigate('/PateintLogIn');
       }, 2000);
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during signup');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during signup';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignup = () => {
-    console.log('Google signup clicked');
+    toast.error("Google signup is not implemented yet.");
   };
+
+  // Password match logic
+  const passwordsEntered = formData.password && formData.confirmPassword;
+  const passwordsMatch = formData.password === formData.confirmPassword && passwordsEntered;
+  const showMatchStatus =
+    (confirmTouched || passwordTouched) && formData.confirmPassword.length > 0;
 
   // Generate particles for background animation
   const particles = Array.from({ length: 50 }, (_, i) => ({
@@ -87,7 +106,7 @@ const SignupPage: React.FC = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center p-4 relative overflow-hidden mt-24">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {particles.map((particle) => (
@@ -164,9 +183,9 @@ const SignupPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md relative z-10 mt-4"
       >
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 relative overflow-hidden"
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 pt-14 pb-14 px-8 relative overflow-hidden"
              style={{
                borderRadius: '2rem 1rem 2rem 1rem',
                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
@@ -305,6 +324,7 @@ const SignupPage: React.FC = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
+                  onBlur={() => setConfirmTouched(true)}
                   className="w-full bg-white/5 border border-white/20 pl-12 pr-12 py-4 text-white placeholder-blue-200/60 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300 backdrop-blur-sm"
                   style={{ borderRadius: '1rem 0.5rem 1rem 0.5rem' }}
                   placeholder="Confirm your password"
@@ -318,6 +338,20 @@ const SignupPage: React.FC = () => {
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {/* Live Password Match Status */}
+              {showMatchStatus && (
+                <div className="mt-2 transition-all">
+                  {passwordsMatch ? (
+                    <span className="text-green-400 bg-green-900/30 px-3 py-1 rounded-xl text-xs font-medium">
+                      ✅ Passwords match
+                    </span>
+                  ) : (
+                    <span className="text-red-400 bg-red-900/30 px-3 py-1 rounded-xl text-xs font-medium">
+                      ❌ Passwords do not match
+                    </span>
+                  )}
+                </div>
+              )}
             </motion.div>
 
             <motion.button
@@ -397,7 +431,7 @@ const SignupPage: React.FC = () => {
             <p className="text-blue-200/80">
               Already have an account?{' '}
               <Link
-                to="/login"
+                to="/PateintLogIn"
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300"
               >
                 Sign in here

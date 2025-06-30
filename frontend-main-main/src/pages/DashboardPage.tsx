@@ -5,6 +5,7 @@ import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Download, Pri
 
 // --- Helper Utility ---
 const formatDate = (dateString: string) => {
+  if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -15,11 +16,11 @@ const formatDate = (dateString: string) => {
 };
 
 // --- TYPE DEFINITIONS ---
+// FIX: Update the Case interface to match the actual API response from the database.
 interface Case {
   id: number;
   created_at: string;
-  prediction_label: string;
-  prediction_confidence: number;
+  predictions: { label: string; confidence: number }[]; // Expect a 'predictions' array
   status: 'new' | 'reviewed' | 'flagged';
   patient_id?: string;
   image_url?: string;
@@ -139,12 +140,16 @@ const DashboardPage: React.FC = () => {
     }
   }, [modal]);
 
+  // FIX: Update stats calculation to use the correct data structure.
   const stats = {
     total: cases.length,
     new: cases.filter(c => c.status === 'new').length,
     reviewed: cases.filter(c => c.status === 'reviewed').length,
     flagged: cases.filter(c => c.status === 'flagged').length,
-    highRisk: cases.filter(c => ['Melanoma', 'Basal Cell Carcinoma'].includes(c.prediction_label)).length
+    highRisk: cases.filter(c => {
+      const topLabel = c.predictions?.[0]?.label;
+      return topLabel && ['Melanoma', 'Basal Cell Carcinoma'].includes(topLabel);
+    }).length
   };
 
   return (
@@ -322,6 +327,8 @@ const DashboardPage: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredCases.map((caseItem, index) => {
+                      // FIX: Safely access the top prediction from the 'predictions' array.
+                      const topPrediction = caseItem.predictions?.[0] || { label: 'N/A', confidence: 0 };
                       const StatusIcon = statusStyles[caseItem.status].icon;
                       const isExpanded = expandedCase === caseItem.id;
                       return (
@@ -346,13 +353,15 @@ const DashboardPage: React.FC = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`text-sm font-medium ${riskLevelColors[caseItem.prediction_label as keyof typeof riskLevelColors] || 'text-slate-900 dark:text-slate-100'}`}>{caseItem.prediction_label}</span>
+                              {/* FIX: Use the safely accessed topPrediction object */}
+                              <span className={`text-sm font-medium ${riskLevelColors[topPrediction.label as keyof typeof riskLevelColors] || 'text-slate-900 dark:text-slate-100'}`}>{topPrediction.label}</span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <div className="text-sm font-mono font-medium text-slate-900 dark:text-slate-100">{caseItem.prediction_confidence.toFixed(1)}%</div>
+                                {/* FIX: Use the safely accessed topPrediction object */}
+                                <div className="text-sm font-mono font-medium text-slate-900 dark:text-slate-100">{topPrediction.confidence.toFixed(1)}%</div>
                                 <div className="ml-2 w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                                  <div className="bg-primary-600 dark:bg-secondary-400 h-2 rounded-full" style={{ width: `${caseItem.prediction_confidence}%` }}></div>
+                                  <div className="bg-primary-600 dark:bg-secondary-400 h-2 rounded-full" style={{ width: `${topPrediction.confidence}%` }}></div>
                                 </div>
                               </div>
                             </td>

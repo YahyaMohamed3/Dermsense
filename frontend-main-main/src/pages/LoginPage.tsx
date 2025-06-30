@@ -45,7 +45,7 @@ export default function LoginPage() {
         // On successful authentication from the backend:
         // 1. Store the authentication state in the browser's local storage.
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', 'dermatologist');
+        localStorage.setItem('userRole', 'clinician');
         // 2. Navigate to the clinical dashboard.
         navigate('/dashboard');
       } else {
