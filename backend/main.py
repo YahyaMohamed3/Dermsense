@@ -197,18 +197,19 @@ def load_all_models():
     """Load ML models and find their last conv layers on startup."""
     print("🚀 Server starting up. Loading all assets...")
     try:
-        clinical_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\clinical_b3_model.keras"
+        clinical_path = os.path.join(os.path.dirname(__file__), "b3_clinical_model.keras")
         models["clinical"] = load_model(clinical_path, compile=False)
         models["clinical_last_layer"] = find_last_conv_layer(models["clinical"])
         class_labels["clinical"] = ["Actinic Keratosis", "Basal Cell Carcinoma", "Benign Mole", "Dermatofibroma", "Melanoma", "Seborrheic Keratosis", "Vascular Lesion"]
         print("   ✅ Clinical Model (B3) and assets loaded successfully.")
 
-        consumer_path = r"C:\Users\yahya\Worlds-Largest-Hackathon-dermascan\models\consumer_b4_model.keras"
+        consumer_path = os.path.join(os.path.dirname(__file__), "b4_consumer_model.keras")
         models["consumer"] = load_model(consumer_path, compile=False)
         models["consumer_last_layer"] = find_last_conv_layer(models["consumer"])
         class_labels["consumer"] = ['Acne', 'Benign Mole', 'Eczema', 'Healthy skin', 'Melanoma Consumer', 'Psoriasis', 'Ringworm']
         print("   ✅ Consumer Model (B4) and assets loaded successfully.")
     except Exception as e:
+        print("📂 Backend directory contents:", os.listdir(os.path.dirname(__file__)))
         print(f"❌ CRITICAL STARTUP ERROR: Could not load models. {e}")
         traceback.print_exc()
 
