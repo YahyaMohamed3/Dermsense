@@ -212,7 +212,6 @@ def load_all_models():
         print("📂 Backend directory contents:", os.listdir(os.path.dirname(__file__)))
         print(f"❌ CRITICAL STARTUP ERROR: Could not load models. {e}")
         traceback.print_exc()
-
 # ==============================================================================
 # 6. Core Prediction & Analysis Logic
 # ==============================================================================

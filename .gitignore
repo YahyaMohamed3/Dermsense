@@ -28,10 +28,8 @@ wheels/
 MANIFEST
 
 # Machine Learning / Data Science
-*.h5
 *.pkl
 *.pickle
-*.keras
 *.ckpt
 saved_model/
 checkpoints/
