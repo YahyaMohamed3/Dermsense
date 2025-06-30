@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, Volume2, Play, Download, StopCircle, Send, CheckCircle, Loader, Save } from 'lucide-react';
+import { AlertCircle, Volume2, Download, StopCircle, Send, CheckCircle, Loader, Save } from 'lucide-react';
 import { cn, typewriterEffect } from "../../lib/utils";
 import { toast } from 'react-hot-toast';
 import { getAuthToken } from '../../services/api';
 
-// --- FIX: This now matches the data from the V3 backend ---
 interface Prediction {
     label: string;
     confidence: number;
@@ -18,7 +17,6 @@ export interface Explanation {
     clinical_recommendation?: string;
 }
 
-// --- FIX: This is the main change. The component now accepts the correct props. ---
 interface ResultPanelProps {
   predictions: Prediction[];
   riskLevel: 'unknown' | 'low' | 'medium' | 'high';
@@ -45,22 +43,18 @@ export default function ResultPanel({
   const [displayedText, setDisplayedText] = useState('');
   const [counterValue, setCounterValue] = useState(0);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expandedExp, setExpandedExp] = useState(false);
+  const [expandedRec, setExpandedRec] = useState(false);
   const [saveScanStatus, setSaveScanStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- FIX: Safely access predictions from the new props array ---
   const topPrediction = predictions?.[0] || { label: 'N/A', confidence: 0 };
   const secondaryPrediction = predictions?.[1] || { label: 'N/A', confidence: 0 };
 
   const fullExplanationText = explanation.explanation_text || explanation.technical_summary || "No explanation available.";
   const recommendationText = explanation.recommendation || explanation.clinical_recommendation || "Consult a dermatologist.";
 
-
   useEffect(() => {
-    // --- FIX: Depend on the safe topPrediction object ---
     if (topPrediction) {
       const targetValue = topPrediction.confidence;
       const duration = 1500;
@@ -106,22 +100,16 @@ export default function ResultPanel({
         setIsGeneratingAudio(false);
         return;
     }
-    
     if (!fullExplanationText) return;
-
     setIsGeneratingAudio(true);
-    
     try {
-        // --- FIX: Use the riskLevel prop ---
         const endpoint = `http://localhost:8000/api/v2/speak?risk_level=${riskLevel}`;
         const response = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text_to_speak: fullExplanationText }),
         });
-
         if (!response.ok) throw new Error(`Backend error: ${response.statusText}`);
-
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
@@ -137,7 +125,6 @@ export default function ResultPanel({
             URL.revokeObjectURL(audioUrl);
             audioRef.current = null;
         };
-
     } catch (error) {
         console.error("Failed to generate or play audio:", error);
         toast.error("Sorry, the audio explanation could not be generated.");
@@ -145,27 +132,6 @@ export default function ResultPanel({
     }
   };
 
-  const handlePlayVideo = async () => {
-    if (!fullExplanationText) return;
-    setIsPlayingVideo(true);
-    try {
-        const res = await fetch("http://localhost:8000/api/video-report", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ script: fullExplanationText + " " + recommendationText })
-        });
-        if (!res.ok) throw new Error("Could not generate video report.");
-        const data = await res.json();
-        if (data.videoUrl) {
-            window.open(data.videoUrl, '_blank');
-        }
-    } catch(error) {
-        console.error("Video report error:", error);
-        toast.error("Sorry, the video summary could not be generated at this time.");
-    } finally {
-        setIsPlayingVideo(false);
-    }
-  };
 
   const handleDownloadReport = () => {
     toast.error("PDF report download is not yet implemented.");
@@ -173,7 +139,6 @@ export default function ResultPanel({
 
   const handleSaveScan = async () => {
     if (saveScanStatus === 'saving' || saveScanStatus === 'saved') return;
-
     setSaveScanStatus('saving');
     try {
         const payload = {
@@ -184,7 +149,6 @@ export default function ResultPanel({
             ai_explanation: explanation.explanation_text || explanation.technical_summary || "N/A",
             lesion_id: lesionId || null
         };
-
         const response = await fetch('http://localhost:8000/api/scan/save_to_history', {
             method: 'POST',
             headers: {
@@ -193,11 +157,9 @@ export default function ResultPanel({
             },
             body: JSON.stringify(payload)
         });
-
         if (!response.ok) {
             throw new Error('Failed to save scan to history');
         }
-
         toast.success("Scan saved to your history successfully!");
         setSaveScanStatus('saved');
     } catch (error) {
@@ -213,9 +175,6 @@ export default function ResultPanel({
     high: { bg: 'bg-red-900/20', text: 'text-red-500', border: 'border-red-500/50', badge: 'bg-red-500 text-white' },
     unknown: { bg: 'bg-slate-800', text: 'text-slate-300', border: 'border-slate-600', badge: 'bg-slate-500 text-white' },
   };
-  
-  // --- LOGIC FIX: Prevent crash by providing a fallback to the 'unknown' style
-  // if the riskLevel prop is invalid or undefined.
   const riskColor = riskColors[riskLevel] || riskColors.unknown;
 
   const containerVariants = {
@@ -230,6 +189,7 @@ export default function ResultPanel({
 
   const MAX_CHAR = 450;
   const isLongExplanation = fullExplanationText && fullExplanationText.length > MAX_CHAR;
+  const isLongRecommendation = recommendationText && recommendationText.length > MAX_CHAR;
 
   return (
     <motion.div
@@ -290,7 +250,7 @@ export default function ResultPanel({
             </motion.div>
           </div>
 
-          {/* Column 2: AI Explanation */}
+          {/* Column 2: AI Explanation and Recommendation */}
           <div className="flex-1">
             <motion.div variants={itemVariants}>
               <div className="flex items-center justify-between mb-2">
@@ -299,24 +259,49 @@ export default function ResultPanel({
                   {isGeneratingAudio ? <StopCircle className="w-5 h-5 text-red-500" strokeWidth={1.5} /> : <Volume2 className="w-5 h-5" strokeWidth={1.5} />}
                 </motion.button>
               </div>
-              <div className={cn("bg-slate-800/80 p-4 rounded-lg min-h-[150px] border border-slate-700 relative", isLongExplanation && !expanded && "max-h-36 overflow-hidden")} style={{ whiteSpace: "pre-line" }}>
+              <div
+                className={cn(
+                  "bg-slate-800/80 p-4 rounded-lg min-h-[150px] border border-slate-700 relative",
+                  isLongExplanation && !expandedExp ? "max-h-36 overflow-hidden pb-16" : "pb-4"
+                )}
+                style={{ whiteSpace: "pre-line" }}
+              >
                 <p className="text-slate-300 border-l-2 border-blue-400 pl-3">
-                  {displayedText || "Generating explanation..."}
+                  {expandedExp ? fullExplanationText : (fullExplanationText.slice(0, MAX_CHAR) + (isLongExplanation ? "…" : ""))}
                   {!displayedText && <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>⏳</motion.span>}
                 </p>
-                {isLongExplanation && !expanded && (
-                  <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-800/90 to-transparent pt-4 pb-1 flex justify-center">
-                    <button className="text-blue-600 underline text-sm" onClick={() => setExpanded(true)}>Show more</button>
+                {isLongExplanation && !expandedExp && (
+                  <div className="absolute bottom-2 left-0 w-full flex justify-center pointer-events-auto">
+                    <button className="text-blue-600 underline text-sm bg-slate-900/80 px-3 py-1 rounded shadow" style={{ marginBottom: 4 }} onClick={() => setExpandedExp(true)}>Show more</button>
+                  </div>
+                )}
+                {isLongExplanation && expandedExp && (
+                  <div className="pt-2 flex justify-center">
+                    <button className="text-blue-600 underline text-sm" onClick={() => setExpandedExp(false)}>Show less</button>
                   </div>
                 )}
               </div>
-              {isLongExplanation && expanded && <button className="text-blue-600 underline text-sm mt-2" onClick={() => setExpanded(false)}>Show less</button>}
             </motion.div>
 
             <motion.div variants={itemVariants} className="mt-6">
               <h3 className="text-lg font-medium text-slate-200 mb-2">Recommendation</h3>
-              <div className="bg-slate-800/80 p-4 rounded-lg border border-slate-700">
-                <p className="text-slate-300">{recommendationText}</p>
+              <div
+                className={cn(
+                  "bg-slate-800/80 p-4 rounded-lg border border-slate-700 relative",
+                  isLongRecommendation && !expandedRec ? "max-h-36 overflow-hidden pb-16" : "pb-4"
+                )}
+              >
+                <p className="text-slate-300">{expandedRec ? recommendationText : (recommendationText.slice(0, MAX_CHAR) + (isLongRecommendation ? "…" : ""))}</p>
+                {isLongRecommendation && !expandedRec && (
+                  <div className="absolute bottom-2 left-0 w-full flex justify-center pointer-events-auto">
+                    <button className="text-blue-600 underline text-sm bg-slate-900/80 px-3 py-1 rounded shadow" style={{ marginBottom: 4 }} onClick={() => setExpandedRec(true)}>Show more</button>
+                  </div>
+                )}
+                {isLongRecommendation && expandedRec && (
+                  <div className="pt-2 flex justify-center">
+                    <button className="text-blue-600 underline text-sm" onClick={() => setExpandedRec(false)}>Show less</button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -329,15 +314,9 @@ export default function ResultPanel({
                 <motion.button className="btn btn-outline w-full text-sm px-4 py-2 justify-start" whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }} whileTap={{ scale: 0.98 }} onClick={handleGenerateAudio}>
                   {isGeneratingAudio ? <><StopCircle className="w-4 h-4 mr-2 text-red-500" />Stop Audio</> : <><Volume2 className="w-4 h-4 mr-2" />Listen to Explanation</>}
                 </motion.button>
-
-                <motion.button className="btn btn-outline w-full text-sm px-4 py-2 justify-start" whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }} whileTap={{ scale: 0.98 }} onClick={handlePlayVideo} disabled={isPlayingVideo}>
-                  {isPlayingVideo ? <><Loader className="w-4 h-4 mr-2 animate-spin" />Generating Video...</> : <><Play className="w-4 h-4 mr-2" />Play Video Summary</>}
-                </motion.button>
-
                 <motion.button className="btn btn-outline w-full text-sm px-4 py-2 justify-start" whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }} whileTap={{ scale: 0.98 }} onClick={handleDownloadReport}>
                   <Download className="w-4 h-4 mr-2" />Download Report
                 </motion.button>
-
                 {isLoggedIn && (
                   <motion.button 
                       className={cn(
@@ -357,7 +336,6 @@ export default function ResultPanel({
                       {saveScanStatus === 'error' && <><AlertCircle className="w-4 h-4 mr-2" />Save Failed</>}
                   </motion.button>
                 )}
-                
                 {isLoggedIn && (
                   <motion.button 
                       className={cn(

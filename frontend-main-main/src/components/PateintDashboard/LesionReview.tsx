@@ -91,7 +91,7 @@ export default function LesionReview() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="col-span-full text-center text-blue-100/80 py-9 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl shadow-xl text-lg"
+            className="col-span-full text-center text-white-100/80 py-9 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl shadow-xl text-lg"
           >
             No professional reviews yet.
           </motion.div>

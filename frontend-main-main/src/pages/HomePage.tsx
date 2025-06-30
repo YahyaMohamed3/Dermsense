@@ -11,12 +11,14 @@ import {
   Brain, 
   LineChart,
   Globe,
-  Database,
   Smartphone,
   ChevronRight
 } from 'lucide-react';
 
 import HeroSection from '../components/home/HeroSection';
+import FeaturesSection from '../components/home/FeaturesSection';
+import HowItWorksSection from '../components/home/HowItWorksSection';
+import TestimonialsSection from './../components/home/TestimonialsSection';
 
 export default function HomePage() {
   return (
@@ -30,6 +32,12 @@ export default function HomePage() {
       </Helmet>
       
       <HeroSection />
+
+      {/* Features Section - immediately after hero */}
+      <FeaturesSection />
+
+      {/* How It Works Section - right after features */}
+      <HowItWorksSection />
       
       {/* Process Section */}
       <section className="py-24 bg-slate-900 relative overflow-hidden">
@@ -63,7 +71,7 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg text-slate-300"
             >
-              Your data never leaves your device. Our AI runs entirely in your browser.
+              Your data is safe we do not store any data that you did not save.
             </motion.p>
           </div>
 
@@ -84,7 +92,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">1. Upload Securely</h3>
               <p className="text-slate-300">
-                Your image is processed in your browser and is never sent to a server.
+                Your saved images are safley protected with a robust Supabase database.
               </p>
             </motion.div>
             
@@ -213,7 +221,7 @@ export default function HomePage() {
               whileHover={{ scale: 1.05 }}
               className="glass-panel p-6 rounded-xl"
             >
-              <h3 className="text-lg font-semibold mb-3 text-white">GPT-4 Clinical Explainer</h3>
+              <h3 className="text-lg font-semibold mb-3 text-white">LLM Clinical Explainer</h3>
               <p className="text-slate-300 text-sm">
                 Results are translated into clear, empathetic language to empower users with real understanding.
               </p>
@@ -356,7 +364,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      
+
+      {/* Testimonials Section - after benefits, before vision/future */}
+      <TestimonialsSection />
+
       {/* Vision & Future Section */}
       <section className="py-24 bg-slate-800 relative overflow-hidden">
         {/* Animated background line */}
@@ -497,7 +508,7 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* Final CTA Section */}
+      {/* Final CTA Section (do not add CtaSection component, your existing CTA stays) */}
       <section className="py-24 bg-gradient-to-r from-primary-900 to-primary-950 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">

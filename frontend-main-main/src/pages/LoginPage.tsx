@@ -1,30 +1,29 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
+import { Lock, Eye, EyeOff, ArrowRight, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, Eye, EyeOff } from 'lucide-react';
-import Logo from '../components/ui/Logo';
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import NeuralNetworkModel from "../components/three/NeuralNetworkModel";
-import ParticleField from "../components/three/ParticleField";
+import Navbar from '../components/layout/Navbar'; // <-- Adjust the import if your path differs
 
-export default function LoginPage() {
+const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState({
-    username: '',
     password: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true); // Show by default
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  // --- Handles only password field, no username ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials({ password: e.target.value });
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // --- LOGIC UPDATED: Replaced simulation with a real API call ---
     try {
       const response = await fetch('http://localhost:8000/api/auth/login/clinical', {
         method: 'POST',
@@ -37,167 +36,257 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // This handles server-side errors, like a 401 for a wrong password
         throw new Error(data.detail || 'Authentication failed. Please check your credentials.');
       }
 
-      if (data.success) {
-        // On successful authentication from the backend:
-        // 1. Store the authentication state in the browser's local storage.
+      if (data.success && data.token) {
+        localStorage.setItem('authToken', data.token);
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', 'clinician');
-        // 2. Navigate to the clinical dashboard.
+        localStorage.setItem('role', 'clinician');
+        localStorage.setItem('isClinicalAuthenticated', 'true');
+        window.dispatchEvent(new Event('authChange'));
         navigate('/dashboard');
       } else {
-        // Handle cases where the server responds 200 OK but login is not successful
         setError(data.message || 'Invalid credentials.');
       }
     } catch (err) {
-      // This catches network errors or errors thrown from the response check
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('An unknown network error occurred.');
       }
     } finally {
-      // Ensure the loading spinner is turned off
       setIsLoading(false);
     }
   };
 
+  // Generate particles for background animation
+  const particles = Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 15 + 8,
+  }));
+
   return (
     <>
-      <Helmet>
-        <title>Clinical Login | DermaSense</title>
-        <meta name="description" content="Secure login for healthcare professionals" />
-      </Helmet>
-
-      <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
-        {/* 3D Background */}
-        <div className="absolute inset-0 -z-10">
-          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
-            <ambientLight intensity={0.3} />
-            <pointLight position={[10, 10, 10]} intensity={0.5} />
-            <NeuralNetworkModel count={1500} />
-            <ParticleField count={800} size={30} />
-            <OrbitControls 
-              enableZoom={false} 
-              enablePan={false} 
-              enableRotate={true}
-              rotateSpeed={0.2}
-              autoRotate
-              autoRotateSpeed={0.3}
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated background particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {particles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute bg-blue-400/20 rounded-full"
+              style={{
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+              }}
+              animate={{
+                y: [0, -120, 0],
+                x: [0, Math.random() * 50 - 25, 0],
+                opacity: [0, 0.8, 0],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
-          </Canvas>
+          ))}
         </div>
-        
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/95 to-white/98 dark:from-slate-900/95 dark:to-slate-900/98 -z-5"></div>
-        
+
+        {/* Animated network connections */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full">
+            <defs>
+              <pattern id="network" width="80" height="80" patternUnits="userSpaceOnUse">
+                <motion.circle
+                  cx="40"
+                  cy="40"
+                  r="2"
+                  fill="rgb(59, 130, 246)"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.line
+                  x1="40"
+                  y1="40"
+                  x2="80"
+                  y2="40"
+                  stroke="rgb(59, 130, 246)"
+                  strokeWidth="0.5"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: [0, 1, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.line
+                  x1="40"
+                  y1="40"
+                  x2="40"
+                  y2="80"
+                  stroke="rgb(59, 130, 246)"
+                  strokeWidth="0.5"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: [0, 1, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#network)" />
+          </svg>
+        </div>
+
+        {/* Floating geometric shapes */}
+        <motion.div
+          className="absolute top-16 right-16 w-28 h-28 border border-blue-400/30"
+          style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}
+          animate={{
+            rotate: 360,
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-16 left-16 w-20 h-20 border border-blue-300/30 rounded-full"
+          animate={{
+            rotate: -360,
+            x: [0, 30, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md z-10"
+          transition={{ duration: 0.8 }}
+          className="w-full max-w-md relative z-10 mt-4"
         >
-          <div className="glass-panel rounded-2xl shadow-xl p-8">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <Logo className="w-16 h-16" />
-              </div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Clinical Access
-              </h1>
-              <p className="text-slate-600 dark:text-slate-300">
-                Secure login for healthcare professionals
-              </p>
-            </div>
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 relative overflow-hidden"
+               style={{
+                 borderRadius: '2rem 1rem 2rem 1rem',
+                 background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+               }}>
+            {/* Flowing background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/10 opacity-60" />
 
-            {/* Demo Credentials Notice */}
-            <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-medium text-primary-800 dark:text-primary-300 mb-1">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-center mb-8 relative z-10"
+            >
+              <motion.div 
+                className="w-20 h-20 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mb-6 flex items-center justify-center relative overflow-hidden"
+                style={{ borderRadius: '1.5rem 0.5rem 1.5rem 0.5rem' }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LogIn className="w-10 h-10 text-white" />
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+              </motion.div>
+              <h1 className="text-3xl font-bold text-white mb-2">Clinician Access</h1>
+              <p className="text-blue-200/80">Secure clinical login</p>
+            </motion.div>
+
+            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-medium text-blue-200 mb-1">
                 Demo Access
               </h3>
-              <p className="text-xs text-primary-700 dark:text-primary-400">
-                Password: <code className="bg-primary-100 dark:bg-primary-800 px-2 py-0.5 rounded">demoday2025</code>
+              <p className="text-xs text-blue-100">
+                Password: <code className="bg-blue-800 px-2 py-0.5 rounded">demoday2025</code>
               </p>
             </div>
 
-            {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-3"
-                >
-                  <p className="text-sm text-error-800 dark:text-error-400">{error}</p>
-                </motion.div>
-              )}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-red-500/20 border border-red-500/30 p-3 mb-6 backdrop-blur-sm"
+                style={{ borderRadius: '1rem 0.5rem 1rem 0.5rem' }}
+              >
+                <p className="text-red-200 text-sm text-center">{error}</p>
+              </motion.div>
+            )}
 
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Username / Employee ID
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" strokeWidth={1.5} />
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <label className="text-white text-sm font-medium mb-2 block">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-300 w-5 h-5 transition-colors duration-300 group-focus-within:text-blue-200" />
                   <input
-                    id="username"
-                    type="text"
-                    value={credentials.username}
-                    onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" strokeWidth={1.5} />
-                  <input
-                    id="password"
                     type={showPassword ? 'text' : 'password'}
+                    name="password"
                     value={credentials.password}
-                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                    className="w-full pl-10 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/20 pl-12 pr-12 py-4 text-white placeholder-blue-200/60 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300 backdrop-blur-sm"
+                    style={{ borderRadius: '1rem 0.5rem 1rem 0.5rem' }}
                     placeholder="Enter your password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-200 transition-colors duration-300"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" strokeWidth={1.5} /> : <Eye className="w-5 h-5" strokeWidth={1.5} />}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="w-full btn btn-primary btn-lg relative py-3"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold py-4 px-6 transition-all duration-500 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+                style={{ borderRadius: '1.5rem 0.5rem 1.5rem 0.5rem' }}
               >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Authenticating...
-                  </>
-                ) : (
-                  'Access Dashboard'
-                )}
-              </button>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ borderRadius: '1.5rem 0.5rem 1.5rem 0.5rem' }}
+                />
+                <div className="relative z-10 flex items-center space-x-2">
+                  {isLoading ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Access Dashboard</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </div>
+              </motion.button>
             </form>
 
-            {/* Security Notice */}
-            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                This system is for authorized healthcare professionals only. 
+            <div className="mt-6 pt-6 border-t border-blue-800/50">
+              <p className="text-xs text-blue-200/60 text-center">
+                This system is for authorized clinicians only.<br />
                 All access is logged and monitored for security purposes.
               </p>
             </div>
@@ -206,4 +295,6 @@ export default function LoginPage() {
       </div>
     </>
   );
-}
+};
+
+export default LoginPage;

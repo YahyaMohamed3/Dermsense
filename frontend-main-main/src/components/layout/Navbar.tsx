@@ -1,38 +1,32 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-// --- FIX: Removed unused 'Info' and 'location' ---
-import { Menu, X, Scan, Sun, Moon, LogOut, BarChart3, Home, Shield, User } from 'lucide-react';
-// --- FIX: Import the unified 'api' object and 'getAuthToken' helper ---
+import { Menu, X, Scan, LogOut, BarChart3, Home, Shield, User } from 'lucide-react';
 import { api, getAuthToken } from '../../services/api';
+
+// Helper to check if a clinical user is logged in
+function isClinician() {
+  return localStorage.getItem('isClinicalAuthenticated') === 'true';
+}
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // --- NEW: Reactive state for authentication ---
-  // This makes the navbar update automatically on login/logout
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getAuthToken());
-  
-  // This is a placeholder for a real theme context, but works for the demo
-  const [theme, setTheme] = useState('dark');
+  const [isClinicalAuth, setIsClinicalAuth] = useState(isClinician());
+  const [isPatientAuth, setIsPatientAuth] = useState(!!getAuthToken());
   const navigate = useNavigate();
 
-  // This effect listens for login/logout events to update the navbar
+  // Listen to auth changes
   useEffect(() => {
     const updateAuthState = () => {
-      setIsAuthenticated(!!getAuthToken());
+      setIsClinicalAuth(isClinician());
+      setIsPatientAuth(!!getAuthToken());
     };
-    // Listen for custom events that you might dispatch after login/logout
     window.addEventListener('authChange', updateAuthState);
-    // Also check when the component mounts
     updateAuthState();
-
-    return () => {
-      window.removeEventListener('authChange', updateAuthState);
-    };
+    return () => window.removeEventListener('authChange', updateAuthState);
   }, []);
-  
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
@@ -41,30 +35,24 @@ export default function Navbar() {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-    // In a real app, you would also apply the theme to the HTML element
-    // document.documentElement.classList.toggle('dark');
-  };
 
+  // Log out only clinical (not patient)
   const handleLogout = () => {
-    // --- FIX: Use the new api.logout() method and update state ---
-    api.logout();
-    setIsAuthenticated(false);
-    navigate('/PateintLogIn'); // Redirect to patient login
+    api.clinicalLogout();
+    setIsClinicalAuth(false);
+    window.dispatchEvent(new Event('authChange'));
+    navigate('/login');
     closeMobileMenu();
   };
-  
-  // --- FIX: Corrected Dashboard path to '/mylesion' for patients ---
+
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
     { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
-    ...(isAuthenticated ? [
+    ...(isPatientAuth ? [
       { name: 'My Lesions', path: '/mylesion', icon: <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} /> }
     ] : [])
   ];
 
-  // Generate floating particles for background
   const particles = Array.from({ length: 15 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -75,7 +63,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Animated background particles - only visible when scrolled */}
       <AnimatePresence>
         {isScrolled && (
           <motion.div
@@ -120,11 +107,9 @@ export default function Navbar() {
             : 'bg-transparent'
         }`}
       >
-        {/* Flowing background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 opacity-60" />
         
         <div className="container mx-auto flex h-20 items-center justify-between px-4 relative z-10">
-          {/* Logo Section */}
           <Link to="/" className="flex items-center space-x-3 group" onClick={closeMobileMenu}>
             <motion.div 
               className="relative"
@@ -190,70 +175,25 @@ export default function Navbar() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <motion.button
-              onClick={toggleTheme}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 bg-white/5 hover:bg-white/10 border border-white/20 transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
-              style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              <motion.div
-                className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ borderRadius: '0.8rem 0.3rem 0.8rem 0.3rem' }}
-              />
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={theme}
-                  initial={{ y: -20, opacity: 0, rotate: -180 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  exit={{ y: 20, opacity: 0, rotate: 180 }}
-                  transition={{ duration: 0.4 }}
-                  className="relative z-10"
-                >
-                  {theme === 'dark' ? 
-                    <Sun className="w-5 h-5 text-yellow-400" strokeWidth={1.5} /> : 
-                    <Moon className="w-5 h-5 text-blue-300" strokeWidth={1.5} />
-                  }
-                </motion.div>
-              </AnimatePresence>
-            </motion.button>
             
             {/* Authentication Actions */}
-            {isAuthenticated ? (
-              <div className="hidden md:flex items-center space-x-2">
-                <Link 
-                  to="/mylesion" 
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 border border-blue-500/30 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+            {isClinicalAuth ? (
+              <motion.button
+                onClick={handleLogout}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
+                style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
-                  />
-                  <div className="relative z-10 flex items-center">
-                    <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    My Lesions
-                  </div>
-                </Link>
-                <motion.button
-                  onClick={handleLogout}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 hover:text-white transition-all duration-500 backdrop-blur-sm relative overflow-hidden group"
-                  style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
-                  />
-                  <div className="relative z-10 flex items-center">
-                    <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    Logout
-                  </div>
-                </motion.button>
-              </div>
+                />
+                <div className="relative z-10 flex items-center">
+                  <LogOut className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                  Logout
+                </div>
+              </motion.button>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
                 <Link 
@@ -366,7 +306,7 @@ export default function Navbar() {
                 ))}
                 
                 <div className="pt-4 border-t border-white/20 space-y-2">
-                  {isAuthenticated ? (
+                  {isClinicalAuth ? (
                     <motion.button
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -386,7 +326,7 @@ export default function Navbar() {
                         transition={{ delay: 0.4, duration: 0.4 }}
                       >
                         <Link
-                          to="/PateintLogIn" // Link to patient login
+                          to="/PateintLogIn"
                           className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-medium transition-all duration-500"
                           style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
                           onClick={closeMobileMenu}
@@ -401,7 +341,7 @@ export default function Navbar() {
                         transition={{ delay: 0.5, duration: 0.4 }}
                       >
                         <Link
-                          to="/login" // Link to clinical login
+                          to="/login"
                           className="flex items-center justify-center w-full px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/20 text-blue-200 hover:text-white transition-all duration-500 backdrop-blur-sm"
                           style={{ borderRadius: '1rem 0.4rem 1rem 0.4rem' }}
                           onClick={closeMobileMenu}

@@ -6,6 +6,7 @@ import { loadSlim } from 'tsparticles-slim';
 import { Engine } from 'tsparticles-engine';
 import MolecularGlobe from '../ui/MolecularGlobe';
 import FloatingElements from '../ui/FloatingElements';
+import { Link } from 'react-router-dom'; // Make sure this import is at the top!
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -211,8 +212,14 @@ export default function HeroSection() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="relative z-10 flex items-center justify-center">
+                  <Link
+                  to="/scan"
+                  className="relative z-10 flex items-center justify-center"
+                >
                   <Microscope className="w-5 h-5 mr-3" strokeWidth={1.5} />
                   Analyze Clinical Image
+                </Link>
+
                 </div>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
@@ -226,18 +233,16 @@ export default function HeroSection() {
                   disabled
                 >
                   <div className="relative z-10 flex items-center justify-center">
-                    <Smartphone className="w-5 h-5 mr-3" strokeWidth={1.5} />
-                    Analyze Personal Photo
+                     <Link
+                  to="/scan"
+                  className="relative z-10 flex items-center justify-center "
+                >
+                  <Smartphone className="w-5 h-5 mr-3" strokeWidth={1.5} />
+                  Analyze Clinical Image
+                </Link>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-blue-800/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </motion.button>
-                <motion.span 
-                  className="absolute -top-3 -right-3 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs font-bold rounded-full shadow-lg"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                >
-                  Coming Soon
-                </motion.span>
               </div>
             </motion.div>
             <motion.div 

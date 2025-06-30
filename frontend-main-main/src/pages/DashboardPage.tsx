@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Download, Printer, Share2, Save, Loader, X } from 'lucide-react';
+import { Eye, Filter, Calendar, AlertTriangle, CheckCircle, Clock, Save, Loader, X } from 'lucide-react';
 
 // --- Helper Utility ---
 const formatDate = (dateString: string) => {
@@ -19,9 +19,10 @@ const formatDate = (dateString: string) => {
 // FIX: Update the Case interface to match the actual API response from the database.
 interface Case {
   id: number;
-  created_at: string;
+  submitted_at: string;
   predictions: { label: string; confidence: number }[]; // Expect a 'predictions' array
   status: 'new' | 'reviewed' | 'flagged';
+  profiles?: { full_name?: string };
   patient_id?: string;
   image_url?: string;
   heatmap_image_url?: string;
@@ -281,20 +282,6 @@ const DashboardPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button className="btn btn-outline btn-sm px-3 py-2">
-                <Printer className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Print
-              </button>
-              <button className="btn btn-outline btn-sm px-3 py-2">
-                <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Export
-              </button>
-              <button className="btn btn-outline btn-sm px-3 py-2">
-                <Share2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                Share
-              </button>
-            </div>
           </div>
 
           {/* Loading and Error States */}
@@ -348,7 +335,7 @@ const DashboardPage: React.FC = () => {
                                 </div>
                                 <div className="ml-4">
                                   <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Case #{caseItem.id}</div>
-                                  <div className="text-sm text-slate-500 dark:text-slate-400">{caseItem.patient_id || 'N/A'}</div>
+                                  <div className="text-sm text-slate-500 dark:text-slate-400">{caseItem.profiles?.full_name || 'N/A'}</div>
                                 </div>
                               </div>
                             </td>
@@ -374,7 +361,7 @@ const DashboardPage: React.FC = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1" strokeWidth={1.5} />
-                                {formatDate(caseItem.created_at)}
+                                {formatDate(caseItem.submitted_at)}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

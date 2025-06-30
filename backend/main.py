@@ -333,31 +333,6 @@ async def text_to_speech_context_aware(request: SpeakRequest, risk_level: str = 
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to generate context-aware audio: {e}")
 
-@app.post("/api/video-report", tags=["V2 (Primary Flow)"])
-async def generate_video_report(request: VideoRequest):
-    """[V2] Generates a personalized video summary from a script using Tavus."""
-    if not TAVUS_API_KEY or not TAVUS_REPLICA_ID:
-        print("⚠️ MOCKING VIDEO: Tavus API key or Replica ID not configured.")
-        return {"videoUrl": "https://storage.googleapis.com/static_dermasense_assets/mock_video.mp4"}
-        
-    headers = {"x-api-key": TAVUS_API_KEY, "Content-Type": "application/json"}
-    payload = {"script": request.script, "replica_id": TAVUS_REPLICA_ID}
-
-    try:
-        timeout = httpx.Timeout(20.0, connect=10.0)
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post("https://api.tavus.io/v2/videos", headers=headers, json=payload)
-            response.raise_for_status() 
-            return {"videoUrl": response.json().get("download_url")}
-    except httpx.TimeoutException as e:
-        print(f"Tavus API Error: Connection timed out - {e}")
-        raise HTTPException(status_code=504, detail="The video generation service took too long to respond.")
-    except httpx.HTTPStatusError as e:
-        print(f"Tavus API Error: {e.response.status_code} - {e.response.text}")
-        raise HTTPException(status_code=e.response.status_code, detail=f"Video provider error: {e.response.json().get('message', 'Unknown error')}")
-    except Exception as e:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Failed to generate video report.")
 
 # ==============================================================================
 # 8. Clinical & Dashboard Endpoints
@@ -367,7 +342,12 @@ async def generate_video_report(request: VideoRequest):
 def clinical_login(request: ClinicalLoginRequest):
     """Provides a simple password check for clinical dashboard access."""
     if request.password == CLINICAL_PASSWORD:
-        return {"success": True, "message": "Login successful."}
+        # You can generate a JWT token here. For now, use a dummy string.
+        return {
+            "success": True,
+            "message": "Login successful.",
+            "token": "dummy-clinician-token-123"  # <--- Add this line!
+        }
     else:
         raise HTTPException(status_code=401, detail="Invalid password.")
 
@@ -419,17 +399,32 @@ async def submit_case_for_review(request: SubmitCaseRequest, current_user: dict 
 async def get_all_cases():
     """Retrieves all submitted cases from Supabase for the doctor's dashboard."""
     if not supabase:
-        return [{"id": 101, "predictions": [{"label": "Melanoma", "confidence": 81.0}], "risk_level": "high", "status": "new", "submitted_at": "2025-06-28T10:00:00Z", "image_url": "https://via.placeholder.com/150", "heatmap_image_url": "https://via.placeholder.com/150"}]
+        return [{
+            "id": 101, "predictions": [{"label": "Melanoma", "confidence": 81.0}],
+            "risk_level": "high", "status": "new",
+            "submitted_at": "2025-06-28T10:00:00Z",
+            "image_url": "https://via.placeholder.com/150",
+            "heatmap_image_url": "https://via.placeholder.com/150"
+        }]
     try:
-        # FIX: Filter out private cases from the clinical dashboard view.
-        data, error = supabase.table("cases").select("*").neq("status", "private").order("id", desc=True).execute()
-        
+        # This is the only line you need to change:
+        data, error = (
+            supabase.table("cases")
+            .select("*, profiles:patient_id(full_name)")
+            .neq("status", "private")
+            .order("id", desc=True)
+            .execute()
+        )
+        print(data)
+
         if error and not isinstance(error, tuple):
-             raise Exception(str(error))
-        
+            raise Exception(str(error))
+
         return data[1]
     except Exception as e:
+        import traceback
         print(traceback.format_exc())
+        from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"Error retrieving cases: {e}")
 
 @app.put("/api/cases/{case_id}/status", tags=["Dashboard Actions"])
