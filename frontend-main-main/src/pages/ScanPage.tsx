@@ -295,6 +295,8 @@ export default function ScanPage() {
                   caseSubmissionStatus={caseSubmissionStatus}
                   isLoggedIn={!!api.getAuthToken()}
                   lesionId={lesionId}
+                  originalImageBase64={analysisResult.originalImageBase64}
+                  heatmapImage={analysisResult.heatmapImage}
                 />
               </motion.div>
             )}

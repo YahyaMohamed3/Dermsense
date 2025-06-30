@@ -537,7 +537,6 @@ async def create_lesion(request: LesionCreateRequest, current_user: dict = Depen
 async def get_patient_lesions(current_user: dict = Depends(get_current_user)):
     """Gets all tracked lesions for the currently authenticated patient."""
     data, error = supabase.table("lesions").select("*").eq("patient_id", current_user.id).order("id", desc=True).execute()
-    print(data)
     if error and not isinstance(error, tuple):
         raise HTTPException(status_code=500, detail=str(error))
     return data[1]
@@ -685,10 +684,79 @@ async def compare_lesion_scans(lesion_id: int, current_user: dict = Depends(get_
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"An error occurred during comparison: {str(e)}")
+    
+# ==============================================================================
+# 12. History tracking user dashboard
+# ==============================================================================
+@app.post("/api/scan/save_to_history", tags=["Patient Dashboard"])
+async def save_scan_to_history(request: SubmitCaseRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Saves a scan to the user's personal history (not for professional review).
+    """
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service is not configured.")
+    try:
+        db_payload = {
+            "image_url": request.image_base64, # decode this if needed!
+            "heatmap_image_url": request.heatmap_image_base64,
+            "predictions": request.predictions,
+            "risk_level": request.risk_level,
+            "ai_explanation": request.ai_explanation,
+            "status": "private",
+            "history": True,
+            "patient_id": current_user.id,
+            "lesion_id": request.lesion_id
+        }
+        data, error = supabase.table("cases").insert(db_payload).execute()
+        if error and not isinstance(error, tuple):
+            raise Exception(str(error))
+        return {"status": "success", "caseId": data[1][0]['id']}
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error saving scan to history: {e}")
+    
+
+
+
+
+@app.get("/api/patient/scans/history", tags=["Patient Dashboard"])
+async def get_scan_history(current_user: dict = Depends(get_current_user)):
+    """
+    Returns only scans user chose to save as history.
+    """
+    data, error = supabase.table("cases")\
+        .select("id, lesion_id, image_url, predictions, risk_level, submitted_at, ai_explanation, heatmap_image_url")\
+        .eq("patient_id", current_user.id)\
+        .eq("history", True)\
+        .order("submitted_at", desc=True)\
+        .execute()
+    print(data)
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=str(error))
+    return data[1]
+
+@app.get("/api/patient/reviews", tags=["Patient Dashboard"])
+async def get_professional_reviews(current_user: dict = Depends(get_current_user)):
+    """
+    Returns all cases where the user requested a professional review (non-private, any status).
+    """
+    data, error = supabase.table("cases")\
+        .select("id, image_url, predictions, submitted_at, status, notes")\
+        .eq("patient_id", current_user.id)\
+        .neq("status", "private")\
+        .order("submitted_at", desc=True)\
+        .execute()
+    if error and not isinstance(error, tuple):
+        raise HTTPException(status_code=500, detail=str(error))
+    # Rename notes to doctor_notes for frontend compatibility
+    for item in data[1]:
+        item["doctor_notes"] = item.pop("notes", "")
+    return data[1]
+
 
 
 # ==============================================================================
-# 12. Root Endpoint
+# 13. Root Endpoint
 # ==============================================================================
 @app.get("/", tags=["Root"])
 def read_root():

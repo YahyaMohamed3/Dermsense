@@ -1,4 +1,3 @@
-import { Navigate } from "react-router-dom";
 
 // --- TYPE DEFINITIONS ---
 export interface PatientSignupRequest {

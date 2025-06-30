@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, Volume2, Play, Download, StopCircle, Send, CheckCircle, Loader } from 'lucide-react';
+import { AlertCircle, Volume2, Play, Download, StopCircle, Send, CheckCircle, Loader, Save } from 'lucide-react';
 import { cn, typewriterEffect } from "../../lib/utils";
 import { toast } from 'react-hot-toast';
+import { getAuthToken } from '../../services/api';
 
 // --- FIX: This now matches the data from the V3 backend ---
 interface Prediction {
@@ -26,6 +27,8 @@ interface ResultPanelProps {
   caseSubmissionStatus: 'idle' | 'submitting' | 'submitted' | 'error';
   isLoggedIn: boolean;
   lesionId?: number | null;
+  originalImageBase64?: string;
+  heatmapImage?: string;
 }
 
 export default function ResultPanel({
@@ -35,13 +38,16 @@ export default function ResultPanel({
     onSubmitForReview,
     caseSubmissionStatus,
     isLoggedIn,
-    lesionId
+    lesionId,
+    originalImageBase64,
+    heatmapImage
 }: ResultPanelProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [counterValue, setCounterValue] = useState(0);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [saveScanStatus, setSaveScanStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -163,6 +169,42 @@ export default function ResultPanel({
 
   const handleDownloadReport = () => {
     toast.error("PDF report download is not yet implemented.");
+  };
+
+  const handleSaveScan = async () => {
+    if (saveScanStatus === 'saving' || saveScanStatus === 'saved') return;
+
+    setSaveScanStatus('saving');
+    try {
+        const payload = {
+            image_base64: originalImageBase64 || '',
+            heatmap_image_base64: heatmapImage || '',
+            predictions: predictions,
+            risk_level: riskLevel,
+            ai_explanation: explanation.explanation_text || explanation.technical_summary || "N/A",
+            lesion_id: lesionId || null
+        };
+
+        const response = await fetch('http://localhost:8000/api/scan/save_to_history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save scan to history');
+        }
+
+        toast.success("Scan saved to your history successfully!");
+        setSaveScanStatus('saved');
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        toast.error(errorMessage);
+        setSaveScanStatus('error');
+    }
   };
 
   const riskColors = {
@@ -295,6 +337,26 @@ export default function ResultPanel({
                 <motion.button className="btn btn-outline w-full text-sm px-4 py-2 justify-start" whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }} whileTap={{ scale: 0.98 }} onClick={handleDownloadReport}>
                   <Download className="w-4 h-4 mr-2" />Download Report
                 </motion.button>
+
+                {isLoggedIn && (
+                  <motion.button 
+                      className={cn(
+                          "btn w-full text-sm px-4 py-2 justify-start",
+                          saveScanStatus === 'saved' 
+                              ? "btn-success" 
+                              : "btn-outline"
+                      )}
+                      whileHover={{ scale: saveScanStatus === 'idle' ? 1.02 : 1, backgroundColor: saveScanStatus === 'idle' ? 'rgba(59, 130, 246, 0.1)' : undefined }} 
+                      whileTap={{ scale: saveScanStatus === 'idle' ? 0.98 : 1 }} 
+                      onClick={handleSaveScan}
+                      disabled={saveScanStatus !== 'idle'}
+                  >
+                      {saveScanStatus === 'idle' && <><Save className="w-4 h-4 mr-2" />Save Scan</>}
+                      {saveScanStatus === 'saving' && <><Loader className="w-4 h-4 mr-2 animate-spin" />Saving...</>}
+                      {saveScanStatus === 'saved' && <><CheckCircle className="w-4 h-4 mr-2" />Saved</>}
+                      {saveScanStatus === 'error' && <><AlertCircle className="w-4 h-4 mr-2" />Save Failed</>}
+                  </motion.button>
+                )}
                 
                 {isLoggedIn && (
                   <motion.button 
