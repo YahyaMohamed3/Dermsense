@@ -490,7 +490,7 @@ export default function HomePage() {
               transition={{ duration: 0.4, delay: 0.3 }}
               className="glass-panel p-6 rounded-xl text-center"
             >
-              <div className="text-4xl font-bold text-secondary-400 mb-2"><3s</div>
+              <div className="text-4xl font-bold text-secondary-400 mb-2">{"<3s"}</div>
               <div className="text-sm text-slate-300">Analysis Time</div>
             </motion.div>
             
