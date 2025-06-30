@@ -257,7 +257,7 @@ async def get_vision_explanation(image_bytes: bytes, predictions: list, mode: st
     """
     Internal function to call Gemini with vision and prediction context.
     """
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     image_part = {"mime_type": "image/jpeg", "data": image_bytes}
     
     predictions_text = "\n".join(
