@@ -63,7 +63,7 @@ This model is a **groundbreaking proof-of-concept**, specifically designed to an
 ## 🛠️ Advanced Technology Stack: Engineering Excellence for Scalability & Impact
 
 * **Frontend:**
-  Built with **Bolt.new (React + TypeScript)**, styled using **Tailwind CSS**, animated with **Framer Motion**, and iconography by **Lucide React**.
+  Built with **Bolt.new (React + TypeScript)**, styled using **Tailwind CSS**, animated with **Framer Motion**, and iconography by **Lucide React** The entire UI was built by bolt.new.
 * **Backend:**
   **Python + FastAPI** for high-performance asynchronous API development.
   **Netlify Serverless Functions** for scalable AI endpoint hosting.
