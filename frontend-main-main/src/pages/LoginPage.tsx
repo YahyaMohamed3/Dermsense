@@ -25,7 +25,7 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/clinical', {
+      const response = await fetch('https://dermsense-1067130927657.us-central1.run.app/api/auth/login/clinical', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

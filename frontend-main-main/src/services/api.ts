@@ -38,7 +38,7 @@ export type SubmitCasePayload = Record<string, any>;
 
 
 // --- CORE LOGIC ---
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://dermsense-1067130927657.us-central1.run.app';
 const AUTH_TOKEN_KEY = 'derma-sense-auth-token';
 
 /**

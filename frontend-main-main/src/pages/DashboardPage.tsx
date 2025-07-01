@@ -67,7 +67,7 @@ const DashboardPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('http://localhost:8000/api/cases');
+        const response = await fetch('https://dermsense-1067130927657.us-central1.run.app/api/cases');
         if (!response.ok) {
           const errData = await response.json();
           throw new Error(errData.detail || 'Failed to fetch clinical cases.');
@@ -108,7 +108,7 @@ const DashboardPage: React.FC = () => {
   const handleUpdateCase = async (caseId: number) => {
     setIsUpdating(caseId);
     try {
-      const response = await fetch(`http://localhost:8000/api/cases/${caseId}/status`, {
+      const response = await fetch(`https://dermsense-1067130927657.us-central1.run.app/api/cases/${caseId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: currentStatus, notes: currentNotes })

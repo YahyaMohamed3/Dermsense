@@ -46,7 +46,7 @@ export default function ScanHistory() {
       setLoading(true);
       try {
         const token = getAuthToken();
-        const res = await fetch('http://localhost:8000/api/patient/scans/history', {
+        const res = await fetch('https://dermsense-1067130927657.us-central1.run.app/api/patient/scans/history', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch scan history');

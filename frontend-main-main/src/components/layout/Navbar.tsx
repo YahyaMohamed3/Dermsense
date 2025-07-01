@@ -16,6 +16,8 @@ export default function Navbar() {
   const [isPatientAuth, setIsPatientAuth] = useState(!!getAuthToken());
   const navigate = useNavigate();
 
+  const isAnyUserLoggedIn = isClinicalAuth || isPatientAuth;
+
   // Listen to auth changes
   useEffect(() => {
     const updateAuthState = () => {
@@ -35,16 +37,16 @@ export default function Navbar() {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-
-  // Log out only clinical (not patient)
+  // Log out both clinical and patient
   const handleLogout = () => {
-    api.clinicalLogout();
-    setIsClinicalAuth(false);
-    window.dispatchEvent(new Event('authChange'));
-    navigate('/login');
-    closeMobileMenu();
-  };
-
+  api.clinicalLogout();
+  api.logout();
+  setIsClinicalAuth(false);
+  setIsPatientAuth(false);
+  window.dispatchEvent(new Event('authChange'));
+  window.location.href = '/scan';;
+  closeMobileMenu();
+};
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
     { name: 'Scan', path: '/scan', icon: <Scan className="w-4 h-4 mr-2" strokeWidth={1.5} /> },
@@ -108,7 +110,7 @@ export default function Navbar() {
         }`}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5 opacity-60" />
-        
+
         <div className="container mx-auto flex h-20 items-center justify-between px-4 relative z-10">
           <Link to="/" className="flex items-center space-x-3 group" onClick={closeMobileMenu}>
             <motion.div 
@@ -175,9 +177,7 @@ export default function Navbar() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
-            
-            {/* Authentication Actions */}
-            {isClinicalAuth ? (
+            {isAnyUserLoggedIn ? (
               <motion.button
                 onClick={handleLogout}
                 whileHover={{ scale: 1.02 }}
@@ -236,7 +236,7 @@ export default function Navbar() {
                   <div className="relative z-10 flex items-center">
                     <User className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     Signup / Login
-                  </div> 
+                  </div>
                 </Link>
               </div>
             )}
@@ -259,10 +259,11 @@ export default function Navbar() {
                   exit={{ rotate: 90, opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {isMobileMenuOpen ? 
-                    <X className="block h-6 w-6" strokeWidth={1.5} /> : 
+                  {isMobileMenuOpen ? (
+                    <X className="block h-6 w-6" strokeWidth={1.5} />
+                  ) : (
                     <Menu className="block h-6 w-6" strokeWidth={1.5} />
-                  }
+                  )}
                 </motion.div>
               </AnimatePresence>
             </motion.button>
@@ -304,9 +305,9 @@ export default function Navbar() {
                     </NavLink>
                   </motion.div>
                 ))}
-                
+
                 <div className="pt-4 border-t border-white/20 space-y-2">
-                  {isClinicalAuth ? (
+                  {isAnyUserLoggedIn ? (
                     <motion.button
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}

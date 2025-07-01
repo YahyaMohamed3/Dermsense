@@ -58,7 +58,7 @@ export default function ScanPage() {
     setOriginalImageUrl(URL.createObjectURL(file));
 
     try {
-      const endpoint = `http://localhost:8000/api/v2/analyze?mode=${activeModel}`;
+      const endpoint = `https://dermsense-1067130927657.us-central1.run.app/api/v2/analyze?mode=${activeModel}`;
       const formData = new FormData();
       formData.append("image", file);
 

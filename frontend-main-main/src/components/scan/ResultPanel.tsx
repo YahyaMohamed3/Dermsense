@@ -103,7 +103,7 @@ export default function ResultPanel({
     if (!fullExplanationText) return;
     setIsGeneratingAudio(true);
     try {
-        const endpoint = `http://localhost:8000/api/v2/speak?risk_level=${riskLevel}`;
+        const endpoint = `https://dermsense-1067130927657.us-central1.run.app/api/v2/speak?risk_level=${riskLevel}`;
         const response = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -149,7 +149,7 @@ export default function ResultPanel({
             ai_explanation: explanation.explanation_text || explanation.technical_summary || "N/A",
             lesion_id: lesionId || null
         };
-        const response = await fetch('http://localhost:8000/api/scan/save_to_history', {
+        const response = await fetch('https://dermsense-1067130927657.us-central1.run.app/api/scan/save_to_history', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

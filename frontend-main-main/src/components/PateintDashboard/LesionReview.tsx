@@ -38,7 +38,7 @@ export default function LesionReview() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8000/api/patient/reviews", {
+    fetch("https://dermsense-1067130927657.us-central1.run.app/api/patient/reviews", {
       headers: {
         "Authorization": `Bearer ${getAuthToken() || ""}`,
       },
