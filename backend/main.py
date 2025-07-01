@@ -131,7 +131,7 @@ security = HTTPBearer()
 # --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174", "http://localhost:5173", "https://your-deployed-frontend-url.com"],
+    allow_origins=["http://localhost:5174", "http://localhost:5173", "https://dermsense.site"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
