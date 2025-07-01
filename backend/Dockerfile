@@ -3,8 +3,8 @@ FROM python:3.10-slim
 WORKDIR /app
 COPY . /app
 
-# Patch system packages to latest available in base image
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+# Install system dependencies required for OpenCV
+RUN apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
