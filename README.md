@@ -217,3 +217,4 @@ A powerful AI designed to **analyze smartphone-captured skin photos**, making ea
 * [DermNet](https://dermnetnz.org)
 * [ISIC](https://challenge.isic-archive.com)
 * [Smartphone Dermatology Studies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7758048/)
+* [Demo Video](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
