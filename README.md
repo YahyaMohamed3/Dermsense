@@ -106,7 +106,7 @@ A powerful AI designed to **analyze smartphone-captured skin photos**, making ea
 
 ### 🗂️ Dataset
 
-* **15,000+ real-world smartphone images** across:
+* **150,000+ real-world smartphone images** across:
 
   * Acne
   * Benign Mole
