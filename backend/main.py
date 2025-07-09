@@ -1,6 +1,6 @@
 # ==============================================================================
 # DermaSense - FINAL & COMPLETE Backend API
-# Author: Yahya, Enhanced by Gemini
+# Author: Yahya, 
 # Date: June 28, 2025
 #
 # This is the final, prize-winning version. It includes all V1 and V2
