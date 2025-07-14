@@ -220,7 +220,7 @@ A powerful AI designed to **analyze smartphone-captured skin photos**, making ea
 * [Demo Video](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
 
 ## 🛡️ License & Copyright
-
+Patent pending 
 This project is © 2025 **Yahya Mohamed**.  
 All rights reserved. This repository is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).  
 Unauthorized commercial use or reproduction is strictly prohibited.  
