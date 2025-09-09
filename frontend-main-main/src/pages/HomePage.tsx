@@ -31,18 +31,6 @@ export default function HomePage() {
         />
       </Helmet>
       
-      {/* Built with Bolt Badge */}
-      <div className="fixed top-24 right-4 z-50">
-        <a 
-          href="https://bolt.new" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="inline-flex items-center px-3 py-2 bg-black/80 hover:bg-black text-white text-sm font-medium rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 border border-white/10"
-        >
-          <span className="mr-1.5">⚡</span>
-          Built with Bolt.new
-        </a>
-      </div>
       
       <HeroSection />
 
@@ -569,19 +557,6 @@ export default function HomePage() {
               <span className="relative z-10">Analyze Clinical Image</span>
               <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 relative z-10" strokeWidth={1.5} />
             </Link>
-            
-            {/* Built with Bolt.new Badge */}
-            <div className="mt-8 flex justify-center">
-              <a 
-                href="https://bolt.new" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-white border border-white/10 transition-colors"
-              >
-                <span className="mr-2">⚡</span>
-                Built with Bolt.new
-              </a>
-            </div>
           </motion.div>
         </div>
       </section>
