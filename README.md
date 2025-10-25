@@ -167,7 +167,7 @@ A powerful AI designed to **analyze smartphone-captured skin photos**, making ea
 **Backend:**
 
 * **Python + FastAPI**
-* **Netlify Serverless Functions** (scalable endpoints)
+* ** Dockerized Backend**
 
 **AI/ML Core:**
 
@@ -181,8 +181,8 @@ A powerful AI designed to **analyze smartphone-captured skin photos**, making ea
 * **Supabase** (PostgreSQL + secure file storage)
 
 **Deployment:**
-
-* **Netlify** (full-stack hosting)
+* **Google Cloud** (Dockerized Backend and .keras models)
+* **Netlify** (Frontend hosting)
 * **IONOS** (custom domain)
 
 ---
