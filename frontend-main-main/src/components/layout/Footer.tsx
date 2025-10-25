@@ -17,12 +17,6 @@ export default function Footer() {
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
               AI-powered skin cancer detection for early diagnosis and peace of mind.
             </p>
-            <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
-              <span>Built with</span>
-              <Heart className="w-4 h-4 text-error-500 fill-error-500" />
-              <span>on</span>
-              <span className="font-medium">Bolt.new</span>
-            </div>
           </div>
 
           <div className="md:mx-auto">
