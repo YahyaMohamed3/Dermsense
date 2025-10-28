@@ -2,6 +2,8 @@
 
 DermaSense is a **private, truly state-of-the-art, dual-model AI platform** meticulously engineered to deliver **instant, clinically-relevant dermatological insights** for both medical professionals and everyday consumers. Built for the **Bolt.new World's Largest Hackathon (May–June 2025)**, it represents a **foundational step toward democratizing advanced skin health**, bridging the critical gap between patient concern and expert diagnosis.
 
+[Demo Video](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
+
 ---
 
 ## ✨ Pioneering Key Features
