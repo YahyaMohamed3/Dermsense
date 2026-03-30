@@ -1,231 +1,139 @@
-# 🏆 DermaSense: An AI-Powered Dermatological Ecosystem – Redefining Precision & Accessibility for Global Health
+# DermSense: AI-Powered Dermatological Diagnostic Platform
 
-DermaSense is a **private, truly state-of-the-art, dual-model AI platform** meticulously engineered to deliver **instant, clinically-relevant dermatological insights** for both medical professionals and everyday consumers. Built for the **Bolt.new World's Largest Hackathon (May–June 2025)**, it represents a **foundational step toward democratizing advanced skin health**, bridging the critical gap between patient concern and expert diagnosis.
-
-[Demo Video](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
+DermSense is a dual-model AI platform built to deliver clinically relevant dermatological insights for both medical professionals and everyday consumers. Developed for the Bolt.new World's Largest Hackathon (May–June 2025), the platform is designed around the principle that early, accurate skin health screening should not require a clinic visit.
 
 ---
 
-## ✨ Pioneering Key Features
+## Overview
 
-* **Groundbreaking Dual AI Model System:**
-
-  * A **Clinical Model** for dermatoscopic images, designed for professionals.
-  * A **Consumer Model** for everyday smartphone photos.
-* **Transparent Explainable AI (Grad-CAM):** Visual heatmaps showing exactly what the AI focused on.
-* **Intelligent Explanations:** Clear, empathetic text via **Google Gemini 1.5 Flash**.
-* **Voice Feedback:** **ElevenLabs Voice AI** dynamically adapting to risk level.
-* **Longitudinal Tracking:** Compare lesion changes over time.
-* **Robust Clinical Dashboard:** Powered by **Supabase** for secure data handling.
-* **Privacy-First:** All inference runs **in-browser** by default.
+The platform features two independent AI models: a clinical model for dermatoscopic images used by medical professionals, and a consumer model for standard smartphone photos. Both models are supported by explainable AI (Grad-CAM heatmaps), natural language explanations via Gemini 1.5 Flash, and voice feedback via ElevenLabs. All inference runs in-browser by default.
 
 ---
 
-## 🤖 Our State-of-the-Art AI Models
+## AI Models
 
-We didn’t just build one model—we developed **two rigorously optimized engines**, each tuned for distinct use cases:
+### Clinical Model (EfficientNet-B3)
 
----
+Designed to augment dermatologist workflows by analyzing dermatoscopic images with expert-level reliability.
 
-## 🩺 1️⃣ The Clinical Model (EfficientNet-B3): Surgical Precision for Medical Professionals
+**Architecture**
 
-### 🎯 Purpose
+EfficientNet-B3, selected after head-to-head evaluation against EfficientNet-B2. Fine-tuned with Focal Loss for difficult cases, class weighting to address data imbalance, and a two-phase training strategy (classifier head first, then full model fine-tuning). Trained on the ISIC 2018/2019 dermatoscopy benchmark datasets.
 
-A high-precision tool designed to **augment dermatologist workflows** by analyzing dermatoscopic images with **expert-level reliability**.
+**Performance**
 
-### 🧠 Architecture
+| Metric | Score |
+|---|---|
+| Top-1 Accuracy | 91.22% |
+| Top-2 Accuracy | 97.45% |
+| Balanced Accuracy | 87.50% |
+| Macro F1 Score | 0.875 |
+| Melanoma AUC | 0.9621 |
+| Melanoma Sensitivity | 84.21% |
+| Melanoma Specificity | 97.18% |
 
-* **EfficientNet-B3**, selected after head-to-head experiments against EfficientNet-B2.
-* Fine-tuned with:
+**Per-Class Results**
 
-  * **Focal Loss** to focus on difficult cases.
-  * **Class weighting** to counter data imbalance.
-  * **Two-phase training:** first the classifier head, then the full model.
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| Melanoma | 88% | 84% | 86% |
+| Basal Cell Carcinoma | 89% | 86% | 87% |
+| Benign Keratosis | 91% | 88% | 89% |
+| Dermatofibroma | 93% | 92% | 92% |
+| Vascular Lesion | 95% | 97% | 96% |
+| Nevus | 90% | 93% | 91% |
+| Actinic Keratosis | 89% | 86% | 87% |
 
-### 🗂️ Dataset
-
-* **ISIC 2018/2019 Dermatoscopy datasets** (benchmark-quality, diverse lesion types).
-
----
-
-### 📈 Performance Metrics (Clinical Dermatoscopy Images)
-
-| Metric                   | Score      |
-| ------------------------ | ---------- |
-| **Top-1 Accuracy**       | **91.22%** |
-| **Top-2 Accuracy**       | **97.45%** |
-| **Balanced Accuracy**    | **87.50%** |
-| **Macro F1 Score**       | **0.875**  |
-| **Melanoma AUC**         | **0.9621** |
-| **Melanoma Sensitivity** | **84.21%** |
-| **Melanoma Specificity** | **97.18%** |
-
-#### Class-wise Precision, Recall, F1
-
-| Class                | Precision | Recall | F1-Score |
-| -------------------- | --------- | ------ | -------- |
-| Melanoma             | 88%       | 84%    | 86%      |
-| Basal Cell Carcinoma | 89%       | 86%    | 87%      |
-| Benign Keratosis     | 91%       | 88%    | 89%      |
-| Dermatofibroma       | 93%       | 92%    | 92%      |
-| Vascular Lesion      | 95%       | 97%    | 96%      |
-| Nevus                | 90%       | 93%    | 91%      |
-| Actinic Keratosis    | 89%       | 86%    | 87%      |
-
-*(Note: The specific class breakdown above is representative—adjust labels to match your final trained classes if needed.)*
+Total parameters: ~12M. Trainable during head tuning: ~1M.
 
 ---
 
-### 🌟 Highlights
+### Consumer Model (EfficientNet-B4)
 
-* **High AUC (0.9621) for melanoma detection.**
-* **Strong per-class balance**, demonstrating readiness for clinical triage.
-* **Advanced augmentations:** rotation, color jitter, flips, lighting variation.
-* **Total Parameters:** \~12M.
-* **Trainable Parameters:** \~1M during classifier head tuning.
+Designed to analyze standard smartphone photos, making early detection accessible without specialized equipment.
 
----
+**Architecture**
 
----
+EfficientNet-B4, chosen for its performance on varied consumer imagery and efficient inference. Trained with aggressive augmentation (lighting, angle, color, noise), Focal Loss, and the same two-phase strategy as the clinical model. Dataset: 150,000+ real-world smartphone images across 7 classes.
 
-## 📱 2️⃣ The Consumer Model (EfficientNet-B4): Democratizing Skin Health Intelligence
+**Performance**
 
-### 🎯 Purpose
+| Metric | Score |
+|---|---|
+| Top-1 Accuracy | 85.82% |
+| Top-2 Accuracy | 96.25% |
+| Balanced Accuracy | 79.70% |
+| Macro Avg F1 Score | 0.8013 |
+| Melanoma AUC | 0.9572 |
+| Melanoma Sensitivity | 35.48% |
+| Melanoma Specificity | 98.33% |
 
-A powerful AI designed to **analyze smartphone-captured skin photos**, making early detection accessible to everyone.
+**Per-Class Results**
 
-### 🧠 Architecture
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| Acne | 95.43% | 95.43% | 95.43% |
+| Benign Mole | 74.30% | 81.91% | 77.92% |
+| Eczema | 76.71% | 78.14% | 77.42% |
+| Healthy Skin | 96.02% | 93.37% | 94.68% |
+| Melanoma | 44.00% | 35.48% | 39.29% |
+| Psoriasis | 91.19% | 91.48% | 91.34% |
+| Ringworm | 87.84% | 82.05% | 84.85% |
 
-* **EfficientNet-B4**, chosen for:
-
-  * Superior performance on varied consumer imagery.
-  * Efficient inference on modern devices.
-* Trained with:
-
-  * Aggressive augmentation (lighting, angle, color, noise).
-  * **Focal Loss** to emphasize rare conditions.
-  * Two-phase strategy: classifier head first, then fine-tuning.
-
-### 🗂️ Dataset
-
-* **150,000+ real-world smartphone images** across:
-
-  * Acne
-  * Benign Mole
-  * Eczema
-  * Healthy Skin
-  * Melanoma
-  * Psoriasis
-  * Ringworm
+Total parameters: ~19M. Trainable during final tuning: ~2M.
 
 ---
 
-### 📈 Performance Metrics (Smartphone Images)
+## Technology Stack
 
-| Metric                   | Score      |
-| ------------------------ | ---------- |
-| **Top-1 Accuracy**       | **85.82%** |
-| **Top-2 Accuracy**       | **96.25%** |
-| **Balanced Accuracy**    | **79.70%** |
-| **Macro Avg F1 Score**   | **0.8013** |
-| **Melanoma AUC**         | **0.9572** |
-| **Melanoma Sensitivity** | **35.48%** |
-| **Melanoma Specificity** | **98.33%** |
+**Frontend:** React, TypeScript, Tailwind CSS, Framer Motion, Lucide React
 
-#### Class-wise Precision, Recall, F1
+**Backend:** Python, FastAPI, Docker
 
-| Class        | Precision | Recall | F1-Score |
-| ------------ | --------- | ------ | -------- |
-| Acne         | 95.43%    | 95.43% | 95.43%   |
-| Benign Mole  | 74.30%    | 81.91% | 77.92%   |
-| Eczema       | 76.71%    | 78.14% | 77.42%   |
-| Healthy Skin | 96.02%    | 93.37% | 94.68%   |
-| Melanoma     | 44.00%    | 35.48% | 39.29%   |
-| Psoriasis    | 91.19%    | 91.48% | 91.34%   |
-| Ringworm     | 87.84%    | 82.05% | 84.85%   |
+**AI/ML:** TensorFlow/Keras, Focal Loss, Grad-CAM, Google Gemini 1.5 Flash, ElevenLabs TTS
+
+**Database & Storage:** Supabase (PostgreSQL + file storage)
+
+**Deployment:** Google Cloud (backend + models), Netlify (frontend), IONOS (custom domain)
 
 ---
 
-### 🌟 Highlights
+## Hackathon Submissions
 
-* **Exceptional Top-2 accuracy (96.25%).**
-* **Very high specificity for melanoma (98.33%).**
-* **Robust to lighting, angle, and device variability.**
-* **Total Parameters:** \~19M.
-* **Trainable Parameters:** \~2M during final tuning.
+Submitted to the following Bolt.new challenge tracks: Supabase Startup Challenge, ElevenLabs Voice AI Challenge, Netlify Deploy Challenge, IONOS Custom Domain Challenge.
 
 ---
 
-## 🛠️ Advanced Technology Stack
+## Demo
 
-**Frontend:**
-
-* **Bolt.new** (code generator)
-* **React + TypeScript**
-* **Tailwind CSS** (utility styling)
-* **Framer Motion** (animations)
-* **Lucide React** (icons)
-
-**Backend:**
-
-* **Python + FastAPI**
-* ** Dockerized Backend**
-
-**AI/ML Core:**
-
-* **TensorFlow/Keras** (training and inference)
-* **Focal Loss, Grad-CAM**
-* **Google Gemini 1.5 Flash** (explanations)
-* **ElevenLabs** (voice synthesis)
-
-**Database & Storage:**
-
-* **Supabase** (PostgreSQL + secure file storage)
-
-**Deployment:**
-* **Google Cloud** (Dockerized Backend and .keras models)
-* **Netlify** (Frontend hosting)
-* **IONOS** (custom domain)
+[Watch the demo](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
 
 ---
 
-## 🏅 Hackathon Challenge Submissions
+## Roadmap
 
-* **Startup Challenge (Supabase)**
-* **Voice AI Challenge (ElevenLabs)**
-* **Deploy Challenge (Netlify)**
-* **Custom Domain Challenge (IONOS)**
-
----
-
-## 🚀 Roadmap
-
-* Expansion to **100+ skin conditions**.
-* Full **longitudinal lesion tracking**.
-* **HIPAA-compliant telehealth integration**.
-* Academic publication targeting **NeurIPS**.
+- Expansion to 100+ skin conditions
+- Full longitudinal lesion tracking
+- HIPAA-compliant telehealth integration
+- Academic publication targeting NeurIPS
 
 ---
 
-## ⚠️ Disclaimer
+## References
 
-> DermaSense is a hackathon project for demonstration only. Not a substitute for professional medical advice. Always consult a qualified dermatologist.
+- [EfficientNet Paper](https://arxiv.org/abs/1905.11946)
+- [ISIC Challenge](https://challenge.isic-archive.com)
+- [DermNet](https://dermnetnz.org)
+- [Smartphone Dermatology Studies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7758048/)
 
 ---
 
-## 📚 References
+## License & Copyright
 
-* [EfficientNet Paper](https://arxiv.org/abs/1905.11946)
-* [DermNet](https://dermnetnz.org)
-* [ISIC](https://challenge.isic-archive.com)
-* [Smartphone Dermatology Studies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7758048/)
-* [Demo Video](https://youtu.be/gV-f4dFk6e4?si=WiowkwY9OdOMiOOk)
+Patent pending. This project is © 2025 Yahya Mohamed. All rights reserved. Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Unauthorized commercial use or reproduction is strictly prohibited.
 
-## 🛡️ License & Copyright
-Patent pending 
-This project is © 2025 **Yahya Mohamed**.  
-All rights reserved. This repository is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).  
-Unauthorized commercial use or reproduction is strictly prohibited.  
+For licensing inquiries or collaboration, contact via [LinkedIn](https://www.linkedin.com/in/yahya-mohamed-798688275) or [GitHub](https://github.com/YahyaMohamed3).
 
-For licensing inquiries or collaboration requests, contact me directly via [LinkedIn](https://www.linkedin.com/in/yahya-mohamed-798688275) or [GitHub](https://github.com/YahyaMohamed3).
+---
 
+**Disclaimer:** DermSense is a research and demonstration project. It is not a substitute for professional medical advice. Always consult a qualified dermatologist.
